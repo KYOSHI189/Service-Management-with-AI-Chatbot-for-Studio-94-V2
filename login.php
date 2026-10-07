@@ -197,7 +197,7 @@ $show_reset_form = !empty($reset_token);
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Studio 94 SnapTrack — Sign In</title>
-  <link rel="stylesheet" href="assets/css/styles.css"/>
+  <link rel="stylesheet" href="<?= APP_URL ?>/assets/css/styles.css"/>
   <style>
     .forgot-password-link {
       font-size: 12px;

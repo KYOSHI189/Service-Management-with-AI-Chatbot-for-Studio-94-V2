@@ -28,6 +28,8 @@ node_modules/
 # User Uploads
 uploads/*
 !uploads/.gitkeep
+assets/uploads/*
+!assets/uploads/.gitkeep
 ASSETS/uploads/*
 !ASSETS/uploads/.gitkeep
 pages/**/uploads/*

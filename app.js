@@ -356,10 +356,10 @@ function handleRegister(e) {
 
 // ===== PACKAGE DATA =====
 const packageData = {
-  'Self-Shoot': { price: '₱1,500', description: 'DIY photoshoot with professional lighting.', duration: '2 hours', inclusions: ['Studio access', 'Professional lighting', '30 edited photos'], images: ['ASSETS/f1.JPG','ASSETS/f2.JPG','ASSETS/f3.JPG'] },
-  'Studio Rental': { price: '₱2,500', description: 'Professional studio space with lighting.', duration: '1 hour', inclusions: ['Studio Space', 'Basic Lighting kit', 'Changing Room'], images: ['ASSETS/pink.JPG','ASSETS/p2.JPG','ASSETS/p3.JPG'] },
-  'Family': { price: '₱3,500', description: 'Inclusive session for families.', duration: '3 hours', inclusions: ['Family Props', '20 Edited Photos', 'Digital Copies'], images: ['ASSETS/f1.JPG','ASSETS/f2.JPG','ASSETS/f3.JPG'] },
-  'Creative': { price: '₱5,000', description: 'High-concept shoot with artistic direction.', duration: '4 hours', inclusions: ['Artistic Direction', 'Advanced Retouching', 'Pro Stylist'], images: ['ASSETS/pink.JPG','ASSETS/f3.JPG','ASSETS/p2.JPG'] }
+  'Self-Shoot': { price: '₱1,500', description: 'DIY photoshoot with professional lighting.', duration: '2 hours', inclusions: ['Studio access', 'Professional lighting', '30 edited photos'], images: ['assets/f1.JPG','assets/f2.JPG','assets/f3.JPG'] },
+  'Studio Rental': { price: '₱2,500', description: 'Professional studio space with lighting.', duration: '1 hour', inclusions: ['Studio Space', 'Basic Lighting kit', 'Changing Room'], images: ['assets/pink.JPG','assets/p2.JPG','assets/p3.JPG'] },
+  'Family': { price: '₱3,500', description: 'Inclusive session for families.', duration: '3 hours', inclusions: ['Family Props', '20 Edited Photos', 'Digital Copies'], images: ['assets/f1.JPG','assets/f2.JPG','assets/f3.JPG'] },
+  'Creative': { price: '₱5,000', description: 'High-concept shoot with artistic direction.', duration: '4 hours', inclusions: ['Artistic Direction', 'Advanced Retouching', 'Pro Stylist'], images: ['assets/pink.JPG','assets/f3.JPG','assets/p2.JPG'] }
 };
 
 let selectedPackage = '';

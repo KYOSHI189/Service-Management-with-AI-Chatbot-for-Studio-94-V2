@@ -302,7 +302,7 @@ if ($loggedIn) {
         </button>
 
         <a href="landing.php" class="logo-container" aria-label="Studio 94 Home">
-          <img src="assets/logo.png" alt="Studio 94 EST.24" class="brand-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <img src="<?= $baseUrl ?>/assets/logo.png" alt="Studio 94 EST.24" class="brand-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
           <div class="brand-logo-text" style="display: none;">
             <span class="mark">S</span> STUDIO 94®
             <span class="brand-sub">EST.24</span>
@@ -333,7 +333,7 @@ if ($loggedIn) {
     <section class="hero-section">
       <div class="container">
         <div class="notebook-container">
-          <img src="assets/hero-notebook.jpg" alt="Studio 94 Lookbook Notebook" class="notebook-img" />
+          <img src="<?= $baseUrl ?>/assets/hero-notebook.jpg" alt="Studio 94 Lookbook Notebook" class="notebook-img" />
         </div>
         <div class="hero-cta">
           <a href="<?= htmlspecialchars($bookingUrl) ?>" class="btn-appointment">Book an appointment</a>
@@ -347,25 +347,25 @@ if ($loggedIn) {
         <div class="categories-grid">
           <article class="category-card">
             <div class="card-photo-wrapper">
-              <img src="assets/card-1.png" alt="Celebrating You Portrait" />
+              <img src="<?= $baseUrl ?>/assets/card-1.png" alt="Celebrating You Portrait" />
             </div>
             <h3 class="category-title">CELEBRATING YOU</h3>
           </article>
           <article class="category-card">
             <div class="card-photo-wrapper">
-              <img src="assets/card-2.png" alt="Little Life Couple Portrait" />
+              <img src="<?= $baseUrl ?>/assets/card-2.png" alt="Little Life Couple Portrait" />
             </div>
             <h3 class="category-title">LITTLE LIFE</h3>
           </article>
           <article class="category-card">
             <div class="card-photo-wrapper">
-              <img src="assets/card-3.png" alt="Family Portrait" />
+              <img src="<?= $baseUrl ?>/assets/card-3.png" alt="Family Portrait" />
             </div>
             <h3 class="category-title">FOR FAMILY</h3>
           </article>
           <article class="category-card">
             <div class="card-photo-wrapper">
-              <img src="assets/card-4.png" alt="Graduation and Group Portrait" />
+              <img src="<?= $baseUrl ?>/assets/card-4.png" alt="Graduation and Group Portrait" />
             </div>
             <h3 class="category-title">FOR EVERYONE</h3>
           </article>

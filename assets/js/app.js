@@ -118,7 +118,8 @@ function printSection(id) {
   const content = document.getElementById(id)?.innerHTML;
   if (!content) return;
   const win = window.open('', '_blank');
-  win.document.write('<html><head><title>Print</title><link rel="stylesheet" href="' + window.location.origin + '/snaptrack/assets/css/styles.css"></head><body>' + content + '</body></html>');
+  const basePath = window.location.pathname.startsWith('/snaptrack') ? '/snaptrack' : '';
+  win.document.write('<html><head><title>Print</title><link rel="stylesheet" href="' + window.location.origin + basePath + '/assets/css/styles.css"></head><body>' + content + '</body></html>');
   win.document.close();
   win.focus();
   setTimeout(() => win.print(), 500);

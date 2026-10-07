@@ -102,7 +102,7 @@ $qrDataUri = $pendingSecret ? MFAHelper::getQRCodeDataURI($pendingSecret, $user[
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Security Settings — Studio 94</title>
-<link rel="stylesheet" href="assets/css/styles.css">
+<link rel="stylesheet" href="<?= APP_URL ?>/assets/css/styles.css">
 <style>
   body { font-family: "Trebuchet MS", Arial, sans-serif; background: #f6f4f4; margin: 0; padding: 40px 20px; min-height: 100vh; }
   .card { max-width: 560px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.08); }
