@@ -33,17 +33,42 @@ function loadEnv($path = __DIR__ . '/.env') {
 loadEnv();
 
 // ===== DATABASE CONNECTION =====
-define('DB_HOST',     'localhost');
-define('DB_NAME',     'snaptrack');
-define('DB_USER',     'root');
-define('DB_PASS',     '');
-define('DB_CHARSET',  'utf8mb4');
+define('DB_HOST',    $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?? $_ENV['MYSQLHOST'] ?? getenv('MYSQLHOST') ?: 'localhost');
+define('DB_PORT',    $_ENV['DB_PORT'] ?? getenv('DB_PORT') ?? $_ENV['MYSQLPORT'] ?? getenv('MYSQLPORT') ?: '3306');
+define('DB_NAME',    $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?? $_ENV['MYSQLDATABASE'] ?? getenv('MYSQLDATABASE') ?: 'snaptrack');
+define('DB_USER',    $_ENV['DB_USER'] ?? getenv('DB_USER') ?? $_ENV['MYSQLUSER'] ?? getenv('MYSQLUSER') ?: 'root');
+define('DB_PASS',    $_ENV['DB_PASS'] ?? getenv('DB_PASS') ?? $_ENV['MYSQLPASSWORD'] ?? getenv('MYSQLPASSWORD') ?: '');
+define('DB_CHARSET', 'utf8mb4');
 
-// ===== APP SETTINGS =====
-define('APP_NAME',    'Studio 94 SnapTrack');
-define('APP_URL',     'http://localhost/snaptrack');
-define('UPLOAD_DIR',  __DIR__ . '/assets/uploads/');
-define('UPLOAD_URL',  APP_URL . '/assets/uploads/');
+// ===== APP SETTINGS & URL CONFIGURATION =====
+define('APP_NAME', 'Studio 94 SnapTrack');
+
+// Detect APP_URL: environment variable takes precedence, otherwise auto-detect from host & protocol
+$envAppUrl = $_ENV['APP_URL'] ?? getenv('APP_URL') ?: null;
+if (!empty($envAppUrl)) {
+    $detectedUrl = rtrim($envAppUrl, '/');
+} else {
+    $isHttps = (
+        (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
+        (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
+        (!empty($_SERVER['HTTP_FRONT_END_HTTPS']) && $_SERVER['HTTP_FRONT_END_HTTPS'] !== 'off') ||
+        (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
+    );
+    $protocol = $isHttps ? 'https://' : 'http://';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+    $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+    $basePath = '';
+    if (strpos($scriptName, '/snaptrack/') === 0 || $scriptName === '/snaptrack') {
+        $basePath = '/snaptrack';
+    }
+
+    $detectedUrl = $protocol . $host . $basePath;
+}
+
+define('APP_URL',    $detectedUrl);
+define('UPLOAD_DIR', __DIR__ . '/assets/uploads/');
+define('UPLOAD_URL', APP_URL . '/assets/uploads/');
 
 define('SESSION_LIFETIME', 7200);
 define('ROLES', ['admin', 'staff', 'client']);

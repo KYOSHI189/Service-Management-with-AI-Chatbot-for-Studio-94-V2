@@ -24,6 +24,7 @@ function db(): PDO
         try {
 
             $dsn = 'mysql:host=' . DB_HOST .
+                   (defined('DB_PORT') && DB_PORT ? ';port=' . DB_PORT : '') .
                    ';dbname=' . DB_NAME .
                    ';charset=' . DB_CHARSET;
 
