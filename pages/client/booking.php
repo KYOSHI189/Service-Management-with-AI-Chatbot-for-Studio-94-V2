@@ -130,17 +130,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pkgStmt->execute([$sub_package_id]);
     $subPackage = $pkgStmt->fetch();
 
-    if (!$subPackage) {
-        setFlash('error', 'Invalid package selected.');
-        header('Location: index.php?page=booking');
-        exit;
-    }
-
-    $mainStmt = $pdo->prepare("SELECT * FROM packages WHERE id = ?");
-    $mainStmt->execute([$subPackage['parent_id']]);
-    $mainPackage = $mainStmt->fetch();
-
     $errors = [];
+    if (!$subPackage) {
+        $errors[] = 'Invalid package selected. Please choose a package.';
+    } else {
+        $mainStmt = $pdo->prepare("SELECT * FROM packages WHERE id = ?");
+        $mainStmt->execute([$subPackage['parent_id']]);
+        $mainPackage = $mainStmt->fetch();
+    }
     if (!$sub_package_id) $errors[] = 'Please select a package.';
     if (!$date) $errors[] = 'Please select a date.';
     if (!$time) $errors[] = 'Please select a time.';
@@ -181,77 +178,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        $ref = 'B-' . date('Ymd') . '-' . str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
-        $checkRef = $pdo->prepare("SELECT id FROM bookings WHERE booking_ref = ?");
-        $checkRef->execute([$ref]);
-        if ($checkRef->fetch()) {
-            $ref = 'B-' . date('YmdHis') . '-' . rand(100, 999);
+        try {
+            $ref = 'B-' . date('Ymd') . '-' . str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
+            $checkRef = $pdo->prepare("SELECT id FROM bookings WHERE booking_ref = ?");
+            $checkRef->execute([$ref]);
+            if ($checkRef->fetch()) {
+                $ref = 'B-' . date('YmdHis') . '-' . rand(100, 999);
+            }
+
+            $basePrice = (float)$subPackage['price'];
+            $finalPrice = $loyaltyDiscountPct > 0
+                ? round($basePrice * (100 - $loyaltyDiscountPct) / 100, 2)
+                : $basePrice;
+
+            // ✅ FLAT ₱100 RESERVATION FEE (hindi percentage-based)
+            $deposit = RESERVATION_FEE;
+            $remaining = max(0, round($finalPrice - $deposit, 2));
+
+            $loyaltyNote = '';
+            if ($loyaltyBonusMinutes > 0) {
+                $loyaltyNote .= "\n[LOYALTY] +{$loyaltyBonusMinutes} MIN bonus applied (base: {$baseMinutes} min → adjusted: {$adjustedMinutes} min)";
+            }
+            if ($loyaltyDiscountPct > 0) {
+                $loyaltyNote .= "\n[LOYALTY] {$loyaltyDiscountPct}% OFF applied (original: ₱{$basePrice} → final: ₱{$finalPrice})";
+            }
+            $finalNotes = trim($notes . $loyaltyNote);
+
+            $ins = $pdo->prepare("INSERT INTO bookings (
+                booking_ref, user_id, package_id, duration_minutes, date, time, people, phone, notes,
+                type, status, package_price, deposit_amount, remaining_balance, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'online', 'Awaiting Approval', ?, ?, ?, NOW())");
+
+            $ins->execute([
+                $ref, $uid, $sub_package_id, $adjustedMinutes,
+                $date, $time, $people, $phone, $finalNotes,
+                $finalPrice, $deposit, $remaining
+            ]);
+
+            $bookingId = $pdo->lastInsertId();
+
+            $payRef = 'PAY-' . date('YmdHis') . '-' . rand(1000, 9999);
+            $checkPayRef = $pdo->prepare("SELECT id FROM payments WHERE payment_ref = ?");
+            $checkPayRef->execute([$payRef]);
+            if ($checkPayRef->fetch()) {
+                $payRef = 'PAY-' . date('YmdHis') . '-' . uniqid() . '-' . rand(100, 999);
+            }
+
+            // ✅ RESERVATION type + FLAT ₱100 amount
+            $pdo->prepare("INSERT INTO payments (payment_ref, booking_id, user_id, amount, type, status, created_at)
+                VALUES (?, ?, ?, ?, 'RESERVATION', 'UNPAID', NOW())")
+                ->execute([$payRef, $bookingId, $uid, RESERVATION_FEE]);
+
+            $lcCheck = $pdo->prepare("SELECT id FROM loyalty_cards WHERE user_id=?");
+            $lcCheck->execute([$uid]);
+            if (!$lcCheck->fetch()) {
+                $cardNo = 'LC-' . date('Y') . '-' . str_pad($uid, 3,'0',STR_PAD_LEFT);
+                $pdo->prepare("INSERT INTO loyalty_cards (user_id, card_number, total_bookings, status) VALUES (?, ?, 1, 'Active')")
+                    ->execute([$uid, $cardNo]);
+            } else {
+                $pdo->prepare("UPDATE loyalty_cards SET total_bookings=total_bookings+1 WHERE user_id=?")
+                    ->execute([$uid]);
+            }
+
+            $mainName = $mainPackage ? $mainPackage['name'] : 'Main Package';
+            $notifMsg = $user['name'] . ' requested ' . $subPackage['name'] . ' (' . $mainName . ') on ' . $date . ' at ' . $time;
+            if ($loyaltyBonusMinutes > 0) $notifMsg .= ' — 🎁 +' . $loyaltyBonusMinutes . ' MIN loyalty bonus';
+            if ($loyaltyDiscountPct > 0)  $notifMsg .= ' — 🎁 ' . $loyaltyDiscountPct . '% loyalty discount';
+
+            addNotificationByRole('staff', 'New Booking Request', $notifMsg, 'booking', '📅');
+
+            setFlash('success', 'Booking request submitted! We will review and confirm your session.');
+            $redirectUrl = APP_URL . '/index.php?page=bookings';
+            header('Location: ' . $redirectUrl);
+            echo "<script>window.location.href = '" . $redirectUrl . "';</script>";
+            exit;
+        } catch (Throwable $e) {
+            error_log('[STUDIO94] Booking creation error: ' . $e->getMessage());
+            $errors[] = 'Could not process booking: ' . $e->getMessage();
         }
-
-        $basePrice = (float)$subPackage['price'];
-        $finalPrice = $loyaltyDiscountPct > 0
-            ? round($basePrice * (100 - $loyaltyDiscountPct) / 100, 2)
-            : $basePrice;
-
-        // ✅ FLAT ₱100 RESERVATION FEE (hindi percentage-based)
-        $deposit = RESERVATION_FEE;
-        $remaining = max(0, round($finalPrice - $deposit, 2));
-
-        $loyaltyNote = '';
-        if ($loyaltyBonusMinutes > 0) {
-            $loyaltyNote .= "\n[LOYALTY] +{$loyaltyBonusMinutes} MIN bonus applied (base: {$baseMinutes} min → adjusted: {$adjustedMinutes} min)";
-        }
-        if ($loyaltyDiscountPct > 0) {
-            $loyaltyNote .= "\n[LOYALTY] {$loyaltyDiscountPct}% OFF applied (original: ₱{$basePrice} → final: ₱{$finalPrice})";
-        }
-        $finalNotes = trim($notes . $loyaltyNote);
-
-        $ins = $pdo->prepare("INSERT INTO bookings (
-            booking_ref, user_id, package_id, duration_minutes, date, time, people, phone, notes,
-            type, status, package_price, deposit_amount, remaining_balance, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'online', 'Awaiting Approval', ?, ?, ?, NOW())");
-
-        $ins->execute([
-            $ref, $uid, $sub_package_id, $adjustedMinutes,
-            $date, $time, $people, $phone, $finalNotes,
-            $finalPrice, $deposit, $remaining
-        ]);
-
-        $bookingId = $pdo->lastInsertId();
-
-        $payRef = 'PAY-' . date('YmdHis') . '-' . rand(1000, 9999);
-        $checkPayRef = $pdo->prepare("SELECT id FROM payments WHERE payment_ref = ?");
-        $checkPayRef->execute([$payRef]);
-        if ($checkPayRef->fetch()) {
-            $payRef = 'PAY-' . date('YmdHis') . '-' . uniqid() . '-' . rand(100, 999);
-        }
-
-        // ✅ RESERVATION type + FLAT ₱100 amount
-        $pdo->prepare("INSERT INTO payments (payment_ref, booking_id, user_id, amount, type, status, created_at)
-            VALUES (?, ?, ?, ?, 'RESERVATION', 'UNPAID', NOW())")
-            ->execute([$payRef, $bookingId, $uid, RESERVATION_FEE]);
-
-        $lcCheck = $pdo->prepare("SELECT id FROM loyalty_cards WHERE user_id=?");
-        $lcCheck->execute([$uid]);
-        if (!$lcCheck->fetch()) {
-            $cardNo = 'LC-' . date('Y') . '-' . str_pad($uid, 3,'0',STR_PAD_LEFT);
-            $pdo->prepare("INSERT INTO loyalty_cards (user_id, card_number, total_bookings, status) VALUES (?, ?, 1, 'Active')")
-                ->execute([$uid, $cardNo]);
-        } else {
-            $pdo->prepare("UPDATE loyalty_cards SET total_bookings=total_bookings+1 WHERE user_id=?")
-                ->execute([$uid]);
-        }
-
-        $mainName = $mainPackage ? $mainPackage['name'] : 'Main Package';
-        $notifMsg = $user['name'] . ' requested ' . $subPackage['name'] . ' (' . $mainName . ') on ' . $date . ' at ' . $time;
-        if ($loyaltyBonusMinutes > 0) $notifMsg .= ' — 🎁 +' . $loyaltyBonusMinutes . ' MIN loyalty bonus';
-        if ($loyaltyDiscountPct > 0)  $notifMsg .= ' — 🎁 ' . $loyaltyDiscountPct . '% loyalty discount';
-
-        addNotificationByRole('staff', 'New Booking Request', $notifMsg, 'booking', '📅');
-
-        setFlash('success', 'Booking request submitted! We will review and confirm your session.');
-        header('Location: index.php?page=bookings');
-        exit;
     }
 }
 
@@ -1078,7 +1082,7 @@ $errors = $errors ?? [];
 <!-- ============================================================ -->
 <!-- STEP 3: BOOKING FORM                                          -->
 <!-- ============================================================ -->
-<div id="booking-form-section" style="display:none;margin-top:20px;">
+<div id="booking-form-section" style="<?= !empty($errors) ? 'display:block;' : 'display:none;' ?>margin-top:20px;">
   <div class="card">
     <div class="section-header">
       <h3><strong>Complete Your Booking</strong></h3>
@@ -1116,7 +1120,7 @@ $errors = $errors ?? [];
         </div>
 
         <div style="padding:12px;background:var(--bg-soft);border-radius:var(--radius-sm);margin-top:12px;">
-          <form method="POST" id="booking-form">
+          <form method="POST" id="booking-form" action="<?= APP_URL ?>/index.php?page=booking">
             <?= csrfField() ?>
             <input type="hidden" name="sub_package_id" id="form-pkg-id">
 

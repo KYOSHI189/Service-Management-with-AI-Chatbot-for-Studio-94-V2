@@ -113,6 +113,58 @@ function ensureDatabaseSchema(PDO $pdo): void
                 INDEX (token)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         ");
+
+        // --- 2. Check bookings table ---
+        $bStmt = $pdo->query("SHOW TABLES LIKE 'bookings'");
+        if ($bStmt && $bStmt->fetch()) {
+            $bCols = $pdo->query("SHOW COLUMNS FROM bookings")->fetchAll(PDO::FETCH_COLUMN);
+            $bNeeded = [
+                'duration_minutes'   => "ALTER TABLE bookings ADD COLUMN duration_minutes INT DEFAULT NULL",
+                'staff_notes'        => "ALTER TABLE bookings ADD COLUMN staff_notes TEXT DEFAULT NULL",
+                'booking_session_id' => "ALTER TABLE bookings ADD COLUMN booking_session_id VARCHAR(50) DEFAULT NULL",
+                'created_by'         => "ALTER TABLE bookings ADD COLUMN created_by VARCHAR(50) DEFAULT 'client'",
+                'number_of_people'   => "ALTER TABLE bookings ADD COLUMN number_of_people INT DEFAULT 1"
+            ];
+            foreach ($bNeeded as $bCol => $bSql) {
+                if (!in_array($bCol, $bCols, true)) {
+                    $pdo->exec($bSql);
+                }
+            }
+            try {
+                $pdo->exec("ALTER TABLE bookings MODIFY COLUMN status ENUM('Awaiting Approval','Approved (Unpaid)','Deposit Paid','Confirmed','In Progress','Completed','Cancelled','Rejected') NOT NULL DEFAULT 'Awaiting Approval'");
+            } catch (Throwable $e) {}
+        }
+
+        // --- 3. Check payments table ---
+        $pStmt = $pdo->query("SHOW TABLES LIKE 'payments'");
+        if ($pStmt && $pStmt->fetch()) {
+            $pCols = $pdo->query("SHOW COLUMNS FROM payments")->fetchAll(PDO::FETCH_COLUMN);
+            if (!in_array('refund_amount', $pCols, true)) {
+                $pdo->exec("ALTER TABLE payments ADD COLUMN refund_amount DECIMAL(10,2) DEFAULT NULL");
+            }
+            try {
+                $pdo->exec("ALTER TABLE payments MODIFY COLUMN type ENUM('RESERVATION','BALANCE','DEPOSIT','FULL') NOT NULL DEFAULT 'RESERVATION'");
+            } catch (Throwable $e) {}
+            try {
+                $pdo->exec("ALTER TABLE payments MODIFY COLUMN status ENUM('UNPAID','PENDING','PAID','REJECTED','REFUNDED','CANCELLED') DEFAULT 'UNPAID'");
+            } catch (Throwable $e) {}
+        }
+
+        // --- 4. Check packages table ---
+        $pkgStmt = $pdo->query("SHOW TABLES LIKE 'packages'");
+        if ($pkgStmt && $pkgStmt->fetch()) {
+            $pkgCols = $pdo->query("SHOW COLUMNS FROM packages")->fetchAll(PDO::FETCH_COLUMN);
+            $pkgNeeded = [
+                'duration_minutes'      => "ALTER TABLE packages ADD COLUMN duration_minutes INT DEFAULT NULL",
+                'print_inclusions'     => "ALTER TABLE packages ADD COLUMN print_inclusions TEXT DEFAULT NULL",
+                'photographer_included' => "ALTER TABLE packages ADD COLUMN photographer_included TINYINT(1) DEFAULT 0"
+            ];
+            foreach ($pkgNeeded as $pkgCol => $pkgSql) {
+                if (!in_array($pkgCol, $pkgCols, true)) {
+                    $pdo->exec($pkgSql);
+                }
+            }
+        }
     } catch (Throwable $e) {
         error_log('[STUDIO94] Schema auto-migration notice: ' . $e->getMessage());
     }
