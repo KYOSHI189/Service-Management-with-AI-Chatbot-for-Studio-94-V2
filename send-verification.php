@@ -74,3 +74,60 @@ function sendVerificationEmail($toEmail, $toName, $token): string {
         return 'failed';
     }
 }
+
+/**
+ * Sends a password reset email via Gmail SMTP.
+ * Returns 'sent' on success, 'skipped' if mail is not configured, or 'failed' on error.
+ */
+function sendPasswordResetEmail($toEmail, $toName, $token): string {
+    if (!isMailConfigured()) {
+        error_log('[STUDIO94] Mail not configured — skipping password reset email for: ' . $toEmail);
+        return 'skipped';
+    }
+
+    $mail = new PHPMailer(true);
+    try {
+        $mail->isSMTP();
+        $mail->Host       = MAIL_HOST;
+        $mail->SMTPAuth   = true;
+        $mail->Username   = MAIL_USERNAME;
+        $mail->Password   = MAIL_PASSWORD;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = MAIL_PORT;
+        $mail->Timeout    = 5;
+
+        $mail->setFrom(MAIL_USERNAME, MAIL_FROM_NAME);
+        $mail->addAddress($toEmail, $toName);
+
+        $resetUrl = APP_URL . '/login.php?token=' . urlencode($token);
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Reset your Studio 94 password';
+        $mail->Body = "
+            <div style='font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;'>
+              <h2 style='color:#111;'>Password Reset Request</h2>
+              <p style='color:#444;line-height:1.6;'>
+                Hello {$toName}, we received a request to reset the password for your Studio 94 account.
+              </p>
+              <p style='color:#444;line-height:1.6;'>
+                Click the button below to choose a new password:
+              </p>
+              <p style='text-align:center;margin:32px 0;'>
+                <a href='{$resetUrl}' style='background:#111;color:#fff;padding:14px 28px;text-decoration:none;border-radius:8px;display:inline-block;font-weight:bold;'>Reset My Password</a>
+              </p>
+              <p style='color:#888;font-size:12px;'>
+                This link will expire in 1 hour. If you didn't request a password reset, you can safely ignore this email.
+              </p>
+              <hr style='border:0;border-top:1px solid #eee;margin:24px 0;'>
+              <p style='color:#999;font-size:11px;'>Studio 94 — Every frame tells a story.</p>
+            </div>
+        ";
+        $mail->AltBody = "Reset your Studio 94 password: {$resetUrl}";
+
+        $mail->send();
+        return 'sent';
+    } catch (Exception $e) {
+        error_log('[STUDIO94] Password reset email FAILED for ' . $toEmail . ': ' . $mail->ErrorInfo);
+        return 'failed';
+    }
+}

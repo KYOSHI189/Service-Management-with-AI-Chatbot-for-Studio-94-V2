@@ -165,7 +165,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = db()->prepare('INSERT INTO password_resets (user_id, email, token, expires_at) VALUES (?, ?, ?, ?)');
                 $stmt->execute([$user['id'], $email, $token, $expires]);
 
-                $success = 'Password reset link has been sent to your email address.';
+                // Send password reset email
+                $mailResult = sendPasswordResetEmail($email, $user['name'], $token);
+
+                if ($mailResult === 'sent') {
+                    $success = 'Password reset link has been sent to <strong>' . clean($email) . '</strong>. Please check your Gmail inbox (and spam folder).';
+                } else {
+                    // SMTP not configured or blocked on cloud server — show direct reset link so user is never locked out
+                    $resetLink = APP_URL . '/login.php?token=' . urlencode($token);
+                    $success = 'Password reset link generated! <br><br><a href="' . $resetLink . '" style="display:inline-block;padding:8px 16px;background:#111;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:4px;">Click here to Reset Your Password</a>';
+                }
             } else {
                 $success = 'If an account exists with this email, a password reset link has been sent.';
             }
