@@ -111,15 +111,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $ins->execute([$fname . ' ' . $lname, $email, $hash, $token, $expires]);
                 }
 
-                // ✅ CRITICAL: Check kung nag-send successfully yung email
-                $emailSent = sendVerificationEmail($email, $fname, $token);
+                // Send verification email — returns 'sent', 'skipped' (no SMTP config), or 'failed'
+                $emailResult = sendVerificationEmail($email, $fname, $token);
 
-                if ($emailSent) {
+                if ($emailResult === 'sent') {
+                    // Email sent successfully — user needs to verify before logging in
                     $success = 'Account created! We sent a verification link to <strong>' . clean($email) . '</strong>. Please check your Gmail inbox (and spam folder) and click the link before signing in.';
                     $tab = 'login';
+
+                } elseif ($emailResult === 'skipped') {
+                    // No SMTP configured (Railway without MAIL vars) — auto-verify the account
+                    $userId = $existing ? $existing['id'] : db()->lastInsertId();
+                    db()->prepare('UPDATE users SET email_verified = 1, verification_token = NULL, verification_expires = NULL WHERE id = ?')
+                         ->execute([$userId]);
+                    $success = 'Account created successfully! You can now sign in with your email and password.';
+                    $tab = 'login';
+
                 } else {
-                    // Email failed — pero nasa DB pa rin yung account
-                    // User can retry by registering again with same email (mapapa-update lang yung token)
+                    // SMTP is configured but sending failed (wrong password, blocked, etc.)
                     $error = 'We could not send the verification email to <strong>' . clean($email) . '</strong>. Please double-check your Gmail address or try again in a few minutes.';
                     error_log("[STUDIO94] Verification email FAILED for: $email");
                 }

@@ -3,13 +3,34 @@
 // send-verification.php — Sends verification email via Gmail SMTP
 // ============================================================
 require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/vendor/autoload.php';   // ← ITO ANG FIX
+require_once __DIR__ . '/vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-function sendVerificationEmail($toEmail, $toName, $token) {
+/**
+ * Returns true if SMTP is properly configured (both username and password present).
+ * If not configured, email cannot be sent from this server.
+ */
+function isMailConfigured(): bool {
+    return defined('MAIL_USERNAME') && defined('MAIL_PASSWORD')
+        && !empty(MAIL_USERNAME) && !empty(MAIL_PASSWORD)
+        && MAIL_USERNAME !== '' && MAIL_PASSWORD !== '';
+}
+
+/**
+ * Sends the verification email.
+ * Returns 'sent' on success, 'skipped' if mail is not configured (auto-verify flow),
+ * or 'failed' if mail is configured but sending failed.
+ */
+function sendVerificationEmail($toEmail, $toName, $token): string {
+    // If no SMTP credentials are configured, skip email sending
+    if (!isMailConfigured()) {
+        error_log('[STUDIO94] Mail not configured (empty MAIL_USERNAME/MAIL_PASSWORD) — skipping email for: ' . $toEmail);
+        return 'skipped';
+    }
+
     $mail = new PHPMailer(true);
     try {
         $mail->isSMTP();
@@ -46,9 +67,9 @@ function sendVerificationEmail($toEmail, $toName, $token) {
         $mail->AltBody = "Welcome to Studio 94! Verify your account: {$verifyUrl}";
 
         $mail->send();
-        return true;
+        return 'sent';
     } catch (Exception $e) {
-        error_log('Verification email failed: ' . $mail->ErrorInfo);
-        return false;
+        error_log('[STUDIO94] Verification email FAILED for ' . $toEmail . ': ' . $mail->ErrorInfo);
+        return 'failed';
     }
 }
