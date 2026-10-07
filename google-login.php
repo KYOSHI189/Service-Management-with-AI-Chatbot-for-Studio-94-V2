@@ -1,6 +1,15 @@
 <?php
 // google-login.php
-require_once 'google-config.php';
+require_once __DIR__ . '/google-config.php';
+
+if (empty(GOOGLE_CLIENT_ID) || empty(GOOGLE_CLIENT_SECRET)) {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    $_SESSION['oauth_error'] = 'Google Sign-In is not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your Railway environment variables.';
+    header('Location: login.php');
+    exit;
+}
 
 $params = [
     'client_id'     => GOOGLE_CLIENT_ID,
