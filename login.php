@@ -154,29 +154,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $error = 'Invalid email address.';
         } else {
+            // Check if email exists in database
             $check = db()->prepare('SELECT id, name FROM users WHERE email = ? AND is_active = 1 LIMIT 1');
             $check->execute([$email]);
             $user = $check->fetch();
 
-            if ($user) {
+            if (!$user) {
+                $error = 'No account found with the email address <strong>' . clean($email) . '</strong>. Please check your spelling or register.';
+            } else {
                 $token   = bin2hex(random_bytes(32));
                 $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
                 $stmt = db()->prepare('INSERT INTO password_resets (user_id, email, token, expires_at) VALUES (?, ?, ?, ?)');
                 $stmt->execute([$user['id'], $email, $token, $expires]);
 
-                // Send password reset email
-                $mailResult = sendPasswordResetEmail($email, $user['name'], $token);
+                // Send password reset email directly to the user's email
+                $mailSent = sendPasswordResetEmail($email, $user['name'], $token);
 
-                if ($mailResult === 'sent') {
-                    $success = 'Password reset link has been sent to <strong>' . clean($email) . '</strong>. Please check your Gmail inbox (and spam folder).';
+                if ($mailSent) {
+                    $success = 'A password reset link has been sent to <strong>' . clean($email) . '</strong>. Please check your Gmail inbox (and spam folder) to reset your password.';
                 } else {
-                    // SMTP not configured or blocked on cloud server — show direct reset link so user is never locked out
-                    $resetLink = APP_URL . '/login.php?token=' . urlencode($token);
-                    $success = 'Password reset link generated! <br><br><a href="' . $resetLink . '" style="display:inline-block;padding:8px 16px;background:#111;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:4px;">Click here to Reset Your Password</a>';
+                    $error = 'We could not send the password reset email to <strong>' . clean($email) . '</strong>. Please make sure your Gmail address is correct or try again in a few minutes.';
                 }
-            } else {
-                $success = 'If an account exists with this email, a password reset link has been sent.';
             }
         }
     }

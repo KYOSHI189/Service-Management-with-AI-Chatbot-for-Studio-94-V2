@@ -77,12 +77,12 @@ function sendVerificationEmail($toEmail, $toName, $token): string {
 
 /**
  * Sends a password reset email via Gmail SMTP.
- * Returns 'sent' on success, 'skipped' if mail is not configured, or 'failed' on error.
+ * Returns true on success, false on error/unconfigured.
  */
-function sendPasswordResetEmail($toEmail, $toName, $token): string {
+function sendPasswordResetEmail($toEmail, $toName, $token): bool {
     if (!isMailConfigured()) {
-        error_log('[STUDIO94] Mail not configured — skipping password reset email for: ' . $toEmail);
-        return 'skipped';
+        error_log('[STUDIO94] Mail not configured (empty MAIL_USERNAME/MAIL_PASSWORD) — cannot send password reset email to: ' . $toEmail);
+        return false;
     }
 
     $mail = new PHPMailer(true);
@@ -94,7 +94,15 @@ function sendPasswordResetEmail($toEmail, $toName, $token): string {
         $mail->Password   = MAIL_PASSWORD;
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = MAIL_PORT;
-        $mail->Timeout    = 5;
+        $mail->Timeout    = 10;
+
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer'       => false,
+                'verify_peer_name'  => false,
+                'allow_self_signed' => true,
+            ],
+        ];
 
         $mail->setFrom(MAIL_USERNAME, MAIL_FROM_NAME);
         $mail->addAddress($toEmail, $toName);
@@ -125,9 +133,9 @@ function sendPasswordResetEmail($toEmail, $toName, $token): string {
         $mail->AltBody = "Reset your Studio 94 password: {$resetUrl}";
 
         $mail->send();
-        return 'sent';
+        return true;
     } catch (Exception $e) {
         error_log('[STUDIO94] Password reset email FAILED for ' . $toEmail . ': ' . $mail->ErrorInfo);
-        return 'failed';
+        return false;
     }
 }
