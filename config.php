@@ -110,8 +110,15 @@ define('LOYALTY_TIERS', [
 // ============================================================
 define('MAIL_HOST',      'smtp.gmail.com');
 define('MAIL_PORT',      587);
-define('MAIL_USERNAME',  'thisis.studio94official@gmail.com');  // ← PALITAN MO
-define('MAIL_PASSWORD',  'xxxxxxxxxxxxxxxx');                   // ← Gmail App Password (16 chars, NO spaces)
+define(
+    'MAIL_USERNAME',
+    $_ENV['MAIL_USERNAME'] ?? getenv('MAIL_USERNAME') ?: ''
+);
+
+define(
+    'MAIL_PASSWORD',
+    $_ENV['MAIL_PASSWORD'] ?? getenv('MAIL_PASSWORD') ?: ''
+);
 define('MAIL_FROM_NAME', 'Studio 94');
 
 // ============================================================
