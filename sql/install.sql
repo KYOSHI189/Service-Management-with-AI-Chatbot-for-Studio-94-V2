@@ -6,11 +6,11 @@
 -- Drop database kung may luma (optional, gamitin kung gusto mong magsimula sa simula)
 -- DROP DATABASE IF EXISTS snaptrack;
 
-CREATE DATABASE IF NOT EXISTS snaptrack
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
+-- CREATE DATABASE IF NOT EXISTS snaptrack
+--   CHARACTER SET utf8mb4
+--   COLLATE utf8mb4_unicode_ci;
 
-USE snaptrack;
+-- USE snaptrack;
 
 -- ============================================================
 -- 1. USERS TABLE
