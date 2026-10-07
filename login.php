@@ -86,52 +86,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Passwords do not match.';
         }
         else {
-            // Check if email already exists AND is verified
-            $check = db()->prepare('SELECT id, email_verified FROM users WHERE email = ? LIMIT 1');
-            $check->execute([$email]);
-            $existing = $check->fetch();
+            try {
+                // Check if email already exists AND is verified
+                $check = db()->prepare('SELECT id, email_verified FROM users WHERE email = ? LIMIT 1');
+                $check->execute([$email]);
+                $existing = $check->fetch();
 
-            if ($existing && $existing['email_verified']) {
-                // Verified account — can't register again
-                $error = 'An account with that email already exists. Please sign in instead.';
-            } else {
-                // New user OR existing unverified user → create/update + resend
-                $hash    = password_hash($password, PASSWORD_DEFAULT);
-                $token   = bin2hex(random_bytes(32));
-                $expires = date('Y-m-d H:i:s', strtotime('+' . VERIFICATION_EXPIRY_HOURS . ' hours'));
-
-                if ($existing) {
-                    // Existing but NOT verified → update + resend verification
-                    $upd = db()->prepare('UPDATE users SET name = ?, password = ?, verification_token = ?, verification_expires = ? WHERE id = ?');
-                    $upd->execute([$fname . ' ' . $lname, $hash, $token, $expires, $existing['id']]);
-                    error_log("[STUDIO94] Resent verification email to existing unverified user: $email");
+                if ($existing && !empty($existing['email_verified'])) {
+                    // Verified account — can't register again
+                    $error = 'An account with that email already exists. Please sign in instead.';
                 } else {
-                    // Brand new user
-                    $ins = db()->prepare('INSERT INTO users (name, email, password, role, is_active, email_verified, verification_token, verification_expires, created_at) VALUES (?, ?, ?, "client", 1, 0, ?, ?, NOW())');
-                    $ins->execute([$fname . ' ' . $lname, $email, $hash, $token, $expires]);
+                    // New user OR existing unverified user → create/update + resend
+                    $hash    = password_hash($password, PASSWORD_DEFAULT);
+                    $token   = bin2hex(random_bytes(32));
+                    $expires = date('Y-m-d H:i:s', strtotime('+' . VERIFICATION_EXPIRY_HOURS . ' hours'));
+
+                    if ($existing) {
+                        // Existing but NOT verified → update + resend verification
+                        $upd = db()->prepare('UPDATE users SET name = ?, password = ?, verification_token = ?, verification_expires = ? WHERE id = ?');
+                        $upd->execute([$fname . ' ' . $lname, $hash, $token, $expires, $existing['id']]);
+                        $userId = $existing['id'];
+                        error_log("[STUDIO94] Updated existing unverified user: $email");
+                    } else {
+                        // Brand new user
+                        $ins = db()->prepare('INSERT INTO users (name, email, password, role, is_active, email_verified, verification_token, verification_expires, created_at) VALUES (?, ?, ?, "client", 1, 0, ?, ?, NOW())');
+                        $ins->execute([$fname . ' ' . $lname, $email, $hash, $token, $expires]);
+                        $userId = db()->lastInsertId();
+                    }
+
+                    // Send verification email — returns 'sent', 'skipped' (no SMTP config), or 'failed'
+                    $emailResult = sendVerificationEmail($email, $fname, $token);
+
+                    if ($emailResult === 'sent') {
+                        // Email sent successfully — user needs to verify before logging in
+                        $success = 'Account created! We sent a verification link to <strong>' . clean($email) . '</strong>. Please check your Gmail inbox (and spam folder) and click the link before signing in.';
+                        $tab = 'login';
+
+                    } elseif ($emailResult === 'skipped') {
+                        // No SMTP configured — auto-verify the account
+                        db()->prepare('UPDATE users SET email_verified = 1, verification_token = NULL, verification_expires = NULL WHERE id = ?')
+                             ->execute([$userId]);
+                        $success = 'Account created successfully! You can now sign in with your email and password.';
+                        $tab = 'login';
+
+                    } else {
+                        // Email sending failed (e.g. SMTP blocked by cloud provider) — auto-verify so user isn't stuck
+                        db()->prepare('UPDATE users SET email_verified = 1, verification_token = NULL, verification_expires = NULL WHERE id = ?')
+                             ->execute([$userId]);
+                        $success = 'Account created successfully! You can now sign in with your email and password.';
+                        $tab = 'login';
+                        error_log("[STUDIO94] Verification email delivery failed for: $email — user was auto-verified");
+                    }
                 }
-
-                // Send verification email — returns 'sent', 'skipped' (no SMTP config), or 'failed'
-                $emailResult = sendVerificationEmail($email, $fname, $token);
-
-                if ($emailResult === 'sent') {
-                    // Email sent successfully — user needs to verify before logging in
-                    $success = 'Account created! We sent a verification link to <strong>' . clean($email) . '</strong>. Please check your Gmail inbox (and spam folder) and click the link before signing in.';
-                    $tab = 'login';
-
-                } elseif ($emailResult === 'skipped') {
-                    // No SMTP configured (Railway without MAIL vars) — auto-verify the account
-                    $userId = $existing ? $existing['id'] : db()->lastInsertId();
-                    db()->prepare('UPDATE users SET email_verified = 1, verification_token = NULL, verification_expires = NULL WHERE id = ?')
-                         ->execute([$userId]);
-                    $success = 'Account created successfully! You can now sign in with your email and password.';
-                    $tab = 'login';
-
-                } else {
-                    // SMTP is configured but sending failed (wrong password, blocked, etc.)
-                    $error = 'We could not send the verification email to <strong>' . clean($email) . '</strong>. Please double-check your Gmail address or try again in a few minutes.';
-                    error_log("[STUDIO94] Verification email FAILED for: $email");
-                }
+            } catch (Throwable $e) {
+                error_log('[STUDIO94] Registration error: ' . $e->getMessage());
+                $error = 'Could not create account: ' . htmlspecialchars($e->getMessage());
             }
         }
     }

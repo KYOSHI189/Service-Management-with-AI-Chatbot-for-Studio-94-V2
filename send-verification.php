@@ -40,6 +40,7 @@ function sendVerificationEmail($toEmail, $toName, $token): string {
         $mail->Password   = MAIL_PASSWORD;
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = MAIL_PORT;
+        $mail->Timeout    = 5;
 
         $mail->setFrom(MAIL_USERNAME, MAIL_FROM_NAME);
         $mail->addAddress($toEmail, $toName);

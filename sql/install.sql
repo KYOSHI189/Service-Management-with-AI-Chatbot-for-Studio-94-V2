@@ -16,16 +16,27 @@
 -- 1. USERS TABLE
 -- ============================================================
 CREATE TABLE IF NOT EXISTS users (
-    id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name        VARCHAR(120)  NOT NULL,
-    email       VARCHAR(180)  NOT NULL UNIQUE,
-    phone       VARCHAR(30)   DEFAULT '',
-    password    VARCHAR(255)  NOT NULL,
-    role        ENUM('admin','staff','client') NOT NULL DEFAULT 'client',
-    is_active   TINYINT(1)    NOT NULL DEFAULT 1,
-    avatar      VARCHAR(255)  DEFAULT NULL,
-    created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    id                    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name                  VARCHAR(120)  NOT NULL,
+    email                 VARCHAR(180)  NOT NULL UNIQUE,
+    phone                 VARCHAR(30)   DEFAULT '',
+    password              VARCHAR(255)  NOT NULL,
+    role                  ENUM('admin','staff','client') NOT NULL DEFAULT 'client',
+    is_active             TINYINT(1)    NOT NULL DEFAULT 1,
+    failed_login_attempts INT           NOT NULL DEFAULT 0,
+    locked_until          DATETIME      DEFAULT NULL,
+    last_login            DATETIME      DEFAULT NULL,
+    avatar                VARCHAR(255)  DEFAULT NULL,
+    created_at            DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at            DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    email_verified        TINYINT(1)    DEFAULT 0,
+    google_id             VARCHAR(255)  DEFAULT NULL,
+    verification_token    VARCHAR(255)  DEFAULT NULL,
+    verification_expires  DATETIME      DEFAULT NULL,
+    mfa_enabled           TINYINT(1)    DEFAULT 0,
+    mfa_secret            VARCHAR(255)  DEFAULT NULL,
+    mfa_backup_codes      TEXT          DEFAULT NULL,
+    mfa_verified_at       DATETIME      DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ============================================================
@@ -184,6 +195,20 @@ CREATE TABLE IF NOT EXISTS settings (
     `key`       VARCHAR(80)  NOT NULL PRIMARY KEY,
     `value`     TEXT         DEFAULT NULL,
     updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ============================================================
+-- 11. PASSWORD RESETS TABLE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS password_resets (
+    id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id    INT UNSIGNED NOT NULL,
+    email      VARCHAR(255) NOT NULL,
+    token      VARCHAR(255) NOT NULL,
+    expires_at DATETIME     NOT NULL,
+    used       TINYINT(1)   DEFAULT 0,
+    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ============================================================

@@ -34,6 +34,9 @@ function db(): PDO
                 PDO::ATTR_EMULATE_PREPARES   => false,
             ]);
 
+            // Auto-migrate missing columns/tables
+            ensureDatabaseSchema($pdo);
+
         } catch (PDOException $e) {
 
             die(
@@ -59,6 +62,60 @@ function db(): PDO
     }
 
     return $pdo;
+}
+
+/**
+ * Automatically checks and adds any missing columns to existing tables
+ */
+function ensureDatabaseSchema(PDO $pdo): void
+{
+    static $migrated = false;
+    if ($migrated) return;
+    $migrated = true;
+
+    try {
+        $stmt = $pdo->query("SHOW TABLES LIKE 'users'");
+        if (!$stmt || !$stmt->fetch()) {
+            return;
+        }
+
+        $cols = $pdo->query("SHOW COLUMNS FROM users")->fetchAll(PDO::FETCH_COLUMN);
+
+        $needed = [
+            'failed_login_attempts' => "ALTER TABLE users ADD COLUMN failed_login_attempts INT NOT NULL DEFAULT 0",
+            'locked_until'          => "ALTER TABLE users ADD COLUMN locked_until DATETIME DEFAULT NULL",
+            'last_login'             => "ALTER TABLE users ADD COLUMN last_login DATETIME DEFAULT NULL",
+            'email_verified'         => "ALTER TABLE users ADD COLUMN email_verified TINYINT(1) DEFAULT 0",
+            'google_id'              => "ALTER TABLE users ADD COLUMN google_id VARCHAR(255) DEFAULT NULL",
+            'verification_token'     => "ALTER TABLE users ADD COLUMN verification_token VARCHAR(255) DEFAULT NULL",
+            'verification_expires'   => "ALTER TABLE users ADD COLUMN verification_expires DATETIME DEFAULT NULL",
+            'mfa_enabled'            => "ALTER TABLE users ADD COLUMN mfa_enabled TINYINT(1) DEFAULT 0",
+            'mfa_secret'             => "ALTER TABLE users ADD COLUMN mfa_secret VARCHAR(255) DEFAULT NULL",
+            'mfa_backup_codes'       => "ALTER TABLE users ADD COLUMN mfa_backup_codes TEXT DEFAULT NULL",
+            'mfa_verified_at'        => "ALTER TABLE users ADD COLUMN mfa_verified_at DATETIME DEFAULT NULL"
+        ];
+
+        foreach ($needed as $col => $alterSql) {
+            if (!in_array($col, $cols, true)) {
+                $pdo->exec($alterSql);
+            }
+        }
+
+        $pdo->exec("
+            CREATE TABLE IF NOT EXISTS password_resets (
+                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                user_id INT UNSIGNED NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                token VARCHAR(255) NOT NULL,
+                expires_at DATETIME NOT NULL,
+                used TINYINT(1) DEFAULT 0,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                INDEX (token)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ");
+    } catch (Throwable $e) {
+        error_log('[STUDIO94] Schema auto-migration notice: ' . $e->getMessage());
+    }
 }
 
 // ============================================================
