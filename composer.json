@@ -1,0 +1,12 @@
+{
+    "config": {
+        "audit": {
+            "block-insecure": false
+        }
+    },
+    "require": {
+        "google/apiclient": "2.15.0",
+        "phpmailer/phpmailer": "^7.1",
+        "endroid/qr-code": "^6.0"
+    }
+}

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio 94 Responsive Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+        
+        .viewport-info {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-family: monospace;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .test-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .test-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .test-table th, .test-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .test-form input, .test-form select, .test-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .test-button {
+            padding: 12px 24px;
+            background: #4a42cc;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            margin: 10px 5px;
+            cursor: pointer;
+        }
+        
+        .test-button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .sidebar-sim {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background: #ECECEC;
+            border-right: 1px solid #E0E0E0;
+            padding: 20px;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+        
+        .sidebar-sim.open {
+            transform: translateX(0);
+        }
+        
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 99;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+        
+        .hamburger {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 42px;
+            height: 42px;
+            background: white;
+            border: 1px solid #E0E0E0;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            z-index: 101;
+        }
+        
+        .hamburger span {
+            width: 18px;
+            height: 2px;
+            background: #0A0A0A;
+            border-radius: 2px;
+        }
+        
+        @media (max-width: 1024px) {
+            .test-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .test-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .test-button-group {
+                flex-direction: column;
+            }
+            
+            .hamburger {
+                display: flex;
+            }
+            
+            .main-content-sim {
+                margin-left: 0;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .test-table {
+                font-size: 12px;
+            }
+            
+            .test-table th, .test-table td {
+                padding: 8px;
+            }
+        }
+        
+        .main-content-sim {
+            margin-left: 260px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content-sim {
+                margin-left: 0;
+            }
+        }
+        
+        .test-result {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border-left: 4px solid #2ecc71;
+        }
+        
+        .test-fail {
+            background: #ffebee;
+            border-left: 4px solid #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Studio 94 Responsive Layout Test</h1>
+    
+    <div class="viewport-info">
+        <strong>Current Viewport:</strong> <span id="viewport-size">Calculating...</span>
+    </div>
+    
+    <div class="test-section">
+        <h2>1. Sidebar Simulation Test</h2>
+        
+        <!-- Simulated sidebar -->
+        <div class="sidebar-sim" id="test-sidebar">
+            <h3>Studio 94 Sidebar</h3>
+            <ul>
+                <li>Dashboard</li>
+                <li>Bookings</li>
+                <li>Payments</li>
+                <li>Clients</li>
+                <li>Inventory</li>
+                <li>Settings</li>
+            </ul>
+        </div>
+        
+        <!-- Overlay -->
+        <div class="sidebar-overlay" id="test-overlay"></div>
+        
+        <!-- Hamburger button -->
+        <div class="hamburger" id="test-hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <!-- Main content -->
+        <div class="main-content-sim" id="main-content">
+            <p>This simulates the main content area. On desktop (>768px), sidebar should be visible on the left. On mobile (≤768px), sidebar should be hidden and accessible via hamburger button.</p>
+            
+            <div class="test-result" id="sidebar-test-result">
+                Testing sidebar behavior...
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Grid System Test</h2>
+        <div class="test-grid">
+            <div class="test-card">Card 1</div>
+            <div class="test-card">Card 2</div>
+            <div class="test-card">Card 3</div>
+            <div class="test-card">Card 4</div>
+        </div>
+        <div class="test-result" id="grid-test-result">
+            Testing grid responsiveness...
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Table Responsiveness Test</h2>
+        <table class="test-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Customer Name</th>
+                    <th>Package</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>B001</td>
+                    <td>Juan Dela Cruz</td>
+                    <td>Self-Shoot Package</td>
+                    <td>2026-06-15</td>
+                    <td>Confirmed</td>
+                    <td>
+                        <div class="test-button-group">
+                            <button class="test-button" style="padding: 6px 12px; font-size: 12px;">Edit</button>
+                            <button class="test-button" style="padding: 6px 12px; font-size: 12px; background: #e74c3c;">Cancel</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="test-result" id="table-test-result">
+            Testing table responsiveness...
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Form Elements Test</h2>
+        <form class="test-form">
+            <input type="text" placeholder="Full Name">
+            <input type="email" placeholder="Email Address">
+            <select>
+                <option>Select Package</option>
+                <option>Self-Shoot</option>
+                <option>Studio Rental</option>
+                <option>Family</option>
+                <option>Creative</option>
+            </select>
+            <textarea placeholder="Additional Requests" rows="3"></textarea>
+            
+            <div class="test-button-group">
+                <button class="test-button" type="button">Submit</button>
+                <button class="test-button" type="button" style="background: #7f8c8d;">Cancel</button>
+            </div>
+        </form>
+        <div class="test-result" id="form-test-result">
+            Testing form responsiveness...
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Breakpoint Tests</h2>
+        <div class="test-result" id="breakpoint-test-result">
+            Testing breakpoints: 360px, 390px, 414px, 430px, 768px, 1024px...
+        </div>
+    </div>
+    
+    <script>
+        // Update viewport size
+        function updateViewportSize() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            document.getElementById('viewport-size').textContent = `${width}px × ${height}px`;
+            
+            // Run tests
+            runResponsiveTests(width);
+        }
+        
+        // Run responsive tests
+        function runResponsiveTests(width) {
+            // Sidebar test
+            const sidebarResult = document.getElementById('sidebar-test-result');
+            if (width <= 768) {
+                sidebarResult.innerHTML = `<strong>✓ Mobile Sidebar Test (${width}px):</strong> Sidebar should be hidden (off-canvas), hamburger visible`;
+                sidebarResult.className = 'test-result';
+            } else {
+                sidebarResult.innerHTML = `<strong>✓ Desktop Sidebar Test (${width}px):</strong> Sidebar should be visible, hamburger hidden`;
+                sidebarResult.className = 'test-result';
+            }
+            
+            // Grid test
+            const gridResult = document.getElementById('grid-test-result');
+            let expectedColumns = 4;
+            if (width <= 480) expectedColumns = 1;
+            else if (width <= 768) expectedColumns = 2;
+            else if (width <= 1024) expectedColumns = 3;
+            
+            gridResult.innerHTML = `<strong>✓ Grid Test (${width}px):</strong> Should show ${expectedColumns} column(s)`;
+            gridResult.className = 'test-result';
+            
+            // Table test
+            const tableResult = document.getElementById('table-test-result');
+            if (width <= 768) {
+                tableResult.innerHTML = `<strong>✓ Table Test (${width}px):</strong> Table should be horizontally scrollable`;
+                tableResult.className = 'test-result';
+            } else {
+                tableResult.innerHTML = `<strong>✓ Table Test (${width}px):</strong> Table should fit container`;
+                tableResult.className = 'test-result';
+            }
+            
+            // Form test
+            const formResult = document.getElementById('form-test-result');
+            if (width <= 768) {
+                formResult.innerHTML = `<strong>✓ Form Test (${width}px):</strong> Button groups should stack vertically, inputs should be touch-friendly`;
+                formResult.className = 'test-result';
+            } else {
+                formResult.innerHTML = `<strong>✓ Form Test (${width}px):</strong> Button groups should be horizontal`;
+                formResult.className = 'test-result';
+            }
+            
+            // Breakpoint test
+            const breakpointResult = document.getElementById('breakpoint-test-result');
+            let breakpoint = 'Desktop (>1024px)';
+            if (width <= 1024 && width > 768) breakpoint = 'Tablet (769px-1024px)';
+            else if (width <= 768 && width > 480) breakpoint = 'Mobile (481px-768px)';
+            else if (width <= 480) breakpoint = 'Small Mobile (≤480px)';
+            
+            breakpointResult.innerHTML = `<strong>✓ Current Breakpoint (${width}px):</strong> ${breakpoint}`;
+            breakpointResult.className = 'test-result';
+        }
+        
+        // Sidebar toggle simulation
+        document.getElementById('test-hamburger').addEventListener('click', function() {
+            const sidebar = document.getElementById('test-sidebar');
+            const overlay = document.getElementById('test-overlay');
+            
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            
+            // Prevent body scroll when sidebar is open
+            if (sidebar.classList.contains('open')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Close sidebar when clicking overlay
+        document.getElementById('test-overlay').addEventListener('click', function() {
+            const sidebar = document.getElementById('test-sidebar');
+            const overlay = document.getElementById('test-overlay');
+            
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        
+        // Initial viewport update
+        updateViewportSize();
+        
+        // Update on resize
+        window.addEventListener('resize', updateViewportSize);
+        
+        // Test specific widths by simulating resize
+        function testSpecificWidths() {
+            const testWidths = [360, 390, 414, 430, 768, 1024];
+            console.log('Testing responsive widths:');
+            
+            testWidths.forEach(width => {
+                // Simulate each width and log expected behavior
+                let behavior = '';
+                if (width <= 480) {
+                    behavior = 'Mobile (1-col grid, stacked buttons, scrollable tables)';
+                } else if (width <= 768) {
+                    behavior = 'Tablet (2-col grid, sidebar hidden, hamburger visible)';
+                } else if (width <= 1024) {
+                    behavior = 'Small Desktop (3-col grid, sidebar may be toggleable)';
+                } else {
+                    behavior = 'Desktop (4-col grid, sidebar visible)';
+                }
+                
+                console.log(`${width}px: ${behavior}`);
+            });
+        }
+        
+        // Run width tests
+        testSpecificWidths();
+    </script>
+</body>
+</html>

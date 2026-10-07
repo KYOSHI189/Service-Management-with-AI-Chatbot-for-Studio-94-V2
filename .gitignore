@@ -1,0 +1,43 @@
+# ==========================================
+# SnapTrack .gitignore
+# ==========================================
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+
+# Database Dumps
+*.sql
+!sql/install.sql
+
+# Large Archives
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# Dependencies
+vendor/
+node_modules/
+
+# User Uploads
+uploads/*
+!uploads/.gitkeep
+ASSETS/uploads/*
+!ASSETS/uploads/.gitkeep
+pages/**/uploads/*
+pages/uploads/*
+
+# Logs
+*.log
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

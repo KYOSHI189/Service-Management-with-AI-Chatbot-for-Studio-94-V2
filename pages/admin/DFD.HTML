@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Studio 94 DFD Layout</title>
+
+<style>
+body{
+    margin:0;
+    background:#ececec;
+    font-family:Arial;
+}
+
+svg{
+    background:white;
+}
+
+.entity{
+    fill:white;
+    stroke:black;
+    stroke-width:2;
+}
+
+.process{
+    fill:white;
+    stroke:black;
+    stroke-width:2;
+}
+
+text{
+    font-family:Arial;
+    font-size:13px;
+    text-anchor:middle;
+}
+</style>
+
+</head>
+
+<body>
+
+<svg width="1800" height="1200">
+
+<!-- TITLE -->
+
+<text x="900" y="35" style="font-size:24px;font-weight:bold;">
+Web-Based AI-Assisted Booking and Management System
+</text>
+
+<!-- ===================== ENTITIES ====================== -->
+
+<rect class="entity" x="40" y="420" width="140" height="60"/>
+<text x="110" y="455">CLIENT</text>
+
+<rect class="entity" x="40" y="860" width="140" height="60"/>
+<text x="110" y="895">STUDIO STAFF</text>
+
+<rect class="entity" x="1600" y="70" width="160" height="60"/>
+<text x="1680" y="105">STUDIO OWNER</text>
+
+<!-- ===================== PROCESSES ====================== -->
+
+<rect class="process" x="450" y="80" width="320" height="60" rx="20"/>
+<text x="610" y="115">1.0 User Authentication</text>
+
+<rect class="process" x="450" y="180" width="320" height="60" rx="20"/>
+<text x="610" y="215">2.0 Appointment & Booking</text>
+
+<rect class="process" x="450" y="280" width="320" height="60" rx="20"/>
+<text x="610" y="315">3.0 Service Management</text>
+
+<rect class="process" x="450" y="380" width="320" height="60" rx="20"/>
+<text x="610" y="415">4.0 Inventory Management</text>
+
+<rect class="process" x="450" y="480" width="320" height="60" rx="20"/>
+<text x="610" y="510">5.0 AI Chatbot &</text>
+<text x="610" y="528">Inquiry Management</text>
+
+<rect class="process" x="450" y="600" width="320" height="60" rx="20"/>
+<text x="610" y="635">6.0 Payment Management</text>
+
+<rect class="process" x="450" y="720" width="320" height="60" rx="20"/>
+<text x="610" y="755">7.0 Feedback Management</text>
+
+<!-- REPORTS -->
+
+<rect class="process" x="1080" y="320" width="320" height="60" rx="20"/>
+<text x="1240" y="355">8.0 Reports & Analytics</text>
+
+<!-- ===================== DATA STORES ====================== -->
+
+<!-- D1 -->
+<line x1="920" y1="80" x2="920" y2="140" stroke="black" stroke-width="2"/>
+<line x1="920" y1="80" x2="1100" y2="80" stroke="black" stroke-width="2"/>
+<text x="1010" y="115">D1 User Accounts</text>
+
+<!-- D2 -->
+<line x1="920" y1="180" x2="920" y2="240" stroke="black" stroke-width="2"/>
+<line x1="920" y1="180" x2="1100" y2="180" stroke="black" stroke-width="2"/>
+<text x="1010" y="215">D2 Booking Records</text>
+
+<!-- D3 -->
+<line x1="920" y1="280" x2="920" y2="340" stroke="black" stroke-width="2"/>
+<line x1="920" y1="280" x2="1100" y2="280" stroke="black" stroke-width="2"/>
+<text x="1010" y="315">D3 Service Records</text>
+
+<!-- D4 -->
+<line x1="920" y1="380" x2="920" y2="440" stroke="black" stroke-width="2"/>
+<line x1="920" y1="380" x2="1100" y2="380" stroke="black" stroke-width="2"/>
+<text x="1010" y="415">D4 Inventory Records</text>
+
+<!-- D5 -->
+<line x1="920" y1="600" x2="920" y2="660" stroke="black" stroke-width="2"/>
+<line x1="920" y1="600" x2="1100" y2="600" stroke="black" stroke-width="2"/>
+<text x="1010" y="635">D5 Payment Records</text>
+
+<!-- D6 -->
+<line x1="920" y1="720" x2="920" y2="780" stroke="black" stroke-width="2"/>
+<line x1="920" y1="720" x2="1100" y2="720" stroke="black" stroke-width="2"/>
+<text x="1010" y="755">D6 Feedback Records</text>
+
+<!-- D7 -->
+<line x1="1500" y1="500" x2="1500" y2="560" stroke="black" stroke-width="2"/>
+<line x1="1500" y1="500" x2="1680" y2="500" stroke="black" stroke-width="2"/>
+<text x="1590" y="535">D7 Reports Database</text>
+
+<defs>
+
+<marker id="arrow"
+markerWidth="10"
+markerHeight="10"
+refX="10"
+refY="3"
+orient="auto"
+markerUnits="strokeWidth">
+
+<path d="M0,0 L10,3 L0,6 Z"
+fill="black"/>
+
+</marker>
+
+</defs>
+<!-- ===================================================== -->
+<!-- 1.0 USER AUTHENTICATION -->
+<!-- ===================================================== -->
+
+<!-- CLIENT -> 1.0 -->
+
+<path
+d="M180 450
+L300 450
+L300 110
+L450 110"
+
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="255" y="440">Registration Details</text>
+
+
+<!-- 1.0 -> CLIENT -->
+
+<path
+d="M450 125
+L260 125
+L260 470
+L180 470"
+
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="320" y="150">Authentication Status</text>
+
+
+<!-- 1.0 -> D1 -->
+
+<path
+d="M770 100
+L920 100"
+
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="845" y="90">Store User Data</text>
+
+
+<!-- D1 -> 1.0 -->
+
+<path
+d="M920 120
+L770 120"
+
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="845" y="145">Retrieve User Data</text>
+<!-- ===================================================== -->
+<!-- 2.0 APPOINTMENT & BOOKING MANAGEMENT -->
+<!-- ===================================================== -->
+
+<!-- CLIENT -> 2.0 -->
+
+<path
+d="M180 450
+L340 450
+L340 210
+L450 210"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="275" y="440">Booking Request</text>
+
+
+<!-- 2.0 -> CLIENT -->
+
+<path
+d="M450 230
+L280 230
+L280 480
+L180 480"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="315" y="250">Booking Confirmation</text>
+
+
+<!-- 2.0 -> D2 -->
+
+<path
+d="M770 210
+L920 210"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="845" y="198">Store Booking Data</text>
+
+
+<!-- D2 -> 2.0 -->
+
+<path
+d="M920 230
+L770 230"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="845" y="250">Retrieve Booking Data</text>
+
+
+<!-- 2.0 -> STUDIO STAFF -->
+
+<path
+d="M610 240
+L610 870
+L180 870"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="640" y="560">Booking Schedule</text>
+
+
+<!-- STUDIO STAFF -> 2.0 -->
+
+<path
+d="M180 900
+L360 900
+L360 250
+L450 250"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="300" y="880">Schedule Updates</text>
+<!-- ===================================================== -->
+<!-- 3.0 SERVICE MANAGEMENT -->
+<!-- ===================================================== -->
+
+<!-- CLIENT -> 3.0 -->
+
+<path
+d="M180 450
+L380 450
+L380 310
+L450 310"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="295" y="440">View Services</text>
+
+<!-- 3.0 -> CLIENT -->
+
+<path
+d="M450 330
+L340 330
+L340 500
+L180 500"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="320" y="320">Service Information</text>
+
+<!-- 3.0 -> D3 -->
+
+<path
+d="M770 310
+L920 310"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="845" y="298">Store Service Data</text>
+
+<!-- D3 -> 3.0 -->
+
+<path
+d="M920 330
+L770 330"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="845" y="350">Retrieve Service Data</text>
+
+
+
+
+
+<!-- ===================================================== -->
+<!-- 4.0 INVENTORY MANAGEMENT -->
+<!-- ===================================================== -->
+
+<!-- STAFF -> 4.0 -->
+
+<path
+d="M180 880
+L350 880
+L350 410
+L450 410"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="290" y="870">Inventory Update</text>
+
+<!-- 4.0 -> STAFF -->
+
+<path
+d="M450 430
+L320 430
+L320 900
+L180 900"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="285" y="450">Inventory Status</text>
+
+<!-- 4.0 -> D4 -->
+
+<path
+d="M770 410
+L920 410"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="845" y="398">Store Inventory Data</text>
+
+<!-- D4 -> 4.0 -->
+
+<path
+d="M920 430
+L770 430"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="845" y="450">Retrieve Inventory Data</text>
+<!-- ===================================================== -->
+<!-- 5.0 AI CHATBOT & INQUIRY MANAGEMENT -->
+<!-- ===================================================== -->
+
+<!-- CLIENT -> 5.0 -->
+
+<path
+d="M180 450
+L390 450
+L390 510
+L450 510"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="295" y="495">Service Inquiry</text>
+
+
+<!-- D3 -> 5.0 -->
+
+<path
+d="M920 340
+L960 340
+L960 520
+L770 520"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="1035" y="430">Retrieve Service Information</text>
+
+
+<!-- 5.0 -> CLIENT -->
+
+<path
+d="M450 530
+L360 530
+L360 560
+L180 560"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="300" y="550">AI Response</text>
+
+
+
+
+
+<!-- ===================================================== -->
+<!-- 6.0 PAYMENT MANAGEMENT -->
+<!-- ===================================================== -->
+
+<!-- CLIENT -> 6.0 -->
+
+<path
+d="M180 450
+L410 450
+L410 620
+L450 620"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="315" y="610">Payment Details</text>
+
+
+<!-- 6.0 -> CLIENT -->
+
+<path
+d="M450 640
+L380 640
+L380 600
+L180 600"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="310" y="630">Payment Confirmation</text>
+
+
+<!-- 6.0 -> D5 -->
+
+<path
+d="M770 620
+L920 620"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="845" y="608">Store Payment Data</text>
+
+
+<!-- D5 -> 6.0 -->
+
+<path
+d="M920 640
+L770 640"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="845" y="660">Retrieve Payment Data</text>
+
+
+
+
+
+
+<!-- ===================================================== -->
+<!-- 7.0 FEEDBACK MANAGEMENT -->
+<!-- ===================================================== -->
+
+<!-- CLIENT -> 7.0 -->
+
+<path
+d="M180 450
+L430 450
+L430 740
+L450 740"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="330" y="730">Ratings & Comments</text>
+
+
+<!-- 7.0 -> CLIENT -->
+
+<path
+d="M450 760
+L390 760
+L390 650
+L180 650"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="315" y="750">Feedback Confirmation</text>
+
+
+<!-- 7.0 -> D6 -->
+
+<path
+d="M770 740
+L920 740"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="845" y="728">Store Feedback Data</text>
+
+
+<!-- D6 -> 7.0 -->
+
+<path
+d="M920 760
+L770 760"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="845" y="780">Retrieve Feedback Data</text>
+<!-- ===================================================== -->
+<!-- 8.0 REPORTS & ANALYTICS -->
+<!-- ===================================================== -->
+
+<!-- D1 -> 8.0 -->
+
+<path
+d="M1100 100
+L1160 100
+L1160 320
+L1080 320"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="1185" y="180">User Data</text>
+
+
+<!-- D2 -> 8.0 -->
+
+<path
+d="M1100 200
+L1180 200
+L1180 330
+L1080 330"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="1205" y="250">Booking Data</text>
+
+
+<!-- D3 -> 8.0 -->
+
+<path
+d="M1100 300
+L1200 300
+L1200 340
+L1080 340"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="1230" y="320">Service Data</text>
+
+
+<!-- D4 -> 8.0 -->
+
+<path
+d="M1100 410
+L1180 410
+L1180 350
+L1080 350"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="1210" y="395">Inventory Data</text>
+
+
+<!-- D5 -> 8.0 -->
+
+<path
+d="M1100 620
+L1220 620
+L1220 360
+L1080 360"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="1245" y="510">Payment Data</text>
+
+
+<!-- D6 -> 8.0 -->
+
+<path
+d="M1100 740
+L1240 740
+L1240 370
+L1080 370"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="1265" y="620">Feedback Data</text>
+
+
+<!-- 8.0 -> D7 -->
+
+<path
+d="M1400 350
+L1500 350
+L1500 500"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="1505" y="430">Store Generated Reports</text>
+
+
+<!-- STUDIO OWNER -> 8.0 -->
+
+<path
+d="M1600 100
+L1450 100
+L1450 280
+L1400 280"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="1515" y="90">Report Request</text>
+
+
+<!-- 8.0 -> STUDIO OWNER -->
+
+<path
+d="M1400 300
+L1480 300
+L1480 120
+L1600 120"
+fill="none"
+stroke="black"
+stroke-width="2"
+marker-end="url(#arrow)"/>
+
+<text x="1505" y="290">Generated Reports</text>
+</svg>
+
+</body>
+</html>
