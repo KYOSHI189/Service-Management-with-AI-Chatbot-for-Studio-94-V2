@@ -63,16 +63,17 @@ CREATE TABLE IF NOT EXISTS packages (
 -- ============================================================
 CREATE TABLE IF NOT EXISTS bookings (
     id               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    booking_ref      VARCHAR(20)   NOT NULL UNIQUE,
+    booking_ref      VARCHAR(50)   NOT NULL UNIQUE,
     user_id          INT UNSIGNED  NOT NULL,
     package_id       INT UNSIGNED  NOT NULL,
+    duration_minutes INT           DEFAULT NULL,
     date             DATE          NOT NULL,
     time             VARCHAR(20)   NOT NULL,
     people           INT           NOT NULL DEFAULT 1,
     phone            VARCHAR(30)   DEFAULT '',
     notes            TEXT          DEFAULT NULL,
     type             ENUM('online','walk-in') NOT NULL DEFAULT 'online',
-    status           ENUM('Awaiting Approval','Approved (Unpaid)','Deposit Paid','Completed','Cancelled') NOT NULL DEFAULT 'Awaiting Approval',
+    status           ENUM('Awaiting Approval','Approved (Unpaid)','Deposit Paid','Confirmed','In Progress','Completed','Cancelled','Rejected') NOT NULL DEFAULT 'Awaiting Approval',
     package_price    DECIMAL(10,2) DEFAULT 0,
     deposit_amount   DECIMAL(10,2) DEFAULT 0,
     deposit_paid     BOOLEAN       DEFAULT FALSE,
@@ -90,11 +91,11 @@ CREATE TABLE IF NOT EXISTS bookings (
 -- ============================================================
 CREATE TABLE IF NOT EXISTS payments (
     id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    payment_ref     VARCHAR(20)   NOT NULL UNIQUE,
+    payment_ref     VARCHAR(50)   NOT NULL UNIQUE,
     booking_id      INT UNSIGNED  NOT NULL,
     user_id         INT UNSIGNED  NOT NULL,
     amount          DECIMAL(10,2) NOT NULL,
-    type            ENUM('DEPOSIT','FULL') NOT NULL DEFAULT 'DEPOSIT',
+    type            ENUM('RESERVATION','BALANCE','DEPOSIT','FULL') NOT NULL DEFAULT 'RESERVATION',
     method          VARCHAR(50)   DEFAULT NULL,
     ref_number      VARCHAR(100)  DEFAULT NULL,
     proof_image     VARCHAR(255)  DEFAULT NULL,

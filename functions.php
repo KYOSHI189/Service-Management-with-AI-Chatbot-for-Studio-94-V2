@@ -131,6 +131,9 @@ function ensureDatabaseSchema(PDO $pdo): void
                 }
             }
             try {
+                $pdo->exec("ALTER TABLE bookings MODIFY COLUMN booking_ref VARCHAR(50) NOT NULL");
+            } catch (Throwable $e) {}
+            try {
                 $pdo->exec("ALTER TABLE bookings MODIFY COLUMN status ENUM('Awaiting Approval','Approved (Unpaid)','Deposit Paid','Confirmed','In Progress','Completed','Cancelled','Rejected') NOT NULL DEFAULT 'Awaiting Approval'");
             } catch (Throwable $e) {}
         }
@@ -142,6 +145,9 @@ function ensureDatabaseSchema(PDO $pdo): void
             if (!in_array('refund_amount', $pCols, true)) {
                 $pdo->exec("ALTER TABLE payments ADD COLUMN refund_amount DECIMAL(10,2) DEFAULT NULL");
             }
+            try {
+                $pdo->exec("ALTER TABLE payments MODIFY COLUMN payment_ref VARCHAR(50) NOT NULL");
+            } catch (Throwable $e) {}
             try {
                 $pdo->exec("ALTER TABLE payments MODIFY COLUMN type ENUM('RESERVATION','BALANCE','DEPOSIT','FULL') NOT NULL DEFAULT 'RESERVATION'");
             } catch (Throwable $e) {}

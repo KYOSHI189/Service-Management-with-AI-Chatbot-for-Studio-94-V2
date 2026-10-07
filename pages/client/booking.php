@@ -217,11 +217,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $bookingId = $pdo->lastInsertId();
 
-            $payRef = 'PAY-' . date('YmdHis') . '-' . rand(1000, 9999);
+            $payRef = 'PAY-' . date('Ymd') . '-' . str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
             $checkPayRef = $pdo->prepare("SELECT id FROM payments WHERE payment_ref = ?");
             $checkPayRef->execute([$payRef]);
             if ($checkPayRef->fetch()) {
-                $payRef = 'PAY-' . date('YmdHis') . '-' . uniqid() . '-' . rand(100, 999);
+                $payRef = 'PAY-' . date('ymd') . '-' . str_pad(rand(10000, 99999), 5, '0', STR_PAD_LEFT);
             }
 
             // ✅ RESERVATION type + FLAT ₱100 amount
