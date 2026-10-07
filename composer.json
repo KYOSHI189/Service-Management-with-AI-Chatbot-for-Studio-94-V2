@@ -5,6 +5,10 @@
         }
     },
     "require": {
+        "php": ">=8.1",
+        "ext-pdo": "*",
+        "ext-pdo_mysql": "*",
+        "ext-mysqli": "*",
         "google/apiclient": "2.15.0",
         "phpmailer/phpmailer": "^7.1",
         "endroid/qr-code": "^6.0"

@@ -1,0 +1,2 @@
+[variables]
+NIXPACKS_PHP_EXTENSIONS = "mysqli,pdo_mysql,pdo,gd,curl,mbstring"
