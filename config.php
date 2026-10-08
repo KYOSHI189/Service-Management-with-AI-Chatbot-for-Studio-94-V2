@@ -126,6 +126,20 @@ define(
     'RESEND_API_KEY',
     $_ENV['RESEND_API_KEY'] ?? getenv('RESEND_API_KEY') ?: ''
 );
+define(
+    'RESEND_FROM',
+    $_ENV['RESEND_FROM'] ?? getenv('RESEND_FROM') ?: 'Studio 94 <onboarding@resend.dev>'
+);
+
+// ===== BREVO (SENDINBLUE) API (HTTPS Port 443 — allows sending to any recipient) =====
+define(
+    'BREVO_API_KEY',
+    $_ENV['BREVO_API_KEY'] ?? getenv('BREVO_API_KEY') ?: ''
+);
+define(
+    'BREVO_SENDER_EMAIL',
+    $_ENV['BREVO_SENDER_EMAIL'] ?? getenv('BREVO_SENDER_EMAIL') ?: (MAIL_USERNAME ?: 'jianalvarez06@gmail.com')
+);
 
 // ============================================================
 // EMAIL VERIFICATION SETTINGS
