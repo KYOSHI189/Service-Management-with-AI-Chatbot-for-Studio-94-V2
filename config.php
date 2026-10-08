@@ -121,6 +121,12 @@ define(
 );
 define('MAIL_FROM_NAME', 'Studio 94');
 
+// ===== RESEND API (HTTPS Port 443 — works on Railway without SMTP blocking) =====
+define(
+    'RESEND_API_KEY',
+    $_ENV['RESEND_API_KEY'] ?? getenv('RESEND_API_KEY') ?: ''
+);
+
 // ============================================================
 // EMAIL VERIFICATION SETTINGS
 // ============================================================
