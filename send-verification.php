@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// send-verification.php — Sends emails via Brevo/Resend (HTTPS 443) or Gmail SMTP
+// send-verification.php — Sends emails via Resend (HTTPS 443) or Gmail SMTP
 // ============================================================
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/vendor/autoload.php';
@@ -10,12 +10,9 @@ use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 /**
- * Returns true if any email service is configured.
+ * Returns true if an email service is configured (either Resend API or Gmail SMTP).
  */
 function isMailConfigured(): bool {
-    if (defined('BREVO_API_KEY') && !empty(BREVO_API_KEY)) {
-        return true;
-    }
     if (defined('RESEND_API_KEY') && !empty(RESEND_API_KEY)) {
         return true;
     }
@@ -25,66 +22,17 @@ function isMailConfigured(): bool {
 }
 
 /**
- * Sends an email via Brevo REST API (HTTPS port 443).
- * Allows sending to ANY recipient email address on free plan.
- */
-function sendViaBrevo(string $toEmail, string $toName, string $subject, string $htmlContent): bool {
-    if (!defined('BREVO_API_KEY') || empty(BREVO_API_KEY)) {
-        return false;
-    }
-
-    $senderEmail = defined('BREVO_SENDER_EMAIL') && !empty(BREVO_SENDER_EMAIL)
-        ? BREVO_SENDER_EMAIL
-        : (defined('MAIL_USERNAME') && !empty(MAIL_USERNAME) ? MAIL_USERNAME : 'hello@studio94.com');
-
-    $ch = curl_init('https://api.brevo.com/v3/smtp/email');
-    $payload = json_encode([
-        'sender'      => ['name' => 'Studio 94', 'email' => $senderEmail],
-        'to'          => [['email' => $toEmail, 'name' => $toName ?: 'Client']],
-        'subject'     => $subject,
-        'htmlContent' => $htmlContent,
-    ]);
-
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'api-key: ' . BREVO_API_KEY,
-        'Content-Type: application/json',
-        'Accept: application/json',
-    ]);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $curlErr  = curl_error($ch);
-    curl_close($ch);
-
-    if ($httpCode >= 200 && $httpCode < 300) {
-        error_log('[STUDIO94] Email sent successfully via Brevo API to: ' . $toEmail);
-        return true;
-    }
-
-    error_log('[STUDIO94] Brevo API error (' . $httpCode . '): ' . $response . ' ' . $curlErr);
-    return false;
-}
-
-/**
  * Sends an email via Resend REST API (HTTPS port 443).
- * Works on Railway where outbound SMTP ports are blocked.
+ * Works reliably on Railway where outbound SMTP ports are blocked.
  */
 function sendViaResend(string $toEmail, string $subject, string $htmlContent): bool {
     if (!defined('RESEND_API_KEY') || empty(RESEND_API_KEY)) {
         return false;
     }
 
-    $fromAddress = defined('RESEND_FROM') && !empty(RESEND_FROM)
-        ? RESEND_FROM
-        : 'Studio 94 <onboarding@resend.dev>';
-
     $ch = curl_init('https://api.resend.com/emails');
     $payload = json_encode([
-        'from'    => $fromAddress,
+        'from'    => 'Studio 94 <onboarding@resend.dev>',
         'to'      => [$toEmail],
         'subject' => $subject,
         'html'    => $htmlContent,
@@ -151,7 +99,7 @@ function sendViaPhpMailer(string $toEmail, string $toName, string $subject, stri
         $mail->send();
         return true;
     } catch (Exception $e) {
-        // Fallback: try port 465 (SMTPS)
+        // Fallback: try port 465 (SMTPS) if port 587 was blocked
         try {
             $mail2 = new PHPMailer(true);
             $mail2->isSMTP();
@@ -215,21 +163,14 @@ function sendVerificationEmail($toEmail, $toName, $token): string {
     ";
     $altBody   = "Welcome to Studio 94! Verify your account: {$verifyUrl}";
 
-    // Priority 1: Brevo API (HTTPS Port 443 — sends to any recipient)
-    if (defined('BREVO_API_KEY') && !empty(BREVO_API_KEY)) {
-        if (sendViaBrevo($toEmail, $toName, $subject, $htmlBody)) {
-            return 'sent';
-        }
-    }
-
-    // Priority 2: Resend API (HTTPS Port 443)
+    // Priority 1: Resend API (HTTPS Port 443 — works everywhere on Railway)
     if (defined('RESEND_API_KEY') && !empty(RESEND_API_KEY)) {
         if (sendViaResend($toEmail, $subject, $htmlBody)) {
             return 'sent';
         }
     }
 
-    // Priority 3: PHPMailer SMTP
+    // Priority 2: PHPMailer SMTP
     if (sendViaPhpMailer($toEmail, $toName, $subject, $htmlBody, $altBody)) {
         return 'sent';
     }
@@ -238,7 +179,7 @@ function sendVerificationEmail($toEmail, $toName, $token): string {
 }
 
 /**
- * Sends a password reset email via Brevo, Resend, or Gmail SMTP.
+ * Sends a password reset email via Resend API or Gmail SMTP.
  * Returns true on success, false on error/unconfigured.
  */
 function sendPasswordResetEmail($toEmail, $toName, $token): bool {
@@ -270,20 +211,13 @@ function sendPasswordResetEmail($toEmail, $toName, $token): bool {
     ";
     $altBody  = "Reset your Studio 94 password: {$resetUrl}";
 
-    // Priority 1: Brevo API (HTTPS Port 443 — sends to any recipient)
-    if (defined('BREVO_API_KEY') && !empty(BREVO_API_KEY)) {
-        if (sendViaBrevo($toEmail, $toName, $subject, $htmlBody)) {
-            return true;
-        }
-    }
-
-    // Priority 2: Resend API (HTTPS Port 443)
+    // Priority 1: Resend API (HTTPS Port 443 — works everywhere on Railway)
     if (defined('RESEND_API_KEY') && !empty(RESEND_API_KEY)) {
         if (sendViaResend($toEmail, $subject, $htmlBody)) {
             return true;
         }
     }
 
-    // Priority 3: PHPMailer SMTP (ports 587 then 465)
+    // Priority 2: PHPMailer SMTP (ports 587 then 465)
     return sendViaPhpMailer($toEmail, $toName, $subject, $htmlBody, $altBody);
 }
