@@ -235,7 +235,6 @@ requireRole('client');
     transition: box-shadow 0.4s ease, border-color 0.4s ease, transform 0.4s ease;
 }
 
-/* ✅ HIGHLIGHT EFFECT kapag na-click ang anchor link */
 .payment-card:target {
     border-color: #EAB308;
     box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.3), 0 8px 24px rgba(234, 179, 8, 0.15);
@@ -869,11 +868,11 @@ requireRole('client');
 
 <script>
 // ============================================================
-// CONFIG
+// CONFIG — FIXED: dynamic APP_BASE from APP_URL (Railway-compatible)
 // ============================================================
 const API_BASE        = 'pages/api/client-payments.php';
 const CSRF_TOKEN      = document.querySelector('meta[name="csrf-token"]').content;
-const APP_BASE        = window.location.origin + '/snaptrack/';
+const APP_BASE        = '<?= rtrim(APP_URL, "/") ?>/';
 const RESERVATION_FEE = 100;
 let   CLIENT_LOYALTY_COUNT = 0;
 
@@ -1045,7 +1044,7 @@ async function loadPayments() {
             return;
         }
 
-        // ✅ GROUP payments by booking_id
+        // GROUP payments by booking_id
         const grouped = {};
         payments.forEach(p => {
             const bid = p.booking_id;
@@ -1083,7 +1082,6 @@ async function loadPayments() {
         const groupedPayments = Object.values(grouped);
         list.innerHTML = groupedPayments.map(renderPaymentCard).join('');
 
-        // ✅ I-SCROLL SA TARGET BOOKING PAGKATAPOS RENDER
         scrollToTargetBooking();
 
     } catch (err) {
@@ -1093,24 +1091,19 @@ async function loadPayments() {
 }
 
 // ============================================================
-// AUTO-SCROLL SA TARGET BOOKING (via #booking-ID anchor)
+// AUTO-SCROLL SA TARGET BOOKING
 // ============================================================
 function scrollToTargetBooking() {
     const hash = window.location.hash;
     if (!hash || !hash.startsWith('#booking-')) return;
 
-    console.log('🎯 Found anchor:', hash);
-
-    // Hintayin ang render
     setTimeout(() => {
-        const targetId = hash.substring(1); // Remove #
+        const targetId = hash.substring(1);
         const target = document.getElementById(targetId);
 
         if (target) {
-            console.log('✅ Scrolling to:', targetId);
             target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-            // ✅ Highlight effect for 3 seconds
             target.style.transition = 'box-shadow 0.3s ease';
             target.style.boxShadow = '0 0 0 4px rgba(234, 179, 8, 0.5)';
 
@@ -1118,13 +1111,10 @@ function scrollToTargetBooking() {
                 target.style.boxShadow = '';
             }, 3000);
 
-            // ✅ Auto-focus sa ref_number input
             const refInput = target.querySelector('input[name="ref_number"]');
             if (refInput) {
                 setTimeout(() => refInput.focus(), 500);
             }
-        } else {
-            console.log('⚠️ Target not found:', targetId);
         }
     }, 500);
 }
@@ -1205,7 +1195,6 @@ function renderPaymentCard(p) {
         ? 'linear-gradient(135deg,#EAB308,#CA8A04)'
         : 'linear-gradient(135deg,#6C63FF,#4A42CC)';
 
-    // ✅ ID para sa anchor linking
     return `
     <div class="payment-card" id="booking-${p.booking_id}">
       <div class="pc-header">
@@ -1281,7 +1270,7 @@ function renderPaymentCard(p) {
 }
 
 // ============================================================
-// RENDER ACTION SECTION (B/W) — FIXED
+// RENDER ACTION SECTION
 // ============================================================
 function renderActions(p, reservationFee, remainingBalance, reservationPaid) {
     const fullyPaid = p.fully_paid;
@@ -1472,25 +1461,14 @@ document.addEventListener('submit', async (e) => {
         fd.set('method', methodHidden.value);
     }
 
-    console.log('=== PAYMENT FORM SUBMIT ===');
-    for (let [key, value] of fd.entries()) {
-        if (value instanceof File) {
-            console.log('  ' + key + ' = File(' + value.name + ', ' + value.size + ' bytes)');
-        } else {
-            console.log('  ' + key + ' = ' + value);
-        }
-    }
-
     const paymentId = fd.get('payment_id');
     const refNumber = fd.get('ref_number');
 
     if (!paymentId || paymentId === '0' || paymentId === '') {
-        console.error('❌ MISSING payment_id!');
         showToast('❌ Payment ID is missing. Please refresh the page.', 'error');
         return;
     }
     if (!refNumber || refNumber.trim() === '') {
-        console.error('❌ MISSING ref_number!');
         showToast('❌ Please enter a reference number.', 'error');
         return;
     }
@@ -1507,8 +1485,6 @@ document.addEventListener('submit', async (e) => {
         });
 
         const rawText = await res.text();
-        console.log('=== SERVER RESPONSE ===');
-        console.log(rawText);
 
         let r;
         try {
@@ -1524,7 +1500,6 @@ document.addEventListener('submit', async (e) => {
         if (r.success) {
             showToast('✅ ' + (r.message || 'Submitted!'), 'success');
 
-            // ✅ I-FORCE RELOAD — para lumabas agad ang PENDING status
             setTimeout(() => {
                 window.location.href = 'index.php?page=payments#booking-' + bookingId;
                 window.location.reload();
