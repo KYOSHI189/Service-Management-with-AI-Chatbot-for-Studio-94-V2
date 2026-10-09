@@ -117,7 +117,20 @@ function sendViaBrevo(string $toEmail, string $subject, string $htmlContent, str
     }
 
     error_log('[STUDIO94] Brevo API error (' . $httpCode . '): ' . $response . ' ' . $curlErr);
+    brevoRememberError((int) $httpCode, (string) $response, $senderEmail);
     return false;
+}
+
+// Records the most recent Brevo failure so mail_diagnose.php can surface it.
+// Without this the only feedback is a generic "could not send" message.
+function brevoRememberError(int $httpCode, string $response, string $sender): void {
+    $file = sys_get_temp_dir() . '/ua-brevo-error.json';
+    @file_put_contents($file, json_encode([
+        'httpCode' => $httpCode,
+        'body'     => substr($response, 0, 600),
+        'sender'   => $sender,
+        'at'       => date('c'),
+    ]));
 }
 
 /**
