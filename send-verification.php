@@ -30,9 +30,16 @@ function sendViaResend(string $toEmail, string $subject, string $htmlContent): b
         return false;
     }
 
+    // Resend's onboarding@resend.dev test domain can only send to the account
+    // owner's own address. Sending to real clients requires a verified domain,
+    // so the sender is configurable via RESEND_FROM.
+    $from = defined('RESEND_FROM') && !empty(RESEND_FROM)
+        ? RESEND_FROM
+        : 'Studio 94 <onboarding@resend.dev>';
+
     $ch = curl_init('https://api.resend.com/emails');
     $payload = json_encode([
-        'from'    => 'Studio 94 <onboarding@resend.dev>',
+        'from'    => $from,
         'to'      => [$toEmail],
         'subject' => $subject,
         'html'    => $htmlContent,

@@ -127,6 +127,14 @@ define(
     $_ENV['RESEND_API_KEY'] ?? getenv('RESEND_API_KEY') ?: ''
 );
 
+// Sender address for outbound mail. Resend's onboarding@resend.dev test domain
+// only allows sending to your own address — to email real clients you must verify
+// a domain in Resend and set RESEND_FROM to e.g. "Studio 94 <no-reply@yourdomain>".
+define(
+    'RESEND_FROM',
+    $_ENV['RESEND_FROM'] ?? getenv('RESEND_FROM') ?: ''
+);
+
 // ============================================================
 // EMAIL VERIFICATION SETTINGS
 // ============================================================
@@ -140,12 +148,18 @@ error_reporting(E_ALL);
 ini_set('display_errors', '0');
 ini_set('display_startup_errors', '1');
 ini_set('log_errors', '1');
-ini_set('error_log', __DIR__ . '/php-errors.log');
 
-// Writing errors to a file makes them invisible on Railway, where the
-// container filesystem is discarded and the log stream is the only
-// place output survives. Mirror fatal errors to stderr as well so a
-// blank page can actually be diagnosed from the Railway dashboard.
+// Writing errors to a file makes them invisible on Railway, where the container
+// filesystem is discarded and the log stream is the only place output survives.
+// Detect Railway (it sets RAILWAY_ENVIRONMENT automatically) and let PHP log to
+// the SAPI logger, which reaches the Railway dashboard.
+$isRailway = !empty($_ENV['RAILWAY_ENVIRONMENT'] ?? getenv('RAILWAY_ENVIRONMENT'));
+if (!$isRailway) {
+    ini_set('error_log', __DIR__ . '/php-errors.log');
+}
+
+// Mirror fatal errors to stderr so a blank page can be diagnosed even if the
+// ini above was left at its default.
 register_shutdown_function(static function (): void {
     $err = error_get_last();
     if ($err === null || !in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR], true)) {
