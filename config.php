@@ -135,6 +135,18 @@ define(
     $_ENV['RESEND_FROM'] ?? getenv('RESEND_FROM') ?: ''
 );
 
+// ===== BREVO API (HTTPS 443 — 300 emails/day free, no domain required) =====
+// Preferred over Gmail SMTP on Railway, which blocks ports 465/587.
+// The sender defaults to MAIL_USERNAME; override with BREVO_FROM_EMAIL.
+define(
+    'BREVO_API_KEY',
+    $_ENV['BREVO_API_KEY'] ?? getenv('BREVO_API_KEY') ?: ''
+);
+define(
+    'BREVO_FROM_EMAIL',
+    $_ENV['BREVO_FROM_EMAIL'] ?? getenv('BREVO_FROM_EMAIL') ?: ''
+);
+
 // ============================================================
 // EMAIL VERIFICATION SETTINGS
 // ============================================================

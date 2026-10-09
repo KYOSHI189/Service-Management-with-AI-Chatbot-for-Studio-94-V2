@@ -16,9 +16,68 @@ function isMailConfigured(): bool {
     if (defined('RESEND_API_KEY') && !empty(RESEND_API_KEY)) {
         return true;
     }
+    if (defined('BREVO_API_KEY') && !empty(BREVO_API_KEY)) {
+        return true;
+    }
     return defined('MAIL_USERNAME') && defined('MAIL_PASSWORD')
         && !empty(MAIL_USERNAME) && !empty(MAIL_PASSWORD)
         && MAIL_USERNAME !== '' && MAIL_PASSWORD !== '';
+}
+
+/**
+ * Sends an email via Brevo REST API v3 (HTTPS port 443).
+ * 300 emails/day free, no domain required, and the default sender is
+ * verified automatically. Works on Railway where SMTP ports are blocked.
+ */
+function sendViaBrevo(string $toEmail, string $subject, string $htmlContent, string $textContent = ''): bool {
+    if (!defined('BREVO_API_KEY') || empty(BREVO_API_KEY)) {
+        return false;
+    }
+
+    $senderEmail = defined('BREVO_FROM_EMAIL') && !empty(BREVO_FROM_EMAIL)
+        ? BREVO_FROM_EMAIL
+        : (MAIL_USERNAME !== '' ? MAIL_USERNAME : '');
+
+    if ($senderEmail === '') {
+        error_log('[STUDIO94] Brevo skipped: no sender address configured');
+        return false;
+    }
+
+    $senderName = defined('MAIL_FROM_NAME') ? MAIL_FROM_NAME : 'Studio 94';
+
+    $payload = [
+        'sender'      => ['name' => $senderName, 'email' => $senderEmail],
+        'to'          => [['email' => $toEmail]],
+        'subject'     => $subject,
+        'htmlContent' => $htmlContent,
+    ];
+    if ($textContent !== '') {
+        $payload['textContent'] = $textContent;
+    }
+
+    $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'api-key: ' . BREVO_API_KEY,
+        'Content-Type: application/json',
+        'Accept: application/json',
+    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlErr  = curl_error($ch);
+    curl_close($ch);
+
+    if ($httpCode >= 200 && $httpCode < 300) {
+        error_log('[STUDIO94] Email sent via Brevo to: ' . $toEmail);
+        return true;
+    }
+
+    error_log('[STUDIO94] Brevo API error (' . $httpCode . '): ' . $response . ' ' . $curlErr);
+    return false;
 }
 
 /**
@@ -177,7 +236,12 @@ function sendVerificationEmail($toEmail, $toName, $token): string {
         }
     }
 
-    // Priority 2: PHPMailer SMTP
+    // Priority 2: Brevo API (HTTPS Port 443 — 300/day free, no domain needed)
+    if (sendViaBrevo($toEmail, $subject, $htmlBody, $altBody)) {
+        return 'sent';
+    }
+
+    // Priority 3: PHPMailer SMTP (blocked by Railway on non-Pro plans)
     if (sendViaPhpMailer($toEmail, $toName, $subject, $htmlBody, $altBody)) {
         return 'sent';
     }
@@ -229,6 +293,11 @@ function sendVerificationCode(string $toEmail, string $toName, string $code): st
         }
     }
 
+    // Brevo — 300 emails/day free, works on Railway over HTTPS.
+    if (sendViaBrevo($toEmail, $subject, $htmlBody, $altBody)) {
+        return 'sent';
+    }
+
     if (sendViaPhpMailer($toEmail, $toName, $subject, $htmlBody, $altBody)) {
         return 'sent';
     }
@@ -276,6 +345,11 @@ function sendPasswordResetEmail($toEmail, $toName, $token): bool {
         }
     }
 
-    // Priority 2: PHPMailer SMTP (ports 587 then 465)
+    // Priority 2: Brevo API (HTTPS Port 443 — 300/day free, no domain needed)
+    if (sendViaBrevo($toEmail, $subject, $htmlBody, $altBody)) {
+        return true;
+    }
+
+    // Priority 3: PHPMailer SMTP (ports 587 then 465)
     return sendViaPhpMailer($toEmail, $toName, $subject, $htmlBody, $altBody);
 }
