@@ -463,6 +463,7 @@ $countActive   = (int)$countPending + (int)$countUnpaid + (int)$countRejected;
       <button type="button" onclick="closeProofModal()" style="background:#F5F5F5;border:none;color:#0A0A0A;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
     <div style="padding:24px;text-align:center;background:#F5F5F5;">
+      <div id="proof-status" style="font-size:12px;color:#E74C3C;margin-bottom:10px;"></div>
       <img id="proof-img" src="" alt="Payment Proof"
            style="max-width:100%;max-height:60vh;border-radius:10px;border:1px solid #E0E0E0;background:#FFFFFF;">
     </div>
@@ -483,6 +484,8 @@ $countActive   = (int)$countPending + (int)$countUnpaid + (int)$countRejected;
 // ============================================================
 const PAYMENTS = <?= json_encode($payments, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>;
 const RESERVATION_FEE = <?= RESERVATION_FEE ?>;
+const PROOF_BASE_URL = <?= json_encode(APP_URL . '/assets/uploads/payments/') ?>;
+const LEGACY_PROOF_BASE_URL = <?= json_encode(APP_URL . '/assets/uploads/') ?>;
 
 function fmtMoney(n) {
     return '₱' + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -514,6 +517,13 @@ function openPaymentDetail(id) {
     const expectedAmount = isBalance ? balanceAmount : (isFull ? effectivePrice : RESERVATION_FEE);
 
     const hasProof = p.proof_image && p.proof_image.length > 0;
+    // Current uploads live in assets/uploads/payments/. Older records were
+    // written flat into assets/uploads/, so fall back to that path.
+    const proofCandidates = hasProof ? [
+        PROOF_BASE_URL + encodeURIComponent(p.proof_image),
+        LEGACY_PROOF_BASE_URL + encodeURIComponent(p.proof_image),
+    ] : [];
+    const proofUrl = proofCandidates[0] || '';
     const hasSubmitted = ['PENDING', 'PAID', 'REJECTED', 'REFUNDED'].includes(p.status);
 
     let amountLabel = 'Amount Due';
@@ -613,11 +623,9 @@ function openPaymentDetail(id) {
         ${hasProof ? `
         <div style="margin-bottom:16px;">
             <button type="button"
-                    onclick="openProofModal(
-                        '<?= APP_URL ?>/assets/uploads/payments/' + p.proof_image,
-                        p.payment_ref || '—',
-                        p.client_name || 'Walk-in Client'
-                    )"
+                    data-proof-url="${esc(proofUrl)}"
+                    data-proof-ref="${esc(p.payment_ref || '—')}"
+                    data-proof-client="${esc(p.client_name || 'Walk-in Client')}"
                     style="width:100%;padding:12px;background:#F5F5F5;color:#0A0A0A;border:1px solid #E0E0E0;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">
                 📎 View Payment Proof
             </button>
@@ -669,6 +677,20 @@ function openPaymentDetail(id) {
 
     document.getElementById('paymentDetailModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
+
+    // Delegated handler for the proof button (it lives inside injected HTML,
+    // so a direct onclick attribute would be lost and inline handlers cannot
+    // safely carry quote characters from the payment record).
+    const proofBtn = content.querySelector('[data-proof-url]');
+    if (proofBtn) {
+        proofBtn.addEventListener('click', function () {
+            openProofModal(
+                this.getAttribute('data-proof-url'),
+                this.getAttribute('data-proof-ref'),
+                this.getAttribute('data-proof-client')
+            );
+        });
+    }
 }
 
 function closePaymentDetail() {
@@ -676,15 +698,40 @@ function closePaymentDetail() {
     document.body.style.overflow = '';
 }
 
+let proofFallbackTried = false;
+
 function openProofModal(imgUrl, ref, client) {
-    document.getElementById('proof-img').src = imgUrl;
+    const img = document.getElementById('proof-img');
+    img.onerror = null;
+    img.src = imgUrl;
     document.getElementById('proof-ref').textContent = ref || '—';
     document.getElementById('proof-client').textContent = client || '—';
     document.getElementById('proof-download-link').href = imgUrl;
+
+    // If the image is missing at the current path, retry the legacy location
+    // once before showing a broken image.
+    img.onerror = function () {
+        if (proofFallbackTried) {
+            document.getElementById('proof-status').textContent =
+                '⚠️ Could not load the proof image. The file may have been moved or deleted.';
+            return;
+        }
+        proofFallbackTried = true;
+        const legacy = LEGACY_PROOF_BASE_URL + encodeURIComponent(
+            decodeURIComponent(imgUrl.split('/').pop())
+        );
+        if (legacy !== imgUrl) {
+            document.getElementById('proof-download-link').href = legacy;
+            img.src = legacy;
+        }
+    };
+
+    document.getElementById('proof-status').textContent = '';
     document.getElementById('proofModal').style.display = 'flex';
 }
 function closeProofModal() {
     document.getElementById('proofModal').style.display = 'none';
+    proofFallbackTried = false;
 }
 
 function openRejectModal(id) {
