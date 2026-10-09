@@ -47,7 +47,7 @@ php -S localhost:8000     # or XAMPP/Laragon
 - **PDF libs are hand-vendored** in `includes/tcpdf` and `includes/fpdf`, not via composer. Don't assume composer knows about them.
 - **Uploads are scattered** across `uploads/`, `assets/uploads/`, `assets/uploads/avatars/`, `pages/assets/uploads/avatars/`, `pages/upload/payments/`, `pages/uploads/payment/`. Only `UPLOAD_DIR` (`assets/uploads/`) is a defined constant. Check which directory a feature actually writes to before assuming `UPLOAD_DIR`.
 - **Root `styles.css` is dead.** Only `assets/css/styles.css` is loaded (by `header.php`, `login.php`, `mfa-setup.php`); `assets/js/app.js` is loaded by `footer.php`. Edit those, not the root copy.
-- **`sql/` is NOT tracked in git** (removed in `40cefcf3`), so the installer is not deployed. If you re-add it, note `sql/install.php` requires `ADMIN_RESET_KEY` in the environment plus `?key=<value>` — do not strip that guard.
+- **`sql/install.php` IS deployed and guarded only by `ADMIN_RESET_KEY`.** It needs that env var plus `?key=<value>` or it returns 403. Do not strip the guard — it overwrites tables.
 - `pages/api/get-day-bookings.php` is a 0-byte empty file.
 
 ### Dead and broken code (verified)
