@@ -1,0 +1,211 @@
+{
+  "nodes": [
+    {
+      "id": "file:pages/api/check_new_notifications.php",
+      "type": "file",
+      "name": "check_new_notifications.php",
+      "filePath": "pages/api/check_new_notifications.php",
+      "summary": "Standalone JSON polling endpoint backing the client's notification bell: with ?all=1 it returns the total unread count for the badge, otherwise with ?since=<unix_ts> it returns up to five unread notifications created since that timestamp. Self-requires config.php and functions.php, does its own isLoggedIn() plus role allow-list check, and degrades to a success:false JSON body rather than a non-200 code when the database is unreachable.",
+      "tags": ["api-handler", "notifications", "polling", "json-endpoint", "authentication"],
+      "complexity": "moderate",
+      "languageNotes": "Sets no-cache headers explicitly because assets/js/app.js polls this endpoint on a timer; every failure branch echoes JSON and exits rather than throwing."
+    },
+    {
+      "id": "file:pages/api/client-payments.php",
+      "type": "file",
+      "name": "client-payments.php",
+      "filePath": "pages/api/client-payments.php",
+      "summary": "Client-scoped JSON API with three actions selected by ?action=: 'settings' returns the GCash and Maribank account/QR details from the settings table, 'list' returns the client's payment rows joined to bookings and packages plus computed totals, and 'submit' accepts a CSRF-protected payment-proof screenshot upload. Uploads are extension- and size-validated (5 MB, images only) and written to assets/uploads/payments/ rather than the UPLOAD_DIR constant.",
+      "tags": ["api-handler", "payments", "file-upload", "validation", "json-endpoint"],
+      "complexity": "complex",
+      "languageNotes": "Hard-codes the 100 peso RESERVATION_FEE as a local variable and duplicates the loyalty-discount thresholds that getLoyaltyTier() implements elsewhere; extensive error_log() debug tracing is still present in the submit path."
+    },
+    {
+      "id": "file:pages/api/get-day-bookings.php",
+      "type": "file",
+      "name": "get-day-bookings.php",
+      "filePath": "pages/api/get-day-bookings.php",
+      "summary": "Zero-byte placeholder file with no PHP, no requires, and no consumers. It is a dead stub: any request to it returns an empty 200 response, and nothing in the codebase references it.",
+      "tags": ["stub", "dead-code", "api-endpoint", "unused"],
+      "complexity": "simple",
+      "languageNotes": "Because the file is empty it fails silently rather than erroring, so it is easy to mistake for a working endpoint in traces."
+    },
+    {
+      "id": "file:pages/api/inventory-usage.php",
+      "type": "file",
+      "name": "inventory-usage.php",
+      "filePath": "pages/api/inventory-usage.php",
+      "summary": "Read-only JSON endpoint that returns up to 50 rows of usage history for a single inventory item by joining booking_inventory to bookings, restricted to admin and staff. Takes the item id from ?id= and returns { success, usage, count } with no-store of state.",
+      "tags": ["api-handler", "inventory", "read-only", "json-endpoint", "authorization"],
+      "complexity": "simple",
+      "languageNotes": "Guards with isLoggedIn() plus an in_array role check rather than the requireRole() helper used elsewhere in pages/api/."
+    },
+    {
+      "id": "file:pages/api/record-payment.php",
+      "type": "file",
+      "name": "record-payment.php",
+      "filePath": "pages/api/record-payment.php",
+      "summary": "Staff/admin JSON endpoint for recording on-site payments, accepting both raw JSON bodies and multipart FormData so an optional proof image can accompany the payment. Handles RESERVATION (flat 100 peso), BALANCE, and FULL types, applies the 10-booking 50% loyalty discount, then writes the payment row and flips the booking status to Deposit Paid or Confirmed inside one transaction before firing client and admin notifications.",
+      "tags": ["api-handler", "payments", "transaction", "file-upload", "authorization"],
+      "complexity": "complex",
+      "languageNotes": "Guarded by requireLogin() + requireRole(['staff','admin']); the loyalty discount is recomputed from loyalty_cards.total_bookings here rather than reusing getLoyaltyTier(), so the threshold is duplicated across the codebase. Catch block calls rollBack() before echoing a 500 body."
+    },
+    {
+      "id": "file:pages/client/booking.php",
+      "type": "file",
+      "name": "booking.php",
+      "filePath": "pages/client/booking.php",
+      "summary": "Client booking-creation page reached through the index.php router (index.php?page=booking); it calls requireRole('client') at line 2 with no require_once of its own, so it is not standalone and would fatal if opened directly. The POST handler validates package, date, time, headcount against the studio's 10:00-19:00 window, and detects schedule overlaps before inserting the booking, an UNPAID RESERVATION payment row, and a loyalty card increment, then fires a staff notification. Roughly the last 800 lines are a large inline <script> block implementing the calendar, slot grid, and sub-package drill-down.",
+      "tags": ["booking", "scheduling", "page-template", "loyalty", "validation"],
+      "complexity": "complex",
+      "languageNotes": "Defines extractHoursFromDuration(), extractMinutesFromDuration(), and checkBookingConflict() inside if (!function_exists(...)) guards; functions.php already defines checkBookingConflict() at line 1232, so the local copy at line 45 is a never-executed fallback on the normal router path. Page-specific CSS is inlined in a <style> block rather than assets/css/styles.css, and the inline JavaScript re-implements the same duration parser in JavaScript for client-side slot checks."
+    },
+    {
+      "id": "function:pages/client/booking.php:extractHoursFromDuration",
+      "type": "function",
+      "name": "extractHoursFromDuration",
+      "filePath": "pages/client/booking.php",
+      "lineRange": [15, 35],
+      "summary": "Parses a free-text package duration string such as '2 hours 30 MIN' or 'Half Day' into a float hour count, falling back to 1.0 hour for empty input. Handles named half/whole-day variants before falling back to regex extraction of numeric hour and minute components.",
+      "tags": ["utility", "parsing", "duration", "validation"],
+      "complexity": "simple",
+      "languageNotes": "Wrapped in an if (!function_exists()) guard because functions.php provides the same-named helper."
+    },
+    {
+      "id": "function:pages/client/booking.php:extractMinutesFromDuration",
+      "type": "function",
+      "name": "extractMinutesFromDuration",
+      "filePath": "pages/client/booking.php",
+      "lineRange": [39, 41],
+      "summary": "One-line adapter that converts a package duration string into whole minutes by multiplying the parsed hour count by 60 and rounding.",
+      "tags": ["utility", "duration", "conversion"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:pages/client/booking.php:checkBookingConflict",
+      "type": "function",
+      "name": "checkBookingConflict",
+      "filePath": "pages/client/booking.php",
+      "lineRange": [45, 81],
+      "summary": "Detects overlapping bookings for a given date and time by loading every active booking joined to its package and doing interval-overlap arithmetic on start/end timestamps. Falls back to the package duration when duration_minutes is null and additionally scrapes a '+N MIN bonus applied' loyalty note out of the free-text notes field to extend the occupied window.",
+      "tags": ["validation", "scheduling", "conflict-detection", "database"],
+      "complexity": "moderate",
+      "languageNotes": "Duplicated from functions.php:1232 behind a function_exists guard, so only one definition is ever live; the loyalty bonus is encoded as text inside notes and re-parsed with a regex here."
+    },
+    {
+      "id": "function:pages/client/booking.php:getAvailableSlots",
+      "type": "function",
+      "name": "getAvailableSlots",
+      "filePath": "pages/client/booking.php",
+      "lineRange": [1405, 1426],
+      "summary": "Client-side counterpart of checkBookingConflict that filters the server-rendered booked-slot list down to start times that fit the selected package duration inside the studio's opening hours without overlapping an existing booking.",
+      "tags": ["scheduling", "client-side", "validation", "slot-calculation"],
+      "complexity": "moderate",
+      "languageNotes": "JavaScript, not PHP: it mirrors the PHP conflict logic above inside the page's inline <script> block, so availability rules are duplicated across the server and client."
+    },
+    {
+      "id": "function:pages/client/booking.php:updateBookedSlotsDisplay",
+      "type": "function",
+      "name": "updateBookedSlotsDisplay",
+      "filePath": "pages/client/booking.php",
+      "lineRange": [1464, 1607],
+      "summary": "Re-renders the time-slot grid for a chosen date, marking each slot as available, booked, pending, or confirmed and wiring up click handlers plus the booked/available counters. This is the main state-refresh path when the user changes date or package.",
+      "tags": ["client-side", "rendering", "ui", "scheduling"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:pages/client/booking.php:checkTimeAvailability",
+      "type": "function",
+      "name": "checkTimeAvailability",
+      "filePath": "pages/client/booking.php",
+      "lineRange": [1639, 1768],
+      "summary": "Runs the full client-side validation of a chosen start time for the selected package: parsing the time, enforcing the 10 AM-7 PM studio window and end-before-close rule, checking headcount against the package maximum, and probing availability against existing bookings.",
+      "tags": ["validation", "client-side", "scheduling", "conflict-detection"],
+      "complexity": "complex",
+      "languageNotes": "Largest single function in the page; repeats the same 10:00/19:00 boundaries as the OPEN_HOUR_MINUTES and CLOSE_HOUR_MINUTES constants defined at the top of the PHP block, so the two can drift."
+    },
+    {
+      "id": "function:pages/client/booking.php:renderCalendar",
+      "type": "function",
+      "name": "renderCalendar",
+      "filePath": "pages/client/booking.php",
+      "lineRange": [1820, 1905],
+      "summary": "Builds the month calendar grid for the selected view month, marks days that are past, today, fully booked, or available, and attaches the date-selection handlers that drive the slot grid below it.",
+      "tags": ["client-side", "rendering", "ui", "calendar"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:pages/client/bookings.php",
+      "type": "file",
+      "name": "bookings.php",
+      "filePath": "pages/client/bookings.php",
+      "summary": "Client booking-list page rendered via index.php?page=bookings; like the other pages/<role>/ files it opens with requireRole('client') and has no require_once of its own. Handles the POST cancel action (blocked within one day of the shoot and on terminal statuses, cascades the cancellation to UNPAID/PENDING payment rows and notifies admin and staff), then renders every booking joined to its package, parent package, and reservation payment with per-status counts.",
+      "tags": ["booking", "page-template", "cancellation", "loyalty", "notification"],
+      "complexity": "complex",
+      "languageNotes": "Uses the classic header('Location: ...') post-redirect-get pattern rather than APP_URL-aware redirects, and hardcodes RESERVATION_FEE as a const that duplicates the value in pages/client/booking.php and pages/api/record-payment.php."
+    },
+    {
+      "id": "function:pages/client/bookings.php:bookingStatusBadge",
+      "type": "function",
+      "name": "bookingStatusBadge",
+      "filePath": "pages/client/bookings.php",
+      "lineRange": [106, 118],
+      "summary": "Maps a booking status string to its CSS badge class and emoji label, returning a neutral grey badge for unmapped values. Escapes only the fallback branch of the status text.",
+      "tags": ["utility", "rendering", "presentation", "status"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:pages/client/dashboard.php",
+      "type": "file",
+      "name": "dashboard.php",
+      "filePath": "pages/client/dashboard.php",
+      "summary": "Client landing page served at index.php?page=dashboard; begins with requireRole('client') and depends on index.php having already loaded config.php and functions.php and defined $user. Assembles the loyalty card summary, the next upcoming session, five recent bookings, three recently delivered photos, and a dynamic 'Welcome back' vs 'Welcome' greeting, then renders it with a page-scoped inline <style> block.",
+      "tags": ["dashboard", "page-template", "loyalty", "reporting"],
+      "complexity": "complex",
+      "languageNotes": "Reads loyalty progress through getLoyaltyRewards() and getLoyaltyProgress() but redefines the tier labels (2/4/7/10) in a local $tiers array rather than reusing getLoyaltyTier(), duplicating the thresholds."
+    }
+  ],
+  "edges": [
+    {"source": "file:pages/api/check_new_notifications.php", "target": "file:config.php", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:pages/api/check_new_notifications.php", "target": "file:functions.php", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:pages/api/client-payments.php", "target": "file:config.php", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:pages/api/client-payments.php", "target": "file:functions.php", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:pages/api/inventory-usage.php", "target": "file:config.php", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:pages/api/inventory-usage.php", "target": "file:functions.php", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:pages/api/record-payment.php", "target": "file:config.php", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:pages/api/record-payment.php", "target": "file:functions.php", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:pages/client/booking.php", "target": "file:index.php", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:pages/client/booking.php", "target": "file:config.php", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:pages/client/booking.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:pages/client/bookings.php", "target": "file:index.php", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:pages/client/bookings.php", "target": "file:config.php", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:pages/client/bookings.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:pages/client/dashboard.php", "target": "file:index.php", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:pages/client/dashboard.php", "target": "file:config.php", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:pages/client/dashboard.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6},
+
+    {"source": "file:pages/api/record-payment.php", "target": "function:functions.php:addNotification", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "file:pages/api/record-payment.php", "target": "function:functions.php:addNotificationByRole", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "file:pages/client/booking.php", "target": "function:functions.php:addNotificationByRole", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "file:pages/client/booking.php", "target": "function:functions.php:setFlash", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "file:pages/client/bookings.php", "target": "function:functions.php:addNotificationByRole", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "file:pages/client/bookings.php", "target": "function:functions.php:setFlash", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "file:pages/client/dashboard.php", "target": "function:functions.php:getLoyaltyRewards", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "file:pages/client/dashboard.php", "target": "function:functions.php:getLoyaltyProgress", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:pages/client/booking.php", "target": "function:pages/client/booking.php:extractHoursFromDuration", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:pages/client/booking.php", "target": "function:pages/client/booking.php:extractMinutesFromDuration", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:pages/client/booking.php", "target": "function:pages/client/booking.php:checkBookingConflict", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:pages/client/booking.php", "target": "function:pages/client/booking.php:getAvailableSlots", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:pages/client/booking.php", "target": "function:pages/client/booking.php:updateBookedSlotsDisplay", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:pages/client/booking.php", "target": "function:pages/client/booking.php:checkTimeAvailability", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:pages/client/booking.php", "target": "function:pages/client/booking.php:renderCalendar", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:pages/client/bookings.php", "target": "function:pages/client/bookings.php:bookingStatusBadge", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:pages/client/bookings.php", "target": "function:pages/client/bookings.php:bookingStatusBadge", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:pages/client/booking.php", "target": "function:pages/client/booking.php:extractMinutesFromDuration", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:pages/client/booking.php:extractMinutesFromDuration", "target": "function:pages/client/booking.php:extractHoursFromDuration", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:pages/client/booking.php:checkBookingConflict", "target": "function:pages/client/booking.php:extractMinutesFromDuration", "type": "calls", "direction": "forward", "weight": 0.8}
+  ]
+}

@@ -1,0 +1,1042 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 5,
+  "filesSkipped": [
+    "uploads/.gitkeep"
+  ],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 5,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 4,
+      "failed": 0,
+      "skipped": 1
+    }
+  },
+  "results": [
+    {
+      "path": "send-verification.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 223,
+      "nonEmptyLines": 200,
+      "functions": [
+        {
+          "name": "isMailConfigured",
+          "startLine": 15,
+          "endLine": 22,
+          "params": []
+        },
+        {
+          "name": "sendViaResend",
+          "startLine": 28,
+          "endLine": 62,
+          "params": [
+            "$toEmail",
+            "$subject",
+            "$htmlContent"
+          ]
+        },
+        {
+          "name": "sendViaPhpMailer",
+          "startLine": 67,
+          "endLine": 133,
+          "params": [
+            "$toEmail",
+            "$toName",
+            "$subject",
+            "$htmlContent",
+            "$altBody"
+          ]
+        },
+        {
+          "name": "sendVerificationEmail",
+          "startLine": 140,
+          "endLine": 179,
+          "params": [
+            "$toEmail",
+            "$toName",
+            "$token"
+          ]
+        },
+        {
+          "name": "sendPasswordResetEmail",
+          "startLine": 185,
+          "endLine": 223,
+          "params": [
+            "$toEmail",
+            "$toName",
+            "$token"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "isMailConfigured",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "sendViaResend",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "sendViaPhpMailer",
+          "line": 67,
+          "isDefault": false
+        },
+        {
+          "name": "sendVerificationEmail",
+          "line": 140,
+          "isDefault": false
+        },
+        {
+          "name": "sendPasswordResetEmail",
+          "line": 185,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isMailConfigured",
+          "callee": "defined",
+          "lineNumber": 16
+        },
+        {
+          "caller": "isMailConfigured",
+          "callee": "empty",
+          "lineNumber": 16
+        },
+        {
+          "caller": "isMailConfigured",
+          "callee": "defined",
+          "lineNumber": 19
+        },
+        {
+          "caller": "isMailConfigured",
+          "callee": "defined",
+          "lineNumber": 19
+        },
+        {
+          "caller": "isMailConfigured",
+          "callee": "empty",
+          "lineNumber": 20
+        },
+        {
+          "caller": "isMailConfigured",
+          "callee": "empty",
+          "lineNumber": 20
+        },
+        {
+          "caller": "sendViaResend",
+          "callee": "defined",
+          "lineNumber": 29
+        },
+        {
+          "caller": "sendViaResend",
+          "callee": "empty",
+          "lineNumber": 29
+        },
+        {
+          "caller": "sendViaResend",
+          "callee": "curl_init",
+          "lineNumber": 33
+        },
+        {
+          "caller": "sendViaResend",
+          "callee": "json_encode",
+          "lineNumber": 34
+        },
+        {
+          "caller": "sendViaResend",
+          "callee": "curl_setopt",
+          "lineNumber": 41
+        },
+        {
+          "caller": "sendViaResend",
+          "callee": "curl_setopt",
+          "lineNumber": 42
+        },
+        {
+          "caller": "sendViaResend",
+          "callee": "curl_setopt",
+          "lineNumber": 43
+        },
+        {
+          "caller": "sendViaResend",
+          "callee": "curl_setopt",
+          "lineNumber": 44
+        },
+        {
+          "caller": "sendViaResend",
+          "callee": "curl_setopt",
+          "lineNumber": 48
+        },
+        {
+          "caller": "sendViaResend",
+          "callee": "curl_exec",
+          "lineNumber": 50
+        },
+        {
+          "caller": "sendViaResend",
+          "callee": "curl_getinfo",
+          "lineNumber": 51
+        },
+        {
+          "caller": "sendViaResend",
+          "callee": "curl_error",
+          "lineNumber": 52
+        },
+        {
+          "caller": "sendViaResend",
+          "callee": "curl_close",
+          "lineNumber": 53
+        },
+        {
+          "caller": "sendViaResend",
+          "callee": "error_log",
+          "lineNumber": 56
+        },
+        {
+          "caller": "sendViaResend",
+          "callee": "error_log",
+          "lineNumber": 60
+        },
+        {
+          "caller": "sendViaPhpMailer",
+          "callee": "defined",
+          "lineNumber": 68
+        },
+        {
+          "caller": "sendViaPhpMailer",
+          "callee": "defined",
+          "lineNumber": 68
+        },
+        {
+          "caller": "sendViaPhpMailer",
+          "callee": "empty",
+          "lineNumber": 68
+        },
+        {
+          "caller": "sendViaPhpMailer",
+          "callee": "empty",
+          "lineNumber": 68
+        },
+        {
+          "caller": "sendViaPhpMailer",
+          "callee": "$mail->isSMTP",
+          "lineNumber": 74
+        },
+        {
+          "caller": "sendViaPhpMailer",
+          "callee": "$mail->setFrom",
+          "lineNumber": 91
+        },
+        {
+          "caller": "sendViaPhpMailer",
+          "callee": "$mail->addAddress",
+          "lineNumber": 92
+        },
+        {
+          "caller": "sendViaPhpMailer",
+          "callee": "$mail->isHTML",
+          "lineNumber": 94
+        },
+        {
+          "caller": "sendViaPhpMailer",
+          "callee": "$mail->send",
+          "lineNumber": 99
+        },
+        {
+          "caller": "sendViaPhpMailer",
+          "callee": "$mail2->isSMTP",
+          "lineNumber": 105
+        },
+        {
+          "caller": "sendViaPhpMailer",
+          "callee": "$mail2->setFrom",
+          "lineNumber": 120
+        },
+        {
+          "caller": "sendViaPhpMailer",
+          "callee": "$mail2->addAddress",
+          "lineNumber": 121
+        },
+        {
+          "caller": "sendViaPhpMailer",
+          "callee": "$mail2->isHTML",
+          "lineNumber": 122
+        },
+        {
+          "caller": "sendViaPhpMailer",
+          "callee": "$mail2->send",
+          "lineNumber": 126
+        },
+        {
+          "caller": "sendViaPhpMailer",
+          "callee": "error_log",
+          "lineNumber": 129
+        },
+        {
+          "caller": "sendVerificationEmail",
+          "callee": "isMailConfigured",
+          "lineNumber": 141
+        },
+        {
+          "caller": "sendVerificationEmail",
+          "callee": "error_log",
+          "lineNumber": 142
+        },
+        {
+          "caller": "sendVerificationEmail",
+          "callee": "urlencode",
+          "lineNumber": 146
+        },
+        {
+          "caller": "sendVerificationEmail",
+          "callee": "defined",
+          "lineNumber": 167
+        },
+        {
+          "caller": "sendVerificationEmail",
+          "callee": "empty",
+          "lineNumber": 167
+        },
+        {
+          "caller": "sendVerificationEmail",
+          "callee": "sendViaResend",
+          "lineNumber": 168
+        },
+        {
+          "caller": "sendVerificationEmail",
+          "callee": "sendViaPhpMailer",
+          "lineNumber": 174
+        },
+        {
+          "caller": "sendPasswordResetEmail",
+          "callee": "isMailConfigured",
+          "lineNumber": 186
+        },
+        {
+          "caller": "sendPasswordResetEmail",
+          "callee": "error_log",
+          "lineNumber": 187
+        },
+        {
+          "caller": "sendPasswordResetEmail",
+          "callee": "urlencode",
+          "lineNumber": 191
+        },
+        {
+          "caller": "sendPasswordResetEmail",
+          "callee": "defined",
+          "lineNumber": 215
+        },
+        {
+          "caller": "sendPasswordResetEmail",
+          "callee": "empty",
+          "lineNumber": 215
+        },
+        {
+          "caller": "sendPasswordResetEmail",
+          "callee": "sendViaResend",
+          "lineNumber": 216
+        },
+        {
+          "caller": "sendPasswordResetEmail",
+          "callee": "sendViaPhpMailer",
+          "lineNumber": 222
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 5,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "sidebar.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 619,
+      "nonEmptyLines": 551,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "sql/hash.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 10,
+      "nonEmptyLines": 9,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "sql/install.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 144,
+      "nonEmptyLines": 132,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "sql/install.sql",
+      "language": "sql",
+      "fileCategory": "data",
+      "totalLines": 397,
+      "nonEmptyLines": 367,
+      "definitions": [
+        {
+          "name": "users",
+          "kind": "table",
+          "fields": [
+            "id",
+            "name",
+            "email",
+            "phone",
+            "password",
+            "role",
+            "is_active",
+            "failed_login_attempts",
+            "locked_until",
+            "last_login",
+            "avatar",
+            "created_at",
+            "updated_at",
+            "email_verified",
+            "google_id",
+            "verification_token",
+            "verification_expires",
+            "mfa_enabled",
+            "mfa_secret",
+            "mfa_backup_codes",
+            "mfa_verified_at",
+            "parent_id",
+            "name",
+            "price",
+            "duration",
+            "description",
+            "features",
+            "color",
+            "is_active",
+            "is_popular",
+            "max_pax",
+            "created_at",
+            "booking_ref",
+            "user_id",
+            "package_id",
+            "duration_minutes",
+            "date",
+            "time",
+            "people",
+            "phone",
+            "notes",
+            "type",
+            "status",
+            "package_price",
+            "deposit_amount",
+            "deposit_paid",
+            "remaining_balance",
+            "fully_paid",
+            "loyalty_reward",
+            "created_at",
+            "updated_at",
+            "payment_ref",
+            "booking_id",
+            "user_id",
+            "amount",
+            "type",
+            "method",
+            "ref_number",
+            "proof_image",
+            "status",
+            "rejection_reason",
+            "verified_by",
+            "verified_at",
+            "created_at",
+            "updated_at",
+            "name",
+            "category",
+            "quantity",
+            "threshold",
+            "notes",
+            "created_at",
+            "updated_at",
+            "user_id",
+            "booking_id",
+            "rating_overall",
+            "rating_staff",
+            "rating_quality",
+            "rating_timeliness",
+            "comment",
+            "sentiment",
+            "topics",
+            "is_urgent",
+            "created_at",
+            "booking_id",
+            "uploader_id",
+            "filename",
+            "filepath",
+            "status",
+            "created_at",
+            "user_id",
+            "type",
+            "title",
+            "message",
+            "icon",
+            "is_read",
+            "created_at",
+            "user_id",
+            "card_number",
+            "total_bookings",
+            "rewards_used",
+            "status",
+            "created_at",
+            "updated_at",
+            "value",
+            "updated_at",
+            "user_id",
+            "email",
+            "token",
+            "expires_at",
+            "used",
+            "created_at",
+            "San",
+            "Camarines"
+          ],
+          "startLine": 18,
+          "endLine": 234
+        },
+        {
+          "name": "packages",
+          "kind": "table",
+          "fields": [
+            "id",
+            "parent_id",
+            "name",
+            "price",
+            "duration",
+            "description",
+            "features",
+            "color",
+            "is_active",
+            "is_popular",
+            "max_pax",
+            "created_at",
+            "booking_ref",
+            "user_id",
+            "package_id",
+            "duration_minutes",
+            "date",
+            "time",
+            "people",
+            "phone",
+            "notes",
+            "type",
+            "status",
+            "package_price",
+            "deposit_amount",
+            "deposit_paid",
+            "remaining_balance",
+            "fully_paid",
+            "loyalty_reward",
+            "created_at",
+            "updated_at",
+            "payment_ref",
+            "booking_id",
+            "user_id",
+            "amount",
+            "type",
+            "method",
+            "ref_number",
+            "proof_image",
+            "status",
+            "rejection_reason",
+            "verified_by",
+            "verified_at",
+            "created_at",
+            "updated_at",
+            "name",
+            "category",
+            "quantity",
+            "threshold",
+            "notes",
+            "created_at",
+            "updated_at",
+            "user_id",
+            "booking_id",
+            "rating_overall",
+            "rating_staff",
+            "rating_quality",
+            "rating_timeliness",
+            "comment",
+            "sentiment",
+            "topics",
+            "is_urgent",
+            "created_at",
+            "booking_id",
+            "uploader_id",
+            "filename",
+            "filepath",
+            "status",
+            "created_at",
+            "user_id",
+            "type",
+            "title",
+            "message",
+            "icon",
+            "is_read",
+            "created_at",
+            "user_id",
+            "card_number",
+            "total_bookings",
+            "rewards_used",
+            "status",
+            "created_at",
+            "updated_at",
+            "value",
+            "updated_at",
+            "user_id",
+            "email",
+            "token",
+            "expires_at",
+            "used",
+            "created_at",
+            "San",
+            "Camarines"
+          ],
+          "startLine": 45,
+          "endLine": 234
+        },
+        {
+          "name": "bookings",
+          "kind": "table",
+          "fields": [
+            "id",
+            "booking_ref",
+            "user_id",
+            "package_id",
+            "duration_minutes",
+            "date",
+            "time",
+            "people",
+            "phone",
+            "notes",
+            "type",
+            "status",
+            "package_price",
+            "deposit_amount",
+            "deposit_paid",
+            "remaining_balance",
+            "fully_paid",
+            "loyalty_reward",
+            "created_at",
+            "updated_at",
+            "payment_ref",
+            "booking_id",
+            "user_id",
+            "amount",
+            "type",
+            "method",
+            "ref_number",
+            "proof_image",
+            "status",
+            "rejection_reason",
+            "verified_by",
+            "verified_at",
+            "created_at",
+            "updated_at",
+            "name",
+            "category",
+            "quantity",
+            "threshold",
+            "notes",
+            "created_at",
+            "updated_at",
+            "user_id",
+            "booking_id",
+            "rating_overall",
+            "rating_staff",
+            "rating_quality",
+            "rating_timeliness",
+            "comment",
+            "sentiment",
+            "topics",
+            "is_urgent",
+            "created_at",
+            "booking_id",
+            "uploader_id",
+            "filename",
+            "filepath",
+            "status",
+            "created_at",
+            "user_id",
+            "type",
+            "title",
+            "message",
+            "icon",
+            "is_read",
+            "created_at",
+            "user_id",
+            "card_number",
+            "total_bookings",
+            "rewards_used",
+            "status",
+            "created_at",
+            "updated_at",
+            "value",
+            "updated_at",
+            "user_id",
+            "email",
+            "token",
+            "expires_at",
+            "used",
+            "created_at",
+            "San",
+            "Camarines"
+          ],
+          "startLine": 64,
+          "endLine": 234
+        },
+        {
+          "name": "payments",
+          "kind": "table",
+          "fields": [
+            "id",
+            "payment_ref",
+            "booking_id",
+            "user_id",
+            "amount",
+            "type",
+            "method",
+            "ref_number",
+            "proof_image",
+            "status",
+            "rejection_reason",
+            "verified_by",
+            "verified_at",
+            "created_at",
+            "updated_at",
+            "name",
+            "category",
+            "quantity",
+            "threshold",
+            "notes",
+            "created_at",
+            "updated_at",
+            "user_id",
+            "booking_id",
+            "rating_overall",
+            "rating_staff",
+            "rating_quality",
+            "rating_timeliness",
+            "comment",
+            "sentiment",
+            "topics",
+            "is_urgent",
+            "created_at",
+            "booking_id",
+            "uploader_id",
+            "filename",
+            "filepath",
+            "status",
+            "created_at",
+            "user_id",
+            "type",
+            "title",
+            "message",
+            "icon",
+            "is_read",
+            "created_at",
+            "user_id",
+            "card_number",
+            "total_bookings",
+            "rewards_used",
+            "status",
+            "created_at",
+            "updated_at",
+            "value",
+            "updated_at",
+            "user_id",
+            "email",
+            "token",
+            "expires_at",
+            "used",
+            "created_at",
+            "San",
+            "Camarines"
+          ],
+          "startLine": 92,
+          "endLine": 234
+        },
+        {
+          "name": "inventory",
+          "kind": "table",
+          "fields": [
+            "id",
+            "name",
+            "category",
+            "quantity",
+            "threshold",
+            "notes",
+            "created_at",
+            "updated_at",
+            "user_id",
+            "booking_id",
+            "rating_overall",
+            "rating_staff",
+            "rating_quality",
+            "rating_timeliness",
+            "comment",
+            "sentiment",
+            "topics",
+            "is_urgent",
+            "created_at",
+            "booking_id",
+            "uploader_id",
+            "filename",
+            "filepath",
+            "status",
+            "created_at",
+            "user_id",
+            "type",
+            "title",
+            "message",
+            "icon",
+            "is_read",
+            "created_at",
+            "user_id",
+            "card_number",
+            "total_bookings",
+            "rewards_used",
+            "status",
+            "created_at",
+            "updated_at",
+            "value",
+            "updated_at",
+            "user_id",
+            "email",
+            "token",
+            "expires_at",
+            "used",
+            "created_at",
+            "San",
+            "Camarines"
+          ],
+          "startLine": 116,
+          "endLine": 234
+        },
+        {
+          "name": "feedback",
+          "kind": "table",
+          "fields": [
+            "id",
+            "user_id",
+            "booking_id",
+            "rating_overall",
+            "rating_staff",
+            "rating_quality",
+            "rating_timeliness",
+            "comment",
+            "sentiment",
+            "topics",
+            "is_urgent",
+            "created_at",
+            "booking_id",
+            "uploader_id",
+            "filename",
+            "filepath",
+            "status",
+            "created_at",
+            "user_id",
+            "type",
+            "title",
+            "message",
+            "icon",
+            "is_read",
+            "created_at",
+            "user_id",
+            "card_number",
+            "total_bookings",
+            "rewards_used",
+            "status",
+            "created_at",
+            "updated_at",
+            "value",
+            "updated_at",
+            "user_id",
+            "email",
+            "token",
+            "expires_at",
+            "used",
+            "created_at",
+            "San",
+            "Camarines"
+          ],
+          "startLine": 130,
+          "endLine": 234
+        },
+        {
+          "name": "photos",
+          "kind": "table",
+          "fields": [
+            "id",
+            "booking_id",
+            "uploader_id",
+            "filename",
+            "filepath",
+            "status",
+            "created_at",
+            "user_id",
+            "type",
+            "title",
+            "message",
+            "icon",
+            "is_read",
+            "created_at",
+            "user_id",
+            "card_number",
+            "total_bookings",
+            "rewards_used",
+            "status",
+            "created_at",
+            "updated_at",
+            "value",
+            "updated_at",
+            "user_id",
+            "email",
+            "token",
+            "expires_at",
+            "used",
+            "created_at",
+            "San",
+            "Camarines"
+          ],
+          "startLine": 150,
+          "endLine": 234
+        },
+        {
+          "name": "notifications",
+          "kind": "table",
+          "fields": [
+            "id",
+            "user_id",
+            "type",
+            "title",
+            "message",
+            "icon",
+            "is_read",
+            "created_at",
+            "user_id",
+            "card_number",
+            "total_bookings",
+            "rewards_used",
+            "status",
+            "created_at",
+            "updated_at",
+            "value",
+            "updated_at",
+            "user_id",
+            "email",
+            "token",
+            "expires_at",
+            "used",
+            "created_at",
+            "San",
+            "Camarines"
+          ],
+          "startLine": 165,
+          "endLine": 234
+        },
+        {
+          "name": "loyalty_cards",
+          "kind": "table",
+          "fields": [
+            "id",
+            "user_id",
+            "card_number",
+            "total_bookings",
+            "rewards_used",
+            "status",
+            "created_at",
+            "updated_at",
+            "value",
+            "updated_at",
+            "user_id",
+            "email",
+            "token",
+            "expires_at",
+            "used",
+            "created_at",
+            "San",
+            "Camarines"
+          ],
+          "startLine": 180,
+          "endLine": 234
+        },
+        {
+          "name": "settings",
+          "kind": "table",
+          "fields": [
+            "key",
+            "value",
+            "updated_at",
+            "user_id",
+            "email",
+            "token",
+            "expires_at",
+            "used",
+            "created_at",
+            "San",
+            "Camarines"
+          ],
+          "startLine": 195,
+          "endLine": 234
+        },
+        {
+          "name": "password_resets",
+          "kind": "table",
+          "fields": [
+            "id",
+            "user_id",
+            "email",
+            "token",
+            "expires_at",
+            "used",
+            "created_at",
+            "San",
+            "Camarines"
+          ],
+          "startLine": 204,
+          "endLine": 234
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 11
+      }
+    }
+  ]
+}

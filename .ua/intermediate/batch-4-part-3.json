@@ -1,0 +1,396 @@
+{
+  "nodes": [
+    {
+      "id": "file:includes/deduct_inventory.php",
+      "type": "file",
+      "name": "deduct_inventory.php",
+      "filePath": "includes/deduct_inventory.php",
+      "summary": "Standalone inventory-deduction helper that maps a package name to consumable/reusable item quantities, decrements stock on booking completion, and raises low-stock notifications. It is never `require`d or `include`d anywhere in the repository, so these two functions are currently unreachable dead code; the live equivalent is `deductInventoryOnComplete()` in `functions.php`.",
+      "tags": ["inventory-management", "utility", "service-layer", "dead-code"],
+      "complexity": "moderate",
+      "languageNotes": "Package-to-item mapping is hardcoded as a literal array keyed by the packages.name string, so renaming a package in the DB silently disables its deductions. Because the file has no require of functions.php, it depends on the caller having already loaded config.php/functions.php and passes the PDO handle in explicitly."
+    },
+    {
+      "id": "function:includes/deduct_inventory.php:deductInventory",
+      "type": "function",
+      "name": "deductInventory",
+      "filePath": "includes/deduct_inventory.php",
+      "lineRange": [6, 92],
+      "summary": "Resolves the package name, looks it up in a hardcoded package-to-inventory map, decrements consumable stock via prepared statements, records reusable-item bookings, and notifies admin/staff when an item drops to its threshold. Returns a structured success/message/deducted/reusable/errors array and appends a line to `logs/inventory.log`.",
+      "tags": ["inventory-management", "business-logic", "utility", "notifications"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:includes/deduct_inventory.php:recordReusableItemUsage",
+      "type": "function",
+      "name": "recordReusableItemUsage",
+      "filePath": "includes/deduct_inventory.php",
+      "lineRange": [94, 97],
+      "summary": "Logs a reusable inventory item's usage against a booking by inserting a row into `booking_inventory` with the current timestamp.",
+      "tags": ["inventory-management", "utility", "persistence"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:index.php",
+      "type": "file",
+      "name": "index.php",
+      "filePath": "index.php",
+      "summary": "The single router and authenticated entry point for all SnapTrack UI (`index.php?page=<name>`). It loads config.php/functions.php, re-reads and re-validates the user from the DB on every request, validates the requested page against the per-role `$rolePages` allowlist, resolves the page file through a fallback chain (own role dir -> `pages/<page>.php` -> other role dirs -> shared `walkin.php` -> dashboard), then wraps it in header/sidebar/footer with the photography-themed topbar CSS.",
+      "tags": ["entry-point", "router", "authentication", "authorization"],
+      "complexity": "complex",
+      "languageNotes": "Purely procedural PHP with no functions or classes: all control flow is top-level `if`/redirect/`require`. Two silent-failure behaviours matter here — a page missing from `$rolePages` is replaced with `dashboard` with no user-visible error (only `error_log`), and an unresolvable page file returns a hand-written 500 HTML page. Note it uses `session_start()` directly rather than `startSession()` from functions.php."
+    },
+    {
+      "id": "file:landing.php",
+      "type": "file",
+      "name": "landing.php",
+      "filePath": "landing.php",
+      "summary": "Public marketing landing page for STUDIO 94 self-shoot studio. Requires config.php/functions.php, branches its call-to-action links based on `isLoggedIn()` and session role (clients go to `index.php?page=booking`, staff/admin to `page=walkin`, anonymous users are sent through `login.php?redirect=...`), and embeds roughly 470 lines of inline CSS/HTML/JS for the hero, package tiers, and how-it-works sections.",
+      "tags": ["entry-point", "public-page", "marketing", "presentation"],
+      "complexity": "complex",
+      "languageNotes": "Almost the entire file is inline `<style>` and markup rather than PHP — the only PHP is the 25-line auth-aware link computation at the top, so the file is mostly a static template with a dynamic header."
+    },
+    {
+      "id": "file:login.php",
+      "type": "file",
+      "name": "login.php",
+      "filePath": "login.php",
+      "summary": "Combined login / register / forgot-password / reset-password page that is the app's authentication entry point. A single CSRF-protected POST handler dispatches on a hidden `action` field: `login` (Gmail-only regex check, `password_verify`, refuses unverified email, `session_regenerate_id`), `register` (creates or refreshes an unverified client, sends a verification email and auto-verifies on 'skipped'/'failed' delivery), `forgot_password` (inserts a `password_resets` row and mails a link) and `reset_password` (consumes the token and rehashes the password).",
+      "tags": ["authentication", "api-handler", "entry-point", "validation", "security"],
+      "complexity": "complex",
+      "languageNotes": "Gmail-only policy is enforced twice — server-side via `preg_match('/@gmail\\.com$/i')` and client-side via an HTML `pattern` attribute. The register branch silently auto-verifies the account when SMTP is unconfigured or blocked, so the email-verification gate is effectively bypassed on hosts without working mail."
+    },
+    {
+      "id": "file:logout.php",
+      "type": "file",
+      "name": "logout.php",
+      "filePath": "logout.php",
+      "summary": "Minimal session teardown endpoint that clears `$_SESSION`, expires the session cookie using the existing cookie params, destroys the session, and redirects to `login.php`. It requires only `functions.php` and relies on that file transitively loading `config.php` for the `APP_URL` constant.",
+      "tags": ["authentication", "session", "utility", "entry-point"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:mfa-helper.php",
+      "type": "file",
+      "name": "mfa-helper.php",
+      "filePath": "mfa-helper.php",
+      "summary": "Dependency-free TOTP (RFC 6238) implementation wrapped in the `MFAHelper` class — base32 secret generation/decoding, HOTP code derivation, constant-time verification with time-slice discrepancy tolerance, `otpauth://` URI building, QR code rendering via `endroid/qr-code`, and bcrypt-hashed single-use backup codes. Included only by `mfa-setup.php`.",
+      "tags": ["authentication", "mfa", "totp", "security", "utility"],
+      "complexity": "moderate",
+      "languageNotes": "Hand-rolled TOTP so no Composer package is required: the base32 alphabet, HMAC-SHA1 truncation and dynamic-truncation bit extraction are all implemented inline with `hash_hmac` and `ord`. `getQRCodeDataURI()` falls back to the raw `otpauth://` URI when the optional `endroid/qr-code` classes are absent."
+    },
+    {
+      "id": "class:mfa-helper.php:MFAHelper",
+      "type": "class",
+      "name": "MFAHelper",
+      "filePath": "mfa-helper.php",
+      "lineRange": [8, 177],
+      "summary": "Static utility class holding the full TOTP two-factor flow: `generateSecret`, `base32Decode` (private), `generateCode`, `verifyCode`, `getOTPAuthURI`, `getQRCodeDataURI`, `generateBackupCodes`, `hashBackupCodes` and `verifyBackupCode`. No state is kept — every method is a pure function of its arguments.",
+      "tags": ["authentication", "mfa", "totp", "static-utility"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:mfa-helper.php:base32Decode",
+      "type": "function",
+      "name": "base32Decode",
+      "filePath": "mfa-helper.php",
+      "lineRange": [25, 48],
+      "summary": "Private helper converting an RFC 4648 base32 TOTP secret into raw binary bytes, stripping padding/whitespace and packing leftover bits into a final character.",
+      "tags": ["crypto", "encoding", "mfa", "utility"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:mfa-helper.php:generateCode",
+      "type": "function",
+      "name": "generateCode",
+      "filePath": "mfa-helper.php",
+      "lineRange": [53, 72],
+      "summary": "Derives a 6-digit HOTP code for a given time slice by HMAC-SHA1 hashing the 8-byte counter, applying dynamic truncation, and zero-padding the result.",
+      "tags": ["crypto", "mfa", "totp", "hotp"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:mfa-helper.php:verifyCode",
+      "type": "function",
+      "name": "verifyCode",
+      "filePath": "mfa-helper.php",
+      "lineRange": [77, 92],
+      "summary": "Validates a submitted 6-digit TOTP code against the secret, comparing the current and adjacent time slices with `hash_equals()` to tolerate modest device clock drift.",
+      "tags": ["security", "mfa", "validation", "totp"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:mfa-helper.php:getQRCodeDataURI",
+      "type": "function",
+      "name": "getQRCodeDataURI",
+      "filePath": "mfa-helper.php",
+      "lineRange": [106, 134],
+      "summary": "Renders the `otpauth://` provisioning URI as a base64 PNG data URI for inline `<img>` display using endroid/qr-code, logging and degrading to the raw URI if the optional library is not installed.",
+      "tags": ["mfa", "qr-code", "rendering", "utility"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:mfa-helper.php:verifyBackupCode",
+      "type": "function",
+      "name": "verifyBackupCode",
+      "filePath": "mfa-helper.php",
+      "lineRange": [161, 176],
+      "summary": "Checks a user-supplied recovery code against the bcrypt hashes stored as a JSON array on the user row, and returns the rewritten hash list with the consumed code removed.",
+      "tags": ["security", "mfa", "validation", "recovery"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:mfa-setup.php",
+      "type": "file",
+      "name": "mfa-setup.php",
+      "filePath": "mfa-setup.php",
+      "summary": "Standalone two-factor enrollment page that sits outside the router: a CSRF-protected POST handler supports `generate` (stash a new secret in the session and re-render the QR), `verify` (confirm the first TOTP code, persist `mfa_enabled`/`mfa_secret`/hashed backup codes, then show the codes once), and `disable` (requires re-entering the account password). Renders one of four states — backup codes, QR scan, enabled, disabled — depending on `?step=`, the pending session secret, and the stored `mfa_enabled` flag.",
+      "tags": ["authentication", "mfa", "account-settings", "security", "page"],
+      "complexity": "moderate",
+      "languageNotes": "Uses POST-redirect-GET so the enrollment step is driven by `?step=` plus session state rather than by re-POSTing, and unsets `$_SESSION['new_backup_codes']` inline in the template so plaintext recovery codes are shown exactly once."
+    },
+    {
+      "id": "file:pages/admin/DFD.HTML",
+      "type": "file",
+      "name": "DFD.HTML",
+      "filePath": "pages/admin/DFD.HTML",
+      "summary": "Static 1800x1200 inline-SVG data-flow diagram titled 'Studio 94 DFD Layout' that maps the system's entities (Client, Studio Staff, Studio Owner), processes 1.0-8.0 (authentication, booking, service, inventory, AI chatbot, payment, feedback, reports) and data stores D1-D7. It contains no PHP and is dead: the `.HTML` extension means `index.php`'s router (which always appends `.php`) can never reach it, and nothing else links to it. Valuable only as design documentation of the intended system.",
+      "tags": ["documentation", "design-mockup", "diagram", "dead-code"],
+      "complexity": "complex",
+      "languageNotes": "Hand-positioned SVG rects/text rather than a diagram DSL or Mermaid source, so the layout cannot be regenerated from a text definition — edits mean editing raw x/y coordinates."
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:includes/deduct_inventory.php",
+      "target": "function:includes/deduct_inventory.php:deductInventory",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:includes/deduct_inventory.php",
+      "target": "function:includes/deduct_inventory.php:recordReusableItemUsage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:includes/deduct_inventory.php",
+      "target": "function:includes/deduct_inventory.php:deductInventory",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:includes/deduct_inventory.php",
+      "target": "function:includes/deduct_inventory.php:recordReusableItemUsage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:includes/deduct_inventory.php:deductInventory",
+      "target": "function:includes/deduct_inventory.php:recordReusableItemUsage",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:includes/deduct_inventory.php:deductInventory",
+      "target": "function:functions.php:addNotificationByRole",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:index.php",
+      "target": "file:config.php",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:index.php",
+      "target": "file:functions.php",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:index.php",
+      "target": "file:header.php",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:index.php",
+      "target": "file:sidebar.php",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:index.php",
+      "target": "file:footer.php",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:landing.php",
+      "target": "file:config.php",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:landing.php",
+      "target": "file:functions.php",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:login.php",
+      "target": "file:config.php",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:login.php",
+      "target": "file:functions.php",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:login.php",
+      "target": "file:send-verification.php",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:login.php",
+      "target": "file:assets/css/styles.css",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:logout.php",
+      "target": "file:functions.php",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mfa-helper.php",
+      "target": "class:mfa-helper.php:MFAHelper",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:mfa-helper.php",
+      "target": "class:mfa-helper.php:MFAHelper",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mfa-helper.php",
+      "target": "function:mfa-helper.php:base32Decode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:mfa-helper.php",
+      "target": "function:mfa-helper.php:generateCode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:mfa-helper.php",
+      "target": "function:mfa-helper.php:verifyCode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:mfa-helper.php",
+      "target": "function:mfa-helper.php:getQRCodeDataURI",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:mfa-helper.php",
+      "target": "function:mfa-helper.php:verifyBackupCode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "function:mfa-helper.php:generateCode",
+      "target": "function:mfa-helper.php:base32Decode",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:mfa-helper.php:verifyCode",
+      "target": "function:mfa-helper.php:generateCode",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mfa-setup.php",
+      "target": "file:config.php",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mfa-setup.php",
+      "target": "file:functions.php",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mfa-setup.php",
+      "target": "file:mfa-helper.php",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mfa-setup.php",
+      "target": "class:mfa-helper.php:MFAHelper",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:mfa-setup.php",
+      "target": "file:assets/css/styles.css",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:pages/admin/DFD.HTML",
+      "target": "file:index.php",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

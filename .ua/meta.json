@@ -1,0 +1,10 @@
+{
+    "gitCommitHash":  "5e31f529d696c232e0efce6c3f8ca169fd5f1689",
+    "analyzedAt":  "2026-10-09T02:07:52.0355258Z",
+    "toolVersion":  "understand-anything 2.9.7",
+    "schemaVersion":  "1.0.0",
+    "nodeCount":  265,
+    "edgeCount":  435,
+    "layerCount":  10,
+    "tourSteps":  13
+}

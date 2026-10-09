@@ -1,0 +1,2034 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 8,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 8,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 8,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "pages/admin/profile.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 488,
+      "nonEmptyLines": 416,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "pages/admin/reports.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 3548,
+      "nonEmptyLines": 2584,
+      "functions": [
+        {
+          "name": "getReportData",
+          "startLine": 299,
+          "endLine": 1035,
+          "params": [
+            "$type",
+            "$from",
+            "$to",
+            "$pdo"
+          ]
+        },
+        {
+          "name": "generateReportPDF",
+          "startLine": 1137,
+          "endLine": 1575,
+          "params": [
+            "$type",
+            "$from",
+            "$to",
+            "$result",
+            "$reportTypes"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "getReportData",
+          "line": 299,
+          "isDefault": false
+        },
+        {
+          "name": "generateReportPDF",
+          "line": 1137,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "reportEsc",
+          "callee": "htmlspecialchars",
+          "lineNumber": 18
+        },
+        {
+          "caller": "reportDate",
+          "callee": "empty",
+          "lineNumber": 29
+        },
+        {
+          "caller": "reportDate",
+          "callee": "strtotime",
+          "lineNumber": 33
+        },
+        {
+          "caller": "reportDate",
+          "callee": "date",
+          "lineNumber": 36
+        },
+        {
+          "caller": "reportDate",
+          "callee": "reportEsc",
+          "lineNumber": 37
+        },
+        {
+          "caller": "reportMoney",
+          "callee": "number_format",
+          "lineNumber": 44
+        },
+        {
+          "caller": "reportStatusBadge",
+          "callee": "trim",
+          "lineNumber": 51
+        },
+        {
+          "caller": "reportStatusBadge",
+          "callee": "strtoupper",
+          "lineNumber": 52
+        },
+        {
+          "caller": "reportStatusBadge",
+          "callee": "in_array",
+          "lineNumber": 55
+        },
+        {
+          "caller": "reportStatusBadge",
+          "callee": "in_array",
+          "lineNumber": 68
+        },
+        {
+          "caller": "reportStatusBadge",
+          "callee": "in_array",
+          "lineNumber": 80
+        },
+        {
+          "caller": "reportStatusBadge",
+          "callee": "reportEsc",
+          "lineNumber": 96
+        },
+        {
+          "caller": "validReportDate",
+          "callee": "is_string",
+          "lineNumber": 104
+        },
+        {
+          "caller": "validReportDate",
+          "callee": "DateTime::createFromFormat",
+          "lineNumber": 108
+        },
+        {
+          "caller": "validReportDate",
+          "callee": "$d->format",
+          "lineNumber": 110
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->query",
+          "lineNumber": 311
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 326
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->prepare",
+          "lineNumber": 337
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$stmt->execute",
+          "lineNumber": 355
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 360
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->prepare",
+          "lineNumber": 371
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$stmt->execute",
+          "lineNumber": 391
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 396
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->prepare",
+          "lineNumber": 409
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$stmt->execute",
+          "lineNumber": 451
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 456
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->query",
+          "lineNumber": 468
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 494
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->prepare",
+          "lineNumber": 507
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$currentBookingsStmt->execute",
+          "lineNumber": 513
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$currentBookingsStmt->fetchColumn",
+          "lineNumber": 518
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->prepare",
+          "lineNumber": 522
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$completedStmt->execute",
+          "lineNumber": 529
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$completedStmt->fetchColumn",
+          "lineNumber": 534
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->prepare",
+          "lineNumber": 538
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pendingStmt->execute",
+          "lineNumber": 545
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pendingStmt->fetchColumn",
+          "lineNumber": 550
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->prepare",
+          "lineNumber": 554
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$revenueStmt->execute",
+          "lineNumber": 561
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$revenueStmt->fetchColumn",
+          "lineNumber": 566
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->query(\"\n                SELECT COUNT(*)\n                FROM users\n                WHERE role = 'client'\n            \")->fetchColumn",
+          "lineNumber": 570
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->query",
+          "lineNumber": 570
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->query(\"\n                SELECT COUNT(*)\n                FROM inventory\n            \")->fetchColumn",
+          "lineNumber": 578
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->query",
+          "lineNumber": 578
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->query(\"\n                SELECT COUNT(*)\n                FROM inventory\n                WHERE is_reusable = 0\n                  AND quantity <= threshold\n            \")->fetchColumn",
+          "lineNumber": 585
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->query",
+          "lineNumber": 585
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->prepare",
+          "lineNumber": 594
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$feedbackStmt->execute",
+          "lineNumber": 602
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$feedbackStmt->fetch",
+          "lineNumber": 607
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$fromDate->diff",
+          "lineNumber": 621
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$previousToDate->modify",
+          "lineNumber": 624
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$previousFromDate->modify",
+          "lineNumber": 627
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$previousFromDate->format",
+          "lineNumber": 629
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$previousToDate->format",
+          "lineNumber": 630
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->prepare",
+          "lineNumber": 634
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$prevBookingsStmt->execute",
+          "lineNumber": 640
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$prevBookingsStmt->fetchColumn",
+          "lineNumber": 645
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->prepare",
+          "lineNumber": 649
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$prevRevenueStmt->execute",
+          "lineNumber": 656
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$prevRevenueStmt->fetchColumn",
+          "lineNumber": 661
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->prepare",
+          "lineNumber": 665
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$prevCompletedStmt->execute",
+          "lineNumber": 672
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$prevCompletedStmt->fetchColumn",
+          "lineNumber": 677
+        },
+        {
+          "caller": "getReportData",
+          "callee": "number_format",
+          "lineNumber": 697
+        },
+        {
+          "caller": "getReportData",
+          "callee": "str_replace",
+          "lineNumber": 720
+        },
+        {
+          "caller": "getReportData",
+          "callee": "reportMoney",
+          "lineNumber": 756
+        },
+        {
+          "caller": "getReportData",
+          "callee": "number_format",
+          "lineNumber": 803
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->prepare",
+          "lineNumber": 821
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$stmt->execute",
+          "lineNumber": 846
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 851
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->prepare",
+          "lineNumber": 862
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$stmt->execute",
+          "lineNumber": 885
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 890
+        },
+        {
+          "caller": "getReportData",
+          "callee": "isset",
+          "lineNumber": 901
+        },
+        {
+          "caller": "getReportData",
+          "callee": "strtolower",
+          "lineNumber": 918
+        },
+        {
+          "caller": "getReportData",
+          "callee": "trim",
+          "lineNumber": 919
+        },
+        {
+          "caller": "getReportData",
+          "callee": "in_array",
+          "lineNumber": 941
+        },
+        {
+          "caller": "getReportData",
+          "callee": "usort",
+          "lineNumber": 979
+        },
+        {
+          "caller": "getReportData",
+          "callee": "strtotime",
+          "lineNumber": 982
+        },
+        {
+          "caller": "getReportData",
+          "callee": "strtotime",
+          "lineNumber": 983
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$pdo->prepare",
+          "lineNumber": 996
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$stmt->execute",
+          "lineNumber": 1022
+        },
+        {
+          "caller": "getReportData",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 1027
+        },
+        {
+          "caller": "safeEncode",
+          "callee": "iconv",
+          "lineNumber": 1080
+        },
+        {
+          "caller": "Cell",
+          "callee": "parent::Cell",
+          "lineNumber": 1101
+        },
+        {
+          "caller": "Cell",
+          "callee": "$this->safeEncode",
+          "lineNumber": 1104
+        },
+        {
+          "caller": "MultiCell",
+          "callee": "parent::MultiCell",
+          "lineNumber": 1121
+        },
+        {
+          "caller": "MultiCell",
+          "callee": "$this->safeEncode",
+          "lineNumber": 1124
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "function_exists",
+          "lineNumber": 1149
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "setFlash",
+          "lineNumber": 1150
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "header",
+          "lineNumber": 1156
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "ob_get_level",
+          "lineNumber": 1163
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "ob_end_clean",
+          "lineNumber": 1164
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->SetMargins",
+          "lineNumber": 1173
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->SetAutoPageBreak",
+          "lineNumber": 1174
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->AddPage",
+          "lineNumber": 1175
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->SetFont",
+          "lineNumber": 1182
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->SetTextColor",
+          "lineNumber": 1183
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->Cell",
+          "lineNumber": 1185
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->SetTextColor",
+          "lineNumber": 1194
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->SetFont",
+          "lineNumber": 1196
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->Cell",
+          "lineNumber": 1198
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->SetFont",
+          "lineNumber": 1207
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->Cell",
+          "lineNumber": 1209
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "date",
+          "lineNumber": 1213
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "strtotime",
+          "lineNumber": 1213
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "date",
+          "lineNumber": 1215
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "strtotime",
+          "lineNumber": 1215
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->Cell",
+          "lineNumber": 1221
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "date",
+          "lineNumber": 1225
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->Ln",
+          "lineNumber": 1231
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->SetFont",
+          "lineNumber": 1286
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->SetFillColor",
+          "lineNumber": 1288
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "count",
+          "lineNumber": 1297
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->Cell",
+          "lineNumber": 1299
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->Ln",
+          "lineNumber": 1310
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->SetFont",
+          "lineNumber": 1317
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "number_format",
+          "lineNumber": 1368
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "number_format",
+          "lineNumber": 1385
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "max",
+          "lineNumber": 1425
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "min",
+          "lineNumber": 1427
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "str_repeat",
+          "lineNumber": 1431
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "str_repeat",
+          "lineNumber": 1432
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "ucfirst",
+          "lineNumber": 1437
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "mb_substr",
+          "lineNumber": 1455
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "mb_strlen",
+          "lineNumber": 1456
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "mb_substr",
+          "lineNumber": 1457
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "mb_strlen",
+          "lineNumber": 1458
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->SetFillColor",
+          "lineNumber": 1494
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "count",
+          "lineNumber": 1508
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "strip_tags",
+          "lineNumber": 1510
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->Cell",
+          "lineNumber": 1514
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "mb_substr",
+          "lineNumber": 1517
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->Ln",
+          "lineNumber": 1525
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->Ln",
+          "lineNumber": 1535
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->SetFont",
+          "lineNumber": 1537
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->Cell",
+          "lineNumber": 1543
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->Cell",
+          "lineNumber": 1552
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "count",
+          "lineNumber": 1555
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "date",
+          "lineNumber": 1566
+        },
+        {
+          "caller": "generateReportPDF",
+          "callee": "$pdf->Output",
+          "lineNumber": 1569
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "pages/admin/sales.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 2323,
+      "nonEmptyLines": 1653,
+      "functions": [
+        {
+          "name": "salesEsc",
+          "startLine": 16,
+          "endLine": 19,
+          "params": [
+            "$value"
+          ]
+        },
+        {
+          "name": "salesMoney",
+          "startLine": 21,
+          "endLine": 24,
+          "params": [
+            "$value"
+          ]
+        },
+        {
+          "name": "salesStatusClass",
+          "startLine": 26,
+          "endLine": 43,
+          "params": [
+            "$status"
+          ]
+        },
+        {
+          "name": "salesStatusLabel",
+          "startLine": 45,
+          "endLine": 62,
+          "params": [
+            "$status"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "salesEsc",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "salesMoney",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "salesStatusClass",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "salesStatusLabel",
+          "line": 45,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "salesEsc",
+          "callee": "htmlspecialchars",
+          "lineNumber": 18
+        },
+        {
+          "caller": "salesMoney",
+          "callee": "number_format",
+          "lineNumber": 23
+        },
+        {
+          "caller": "salesStatusClass",
+          "callee": "strtoupper",
+          "lineNumber": 28
+        },
+        {
+          "caller": "salesStatusClass",
+          "callee": "trim",
+          "lineNumber": 28
+        },
+        {
+          "caller": "salesStatusClass",
+          "callee": "in_array",
+          "lineNumber": 30
+        },
+        {
+          "caller": "salesStatusClass",
+          "callee": "in_array",
+          "lineNumber": 34
+        },
+        {
+          "caller": "salesStatusClass",
+          "callee": "in_array",
+          "lineNumber": 38
+        },
+        {
+          "caller": "salesStatusLabel",
+          "callee": "strtoupper",
+          "lineNumber": 47
+        },
+        {
+          "caller": "salesStatusLabel",
+          "callee": "trim",
+          "lineNumber": 47
+        },
+        {
+          "caller": "salesStatusLabel",
+          "callee": "salesEsc",
+          "lineNumber": 61
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "pages/admin/settings.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 390,
+      "nonEmptyLines": 330,
+      "functions": [
+        {
+          "name": "handleQrUpload",
+          "startLine": 101,
+          "endLine": 160,
+          "params": [
+            "$file",
+            "$settingKey",
+            "$uploadDir",
+            "$uploadUrl",
+            "$pdo"
+          ]
+        },
+        {
+          "name": "s",
+          "startLine": 182,
+          "endLine": 189,
+          "params": [
+            "$settings",
+            "$key",
+            "$default"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handleQrUpload",
+          "line": 101,
+          "isDefault": false
+        },
+        {
+          "name": "s",
+          "line": 182,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handleQrUpload",
+          "callee": "$finfo->file",
+          "lineNumber": 114
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "isset",
+          "lineNumber": 122
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "time",
+          "lineNumber": 128
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "bin2hex",
+          "lineNumber": 128
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "random_bytes",
+          "lineNumber": 128
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "rtrim",
+          "lineNumber": 130
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "move_uploaded_file",
+          "lineNumber": 132
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "$pdo->prepare",
+          "lineNumber": 137
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "$oldStmt->execute",
+          "lineNumber": 138
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "$oldStmt->fetchColumn",
+          "lineNumber": 139
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "$pdo->prepare",
+          "lineNumber": 144
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "$stmt->execute",
+          "lineNumber": 149
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "empty",
+          "lineNumber": 152
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "dirname",
+          "lineNumber": 153
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "ltrim",
+          "lineNumber": 153
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "is_file",
+          "lineNumber": 154
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "realpath",
+          "lineNumber": 154
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "realpath",
+          "lineNumber": 154
+        },
+        {
+          "caller": "handleQrUpload",
+          "callee": "unlink",
+          "lineNumber": 155
+        },
+        {
+          "caller": "s",
+          "callee": "htmlspecialchars",
+          "lineNumber": 184
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "pages/admin/staff.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 110,
+      "nonEmptyLines": 104,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "pages/api/chatbot-ai.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 814,
+      "nonEmptyLines": 691,
+      "functions": [
+        {
+          "name": "chatbotReply",
+          "startLine": 36,
+          "endLine": 43,
+          "params": [
+            "$reply",
+            "$extra"
+          ]
+        },
+        {
+          "name": "cleanBotText",
+          "startLine": 45,
+          "endLine": 66,
+          "params": [
+            "$text"
+          ]
+        },
+        {
+          "name": "normalizeText",
+          "startLine": 68,
+          "endLine": 73,
+          "params": [
+            "$text"
+          ]
+        },
+        {
+          "name": "saveChatLog",
+          "startLine": 115,
+          "endLine": 131,
+          "params": [
+            "$pdo",
+            "$userMessage",
+            "$botReply"
+          ]
+        },
+        {
+          "name": "isAvailabilityQuestion",
+          "startLine": 148,
+          "endLine": 170,
+          "params": [
+            "$text"
+          ]
+        },
+        {
+          "name": "parseRequestedDate",
+          "startLine": 176,
+          "endLine": 248,
+          "params": [
+            "$text"
+          ]
+        },
+        {
+          "name": "parseRequestedTime",
+          "startLine": 250,
+          "endLine": 262,
+          "params": [
+            "$text"
+          ]
+        },
+        {
+          "name": "formatTime",
+          "startLine": 264,
+          "endLine": 272,
+          "params": [
+            "$min"
+          ]
+        },
+        {
+          "name": "formatDateLong",
+          "startLine": 274,
+          "endLine": 277,
+          "params": [
+            "$d"
+          ]
+        },
+        {
+          "name": "isBlockingStatus",
+          "startLine": 279,
+          "endLine": 287,
+          "params": [
+            "$status"
+          ]
+        },
+        {
+          "name": "getBookingsForDate",
+          "startLine": 293,
+          "endLine": 318,
+          "params": [
+            "$pdo",
+            "$date"
+          ]
+        },
+        {
+          "name": "slotOverlaps",
+          "startLine": 320,
+          "endLine": 326,
+          "params": [
+            "$s",
+            "$e",
+            "$bookings"
+          ]
+        },
+        {
+          "name": "mergeSlots",
+          "startLine": 328,
+          "endLine": 347,
+          "params": [
+            "$slots"
+          ]
+        },
+        {
+          "name": "buildAvailabilityResponse",
+          "startLine": 353,
+          "endLine": 411,
+          "params": [
+            "$date",
+            "$bookings",
+            "$reqTime"
+          ]
+        },
+        {
+          "name": "answerFAQ",
+          "startLine": 417,
+          "endLine": 559,
+          "params": [
+            "$text"
+          ]
+        },
+        {
+          "name": "callGemini",
+          "startLine": 566,
+          "endLine": 697,
+          "params": [
+            "$apiKey",
+            "$message",
+            "$models"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "chatbotReply",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "cleanBotText",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "normalizeText",
+          "line": 68,
+          "isDefault": false
+        },
+        {
+          "name": "saveChatLog",
+          "line": 115,
+          "isDefault": false
+        },
+        {
+          "name": "isAvailabilityQuestion",
+          "line": 148,
+          "isDefault": false
+        },
+        {
+          "name": "parseRequestedDate",
+          "line": 176,
+          "isDefault": false
+        },
+        {
+          "name": "parseRequestedTime",
+          "line": 250,
+          "isDefault": false
+        },
+        {
+          "name": "formatTime",
+          "line": 264,
+          "isDefault": false
+        },
+        {
+          "name": "formatDateLong",
+          "line": 274,
+          "isDefault": false
+        },
+        {
+          "name": "isBlockingStatus",
+          "line": 279,
+          "isDefault": false
+        },
+        {
+          "name": "getBookingsForDate",
+          "line": 293,
+          "isDefault": false
+        },
+        {
+          "name": "slotOverlaps",
+          "line": 320,
+          "isDefault": false
+        },
+        {
+          "name": "mergeSlots",
+          "line": 328,
+          "isDefault": false
+        },
+        {
+          "name": "buildAvailabilityResponse",
+          "line": 353,
+          "isDefault": false
+        },
+        {
+          "name": "answerFAQ",
+          "line": 417,
+          "isDefault": false
+        },
+        {
+          "name": "callGemini",
+          "line": 566,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "chatbotReply",
+          "callee": "json_encode",
+          "lineNumber": 38
+        },
+        {
+          "caller": "chatbotReply",
+          "callee": "array_merge",
+          "lineNumber": 39
+        },
+        {
+          "caller": "chatbotReply",
+          "callee": "cleanBotText",
+          "lineNumber": 39
+        },
+        {
+          "caller": "cleanBotText",
+          "callee": "str_replace",
+          "lineNumber": 48
+        },
+        {
+          "caller": "cleanBotText",
+          "callee": "str_replace",
+          "lineNumber": 51
+        },
+        {
+          "caller": "cleanBotText",
+          "callee": "str_replace",
+          "lineNumber": 54
+        },
+        {
+          "caller": "cleanBotText",
+          "callee": "preg_replace",
+          "lineNumber": 57
+        },
+        {
+          "caller": "cleanBotText",
+          "callee": "preg_replace",
+          "lineNumber": 60
+        },
+        {
+          "caller": "cleanBotText",
+          "callee": "preg_replace",
+          "lineNumber": 63
+        },
+        {
+          "caller": "cleanBotText",
+          "callee": "trim",
+          "lineNumber": 65
+        },
+        {
+          "caller": "normalizeText",
+          "callee": "trim",
+          "lineNumber": 70
+        },
+        {
+          "caller": "normalizeText",
+          "callee": "mb_strtolower",
+          "lineNumber": 70
+        },
+        {
+          "caller": "normalizeText",
+          "callee": "preg_replace",
+          "lineNumber": 71
+        },
+        {
+          "caller": "saveChatLog",
+          "callee": "function_exists",
+          "lineNumber": 119
+        },
+        {
+          "caller": "saveChatLog",
+          "callee": "isLoggedIn",
+          "lineNumber": 119
+        },
+        {
+          "caller": "saveChatLog",
+          "callee": "currentUser",
+          "lineNumber": 120
+        },
+        {
+          "caller": "saveChatLog",
+          "callee": "$pdo->prepare",
+          "lineNumber": 123
+        },
+        {
+          "caller": "saveChatLog",
+          "callee": "$stmt->execute",
+          "lineNumber": 127
+        },
+        {
+          "caller": "saveChatLog",
+          "callee": "error_log",
+          "lineNumber": 129
+        },
+        {
+          "caller": "saveChatLog",
+          "callee": "$e->getMessage",
+          "lineNumber": 129
+        },
+        {
+          "caller": "isAvailabilityQuestion",
+          "callee": "mb_strpos",
+          "lineNumber": 159
+        },
+        {
+          "caller": "isAvailabilityQuestion",
+          "callee": "preg_match",
+          "lineNumber": 163
+        },
+        {
+          "caller": "isAvailabilityQuestion",
+          "callee": "preg_match",
+          "lineNumber": 164
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "preg_match",
+          "lineNumber": 180
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "preg_match",
+          "lineNumber": 182
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "$d->modify",
+          "lineNumber": 184
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "preg_match",
+          "lineNumber": 188
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "DateTime::createFromFormat",
+          "lineNumber": 189
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "checkdate",
+          "lineNumber": 190
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "preg_match",
+          "lineNumber": 193
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "checkdate",
+          "lineNumber": 196
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "DateTime::createFromFormat",
+          "lineNumber": 197
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "str_replace",
+          "lineNumber": 208
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "preg_match",
+          "lineNumber": 210
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "strtotime",
+          "lineNumber": 211
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "$d->setTimezone",
+          "lineNumber": 214
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "preg_match",
+          "lineNumber": 219
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "$today->format",
+          "lineNumber": 220
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "strtotime",
+          "lineNumber": 221
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "$d->setTimezone",
+          "lineNumber": 224
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "$d->modify",
+          "lineNumber": 225
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "preg_match",
+          "lineNumber": 240
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "preg_quote",
+          "lineNumber": 240
+        },
+        {
+          "caller": "parseRequestedDate",
+          "callee": "$d->modify",
+          "lineNumber": 242
+        },
+        {
+          "caller": "parseRequestedTime",
+          "callee": "preg_match",
+          "lineNumber": 252
+        },
+        {
+          "caller": "parseRequestedTime",
+          "callee": "isset",
+          "lineNumber": 256
+        },
+        {
+          "caller": "parseRequestedTime",
+          "callee": "strtolower",
+          "lineNumber": 257
+        },
+        {
+          "caller": "formatTime",
+          "callee": "intdiv",
+          "lineNumber": 266
+        },
+        {
+          "caller": "formatTime",
+          "callee": "sprintf",
+          "lineNumber": 271
+        },
+        {
+          "caller": "formatDateLong",
+          "callee": "$d->format",
+          "lineNumber": 276
+        },
+        {
+          "caller": "isBlockingStatus",
+          "callee": "trim",
+          "lineNumber": 281
+        },
+        {
+          "caller": "isBlockingStatus",
+          "callee": "mb_strtolower",
+          "lineNumber": 282
+        },
+        {
+          "caller": "isBlockingStatus",
+          "callee": "trim",
+          "lineNumber": 282
+        },
+        {
+          "caller": "isBlockingStatus",
+          "callee": "str_replace",
+          "lineNumber": 283
+        },
+        {
+          "caller": "isBlockingStatus",
+          "callee": "preg_replace",
+          "lineNumber": 284
+        },
+        {
+          "caller": "isBlockingStatus",
+          "callee": "in_array",
+          "lineNumber": 286
+        },
+        {
+          "caller": "getBookingsForDate",
+          "callee": "$pdo->prepare",
+          "lineNumber": 296
+        },
+        {
+          "caller": "getBookingsForDate",
+          "callee": "$stmt->execute",
+          "lineNumber": 297
+        },
+        {
+          "caller": "getBookingsForDate",
+          "callee": "$date->format",
+          "lineNumber": 297
+        },
+        {
+          "caller": "getBookingsForDate",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 298
+        },
+        {
+          "caller": "getBookingsForDate",
+          "callee": "isBlockingStatus",
+          "lineNumber": 302
+        },
+        {
+          "caller": "getBookingsForDate",
+          "callee": "trim",
+          "lineNumber": 304
+        },
+        {
+          "caller": "getBookingsForDate",
+          "callee": "strtotime",
+          "lineNumber": 307
+        },
+        {
+          "caller": "getBookingsForDate",
+          "callee": "date",
+          "lineNumber": 310
+        },
+        {
+          "caller": "getBookingsForDate",
+          "callee": "date",
+          "lineNumber": 310
+        },
+        {
+          "caller": "getBookingsForDate",
+          "callee": "usort",
+          "lineNumber": 316
+        },
+        {
+          "caller": "mergeSlots",
+          "callee": "empty",
+          "lineNumber": 330
+        },
+        {
+          "caller": "mergeSlots",
+          "callee": "usort",
+          "lineNumber": 331
+        },
+        {
+          "caller": "mergeSlots",
+          "callee": "count",
+          "lineNumber": 334
+        },
+        {
+          "caller": "buildAvailabilityResponse",
+          "callee": "formatDateLong",
+          "lineNumber": 355
+        },
+        {
+          "caller": "buildAvailabilityResponse",
+          "callee": "formatTime",
+          "lineNumber": 363
+        },
+        {
+          "caller": "buildAvailabilityResponse",
+          "callee": "slotOverlaps",
+          "lineNumber": 368
+        },
+        {
+          "caller": "buildAvailabilityResponse",
+          "callee": "formatTime",
+          "lineNumber": 371
+        },
+        {
+          "caller": "buildAvailabilityResponse",
+          "callee": "formatTime",
+          "lineNumber": 371
+        },
+        {
+          "caller": "buildAvailabilityResponse",
+          "callee": "formatTime",
+          "lineNumber": 376
+        },
+        {
+          "caller": "buildAvailabilityResponse",
+          "callee": "formatTime",
+          "lineNumber": 376
+        },
+        {
+          "caller": "buildAvailabilityResponse",
+          "callee": "empty",
+          "lineNumber": 381
+        },
+        {
+          "caller": "buildAvailabilityResponse",
+          "callee": "mergeSlots",
+          "lineNumber": 384
+        },
+        {
+          "caller": "buildAvailabilityResponse",
+          "callee": "formatTime",
+          "lineNumber": 385
+        },
+        {
+          "caller": "buildAvailabilityResponse",
+          "callee": "formatTime",
+          "lineNumber": 385
+        },
+        {
+          "caller": "buildAvailabilityResponse",
+          "callee": "slotOverlaps",
+          "lineNumber": 392
+        },
+        {
+          "caller": "buildAvailabilityResponse",
+          "callee": "mergeSlots",
+          "lineNumber": 397
+        },
+        {
+          "caller": "buildAvailabilityResponse",
+          "callee": "empty",
+          "lineNumber": 400
+        },
+        {
+          "caller": "buildAvailabilityResponse",
+          "callee": "formatTime",
+          "lineNumber": 405
+        },
+        {
+          "caller": "buildAvailabilityResponse",
+          "callee": "formatTime",
+          "lineNumber": 405
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 419
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 431
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 438
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 445
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 454
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 465
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 472
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 480
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 487
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 497
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 504
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 512
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 524
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 531
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 539
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 550
+        },
+        {
+          "caller": "answerFAQ",
+          "callee": "preg_match",
+          "lineNumber": 554
+        },
+        {
+          "caller": "callGemini",
+          "callee": "curl_init",
+          "lineNumber": 621
+        },
+        {
+          "caller": "callGemini",
+          "callee": "curl_setopt_array",
+          "lineNumber": 622
+        },
+        {
+          "caller": "callGemini",
+          "callee": "json_encode",
+          "lineNumber": 626
+        },
+        {
+          "caller": "callGemini",
+          "callee": "curl_exec",
+          "lineNumber": 637
+        },
+        {
+          "caller": "callGemini",
+          "callee": "curl_error",
+          "lineNumber": 638
+        },
+        {
+          "caller": "callGemini",
+          "callee": "curl_getinfo",
+          "lineNumber": 639
+        },
+        {
+          "caller": "callGemini",
+          "callee": "curl_close",
+          "lineNumber": 640
+        },
+        {
+          "caller": "callGemini",
+          "callee": "error_log",
+          "lineNumber": 645
+        },
+        {
+          "caller": "callGemini",
+          "callee": "json_decode",
+          "lineNumber": 650
+        },
+        {
+          "caller": "callGemini",
+          "callee": "error_log",
+          "lineNumber": 654
+        },
+        {
+          "caller": "callGemini",
+          "callee": "json_decode",
+          "lineNumber": 658
+        },
+        {
+          "caller": "callGemini",
+          "callee": "isset",
+          "lineNumber": 662
+        },
+        {
+          "caller": "callGemini",
+          "callee": "isset",
+          "lineNumber": 664
+        },
+        {
+          "caller": "callGemini",
+          "callee": "is_string",
+          "lineNumber": 664
+        },
+        {
+          "caller": "callGemini",
+          "callee": "trim",
+          "lineNumber": 670
+        },
+        {
+          "caller": "callGemini",
+          "callee": "error_log",
+          "lineNumber": 677
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 16,
+        "functionCount": 16,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "pages/api/check-client-loyalty.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 95,
+      "nonEmptyLines": 78,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "pages/api/check_availability.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 267,
+      "nonEmptyLines": 232,
+      "callGraph": [
+        {
+          "caller": "parseTimeToMinutes",
+          "callee": "preg_match",
+          "lineNumber": 54
+        },
+        {
+          "caller": "parseTimeToMinutes",
+          "callee": "strtoupper",
+          "lineNumber": 55
+        },
+        {
+          "caller": "parseTimeToMinutes",
+          "callee": "preg_match",
+          "lineNumber": 60
+        },
+        {
+          "caller": "formatMinutesToTime",
+          "callee": "intdiv",
+          "lineNumber": 71
+        },
+        {
+          "caller": "formatMinutesToTime",
+          "callee": "sprintf",
+          "lineNumber": 75
+        },
+        {
+          "caller": "extractMinutesFromDuration",
+          "callee": "strtolower",
+          "lineNumber": 82
+        },
+        {
+          "caller": "extractMinutesFromDuration",
+          "callee": "trim",
+          "lineNumber": 82
+        },
+        {
+          "caller": "extractMinutesFromDuration",
+          "callee": "strpos",
+          "lineNumber": 85
+        },
+        {
+          "caller": "extractMinutesFromDuration",
+          "callee": "strpos",
+          "lineNumber": 85
+        },
+        {
+          "caller": "extractMinutesFromDuration",
+          "callee": "strpos",
+          "lineNumber": 86
+        },
+        {
+          "caller": "extractMinutesFromDuration",
+          "callee": "strpos",
+          "lineNumber": 86
+        },
+        {
+          "caller": "extractMinutesFromDuration",
+          "callee": "strpos",
+          "lineNumber": 87
+        },
+        {
+          "caller": "extractMinutesFromDuration",
+          "callee": "strpos",
+          "lineNumber": 87
+        },
+        {
+          "caller": "extractMinutesFromDuration",
+          "callee": "preg_match",
+          "lineNumber": 90
+        },
+        {
+          "caller": "extractMinutesFromDuration",
+          "callee": "preg_match",
+          "lineNumber": 93
+        },
+        {
+          "caller": "extractMinutesFromDuration",
+          "callee": "preg_match",
+          "lineNumber": 98
+        },
+        {
+          "caller": "extractMinutesFromDuration",
+          "callee": "preg_match",
+          "lineNumber": 103
+        },
+        {
+          "caller": "extractMinutesFromDuration",
+          "callee": "round",
+          "lineNumber": 104
+        },
+        {
+          "caller": "extractMinutesFromDuration",
+          "callee": "preg_match",
+          "lineNumber": 108
+        },
+        {
+          "caller": "extractMinutesFromDuration",
+          "callee": "preg_match",
+          "lineNumber": 113
+        },
+        {
+          "caller": "extractMinutesFromDuration",
+          "callee": "round",
+          "lineNumber": 114
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

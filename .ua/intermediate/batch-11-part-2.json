@@ -1,0 +1,161 @@
+{
+  "nodes": [
+    {
+      "id": "file:pages/staff/inventory.php",
+      "type": "file",
+      "name": "inventory.php",
+      "filePath": "pages/staff/inventory.php",
+      "summary": "Staff/admin inventory management page for the `inventory` table: CSRF-protected add / update_quantity / delete actions (delete is blocked when `booking_inventory` references the item), a red low-stock alert banner computed inline from non-reusable items at or below threshold, and an inline JS edit modal. Not standalone — it opens with requireRole(['admin','staff']) and relies on index.php having already loaded config.php/functions.php and defined $user/$role.",
+      "tags": ["page", "inventory", "crud", "role-gated", "procedural-php"],
+      "complexity": "complex",
+      "languageNotes": "Laravel-style Blade echo (`<?= ?>`) and inline CSS/JS are embedded directly in the PHP template; every mutating branch calls setFlash() then header('Location: index.php?page=inventory') and exit (POST-redirect-GET)."
+    },
+    {
+      "id": "file:pages/staff/notifications.php",
+      "type": "file",
+      "name": "notifications.php",
+      "filePath": "pages/staff/notifications.php",
+      "summary": "Small staff-only notification inbox that lists the last 50 `notifications` rows for the current user with all/unread/read filters, plus a `?markread=1` GET action that flips every row to is_read=1. Only 49 lines of which most is HTML; relies on the router having loaded config.php/functions.php and set $user.",
+      "tags": ["page", "notifications", "list-view", "role-gated", "procedural-php"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:pages/staff/payments.php",
+      "type": "file",
+      "name": "payments.php",
+      "filePath": "pages/staff/payments.php",
+      "summary": "Payment verification console for staff/admin: handles verify / reject / refund POST actions, recomputing effective price from `loyalty_cards.total_bookings` (50% off at 10+ bookings), flipping `bookings` to Deposit Paid / Confirmed, and notifying the client via addNotification(). Adds a filter+search list query over payments joined to bookings, packages, users and loyalty_cards with status-ordered counts, then renders a list view whose rows open detail / proof / reject / refund modals.",
+      "tags": ["page", "payments", "verification", "loyalty", "role-gated"],
+      "complexity": "complex",
+      "languageNotes": "Declares `const RESERVATION_FEE = 100;` at file scope — a redeclaration hazard if the page were ever included twice in one request."
+    },
+    {
+      "id": "file:pages/staff/profile.php",
+      "type": "file",
+      "name": "profile.php",
+      "filePath": "pages/staff/profile.php",
+      "summary": "Shared self-service profile page for staff/admin (identical copy also served under pages/client) handling three POST actions — update_profile (with email uniqueness check and session resync), change_password (current-password verify + password_hash), and upload_avatar (finfo MIME sniffing, 2MB cap, writes to assets/uploads/avatars/ and unlinks the old file). Notably it does NOT call requireRole(); it only guards on `isset($user)`/`isset($role)` and redirects to login.php, and it calls db() seven separate times instead of reusing one handle.",
+      "tags": ["page", "profile", "file-upload", "account", "procedural-php"],
+      "complexity": "complex",
+      "languageNotes": "No csrfField()/verifyCsrf() on any of the three forms, unlike the other pages in this batch — CSRF protection is inconsistent across the codebase."
+    },
+    {
+      "id": "file:pages/staff/schedule.php",
+      "type": "file",
+      "name": "schedule.php",
+      "filePath": "pages/staff/schedule.php",
+      "summary": "Read-only staff schedule board that groups non-cancelled bookings by date and splits each day into online vs walk-in buckets (detected from booking type or a 'WALK' booking_ref prefix), with upcoming / today / tomorrow / week views driven by a CURDATE()-based WHERE builder. No POST handling and no CSRF surface.",
+      "tags": ["page", "schedule", "reporting", "read-only", "role-gated"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:pages/staff/upload.php",
+      "type": "file",
+      "name": "upload.php",
+      "filePath": "pages/staff/upload.php",
+      "summary": "Staff photo-delivery page: CSRF-protected multi-file upload that filters extensions (jpg/jpeg/png/gif/webp/raw), caps each file at 50MB, writes into UPLOAD_DIR (assets/uploads/), inserts a `photos` row per file, and notifies the client via addNotification() once at least one file lands. Also lists Completed/Deposit Paid sessions eligible for upload and a 10-row upload history.",
+      "tags": ["page", "file-upload", "photos", "notification", "role-gated"],
+      "complexity": "moderate",
+      "languageNotes": "Writes to the UPLOAD_DIR constant (assets/uploads/) rather than pages/upload/payments/ — upload destinations in this project are scattered across several directories."
+    },
+    {
+      "id": "file:pages/staff/walkin.php",
+      "type": "file",
+      "name": "walkin.php",
+      "filePath": "pages/staff/walkin.php",
+      "summary": "The largest page in the batch: a walk-in booking flow that ALTERs `bookings` to add duration_minutes at request time, parses package duration strings into minutes, detects schedule conflicts, finds-or-creates the client user (issuing a random password sent via addNotification), inserts the walk-in booking plus a Pending RESERVATION payment row, bumps loyalty_cards, and notifies admin+staff. Ships ~500 lines of inline JS for package drill-down, a month calendar with availability colouring, quick-time dropdown, and an async loyalty lookup against pages/api/check-client-loyalty.php.",
+      "tags": ["page", "walk-in", "booking", "schema-migration", "role-gated"],
+      "complexity": "complex",
+      "languageNotes": "Wraps every helper in `if (!function_exists(...))` because this page is reachable through more than one include path; also probes for the duration_minutes column and keeps two INSERT variants so the page survives a partially-migrated database."
+    },
+    {
+      "id": "file:public/service-workers.js",
+      "type": "file",
+      "name": "service-workers.js",
+      "filePath": "public/service-workers.js",
+      "summary": "Web Push service worker that displays notifications from a JSON push payload with vibrate/sound/action buttons and opens /index.php?page=notifications on click; the fetch handler is network-first with an 'Offline' 503 fallback. Dead in practice — no `navigator.serviceWorker.register()` call exists anywhere in the project, so this file is never installed.",
+      "tags": ["service-worker", "push-notifications", "offline", "progressive-enhancement", "dead-code"],
+      "complexity": "simple",
+      "languageNotes": "Declares CACHE_NAME = 'notifications-v1' but never calls caches.open(), so the cache is unused vestigial config."
+    },
+    {
+      "id": "function:pages/staff/walkin.php:parsePackageDurationToMinutes",
+      "type": "function",
+      "name": "parsePackageDurationToMinutes",
+      "filePath": "pages/staff/walkin.php",
+      "lineRange": [37, 51],
+      "summary": "Normalizes the free-text `packages.duration` column into integer minutes, handling half-day (240), whole-day (480), 'N-M hour', 'N-M min', compound 'Nh Mm', decimal hours, bare minutes, and a bare-number fallback of 60.",
+      "tags": ["utility", "parsing", "duration", "regex"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:pages/staff/walkin.php:resolveBookingDurationMinutes",
+      "type": "function",
+      "name": "resolveBookingDurationMinutes",
+      "filePath": "pages/staff/walkin.php",
+      "lineRange": [55, 65],
+      "summary": "Returns a booking's effective length in minutes, preferring the stored duration_minutes column and otherwise falling back to parsePackageDurationToMinutes() plus any '+N MIN bonus applied' marker smuggled into the booking notes.",
+      "tags": ["utility", "duration", "loyalty", "fallback"],
+      "complexity": "simple",
+      "languageNotes": "The loyalty bonus is persisted by appending a human-readable line to bookings.notes, so conflict logic has to regex the notes column to reconstruct real durations."
+    },
+    {
+      "id": "function:pages/staff/walkin.php:parseTimeToMinutes",
+      "type": "function",
+      "name": "parseTimeToMinutes",
+      "filePath": "pages/staff/walkin.php",
+      "lineRange": [68, 78],
+      "summary": "Parses a 'h:mm AM/PM' time string into minutes-since-midnight, handling the 12 AM/PM edge cases, and returns null on any unparsable input so callers can surface a validation error.",
+      "tags": ["utility", "parsing", "time", "validation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:pages/staff/walkin.php:calculateWalkinLoyaltyBonus",
+      "type": "function",
+      "name": "calculateWalkinLoyaltyBonus",
+      "filePath": "pages/staff/walkin.php",
+      "lineRange": [90, 101],
+      "summary": "Duplicates the loyalty thresholds inline — 1+ prior bookings grants a 5-minute bonus, 10+ grants a 50% discount — returning bonus_minutes / discount_pct / has_loyalty / has_discount for the walk-in booking path.",
+      "tags": ["utility", "loyalty", "business-rules", "duplication"],
+      "complexity": "simple",
+      "languageNotes": "These 1/10 thresholds are copy-pasted from getLoyaltyTier()/getLoyaltyRewards() in functions.php rather than calling them, so the two copies can drift."
+    },
+    {
+      "id": "function:pages/staff/walkin.php:checkWalkinConflict",
+      "type": "function",
+      "name": "checkWalkinConflict",
+      "filePath": "pages/staff/walkin.php",
+      "lineRange": [104, 128],
+      "summary": "Server-side double-booking guard: loads every blocking booking for the given date (Confirmed / In Progress / Completed / Deposit Paid / Approved (Unpaid)), reconstructs each one's duration via resolveBookingDurationMinutes(), and returns true if the proposed interval overlaps any of them.",
+      "tags": ["validation", "conflict-detection", "query", "booking"],
+      "complexity": "moderate",
+      "languageNotes": "Uses classic interval-overlap math (newStart < exEnd && newEnd > exStart) and branches its SELECT list on the runtime-probed $hasDurationColumn global."
+    }
+  ],
+  "edges": [
+    { "source": "file:pages/staff/walkin.php", "target": "function:pages/staff/walkin.php:parsePackageDurationToMinutes", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:pages/staff/walkin.php", "target": "function:pages/staff/walkin.php:resolveBookingDurationMinutes", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:pages/staff/walkin.php", "target": "function:pages/staff/walkin.php:parseTimeToMinutes", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:pages/staff/walkin.php", "target": "function:pages/staff/walkin.php:calculateWalkinLoyaltyBonus", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:pages/staff/walkin.php", "target": "function:pages/staff/walkin.php:checkWalkinConflict", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:pages/staff/inventory.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/staff/inventory.php", "target": "file:config.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/staff/notifications.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/staff/payments.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/staff/payments.php", "target": "file:config.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/staff/profile.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/staff/profile.php", "target": "file:config.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/staff/schedule.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/staff/upload.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/staff/upload.php", "target": "file:config.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/staff/walkin.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/staff/walkin.php", "target": "file:config.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/staff/walkin.php", "target": "file:pages/api/check-client-loyalty.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:public/service-workers.js", "target": "file:functions.php", "type": "related", "direction": "forward", "weight": 0.5 },
+    { "source": "file:pages/staff/inventory.php", "target": "function:functions.php:checkLowStockAndNotify", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "file:pages/staff/upload.php", "target": "function:functions.php:addNotification", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "file:pages/staff/payments.php", "target": "function:functions.php:addNotification", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "file:pages/staff/walkin.php", "target": "function:functions.php:addNotificationByRole", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "function:pages/staff/walkin.php:checkWalkinConflict", "target": "function:functions.php:db", "type": "calls", "direction": "forward", "weight": 0.8 }
+  ]
+}

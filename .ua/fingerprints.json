@@ -1,0 +1,3073 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "5e31f529d696c232e0efce6c3f8ca169fd5f1689",
+  "generatedAt": "2026-10-09T02:08:10.880Z",
+  "files": {
+    ".env.example": {
+      "filePath": ".env.example",
+      "contentHash": "2d245387120d9bc03a4238297262aa36e77df13b2819184733beb37d57bbcd31",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 34,
+      "hasStructuralAnalysis": false
+    },
+    "AGENTS.md": {
+      "filePath": "AGENTS.md",
+      "contentHash": "ad8ddffae4b8cec2ec4a7ac7c889b90dd6c8f585284cd8ad76dccd0277797215",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 62,
+      "hasStructuralAnalysis": false
+    },
+    "GEMINI.md": {
+      "filePath": "GEMINI.md",
+      "contentHash": "8cf858121e33d27bbf670bdd0001310950dcef24181bba8a154b4197d7919b9a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 75,
+      "hasStructuralAnalysis": false
+    },
+    "ai_helper.php": {
+      "filePath": "ai_helper.php",
+      "contentHash": "96c2a0764aa386c01aba7d0de5599100af999702ea044be7b70ae557ee066f2b",
+      "functions": [
+        {
+          "name": "analyzeFeedbackWithAI",
+          "params": [
+            "$feedbackText"
+          ],
+          "returnType": "?array",
+          "exported": true,
+          "lineCount": 85
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "analyzeFeedbackWithAI"
+      ],
+      "totalLines": 93,
+      "hasStructuralAnalysis": true
+    },
+    "app.js": {
+      "filePath": "app.js",
+      "contentHash": "283d3f34b22b4599083c2d54331e8bf0578addf7df10a7cd3429d0a719ae52b5",
+      "functions": [
+        {
+          "name": "initSampleData",
+          "params": [],
+          "exported": false,
+          "lineCount": 136
+        },
+        {
+          "name": "getBookings",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "saveBookings",
+          "params": [
+            "data"
+          ],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "getPayments",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "savePayments",
+          "params": [
+            "data"
+          ],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "getInventory",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "saveInventory",
+          "params": [
+            "data"
+          ],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "getLoyalty",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "saveLoyalty",
+          "params": [
+            "data"
+          ],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "getFeedbacks",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "saveFeedbacks",
+          "params": [
+            "data"
+          ],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "getSales",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "saveSales",
+          "params": [
+            "data"
+          ],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "getNotifications",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "saveNotifications",
+          "params": [
+            "data"
+          ],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "getUsers",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "saveUsers",
+          "params": [
+            "data"
+          ],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "getSettings",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "saveSettings",
+          "params": [
+            "data"
+          ],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "getPackages",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "savePackages",
+          "params": [
+            "data"
+          ],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "addNotification",
+          "params": [
+            "title",
+            "message",
+            "icon",
+            "role"
+          ],
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "checkConflict",
+          "params": [
+            "date",
+            "time",
+            "excludeId"
+          ],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "createWalkinBooking",
+          "params": [
+            "data"
+          ],
+          "exported": false,
+          "lineCount": 14
+        },
+        {
+          "name": "formatTimeAgo",
+          "params": [
+            "isoString"
+          ],
+          "exported": false,
+          "lineCount": 11
+        },
+        {
+          "name": "getClientStats",
+          "params": [
+            "clientName"
+          ],
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "exportTableCSV",
+          "params": [
+            "headers",
+            "rows",
+            "filename"
+          ],
+          "exported": false,
+          "lineCount": 11
+        },
+        {
+          "name": "showPage",
+          "params": [
+            "pageId",
+            "navEl"
+          ],
+          "exported": false,
+          "lineCount": 66
+        },
+        {
+          "name": "showTab",
+          "params": [
+            "tab",
+            "btn"
+          ],
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "selectRole",
+          "params": [
+            "btn",
+            "role"
+          ],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "handleLogin",
+          "params": [
+            "e"
+          ],
+          "exported": false,
+          "lineCount": 29
+        },
+        {
+          "name": "handleRegister",
+          "params": [
+            "e"
+          ],
+          "exported": false,
+          "lineCount": 17
+        },
+        {
+          "name": "openPackageModal",
+          "params": [
+            "pkgName"
+          ],
+          "exported": false,
+          "lineCount": 24
+        },
+        {
+          "name": "switchStep",
+          "params": [
+            "stepId"
+          ],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "showBookingStep",
+          "params": [],
+          "exported": false,
+          "lineCount": 32
+        },
+        {
+          "name": "toggleLoyaltyOptions",
+          "params": [],
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "backToDetails",
+          "params": [],
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "closePackageModal",
+          "params": [],
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "renderCalendar",
+          "params": [],
+          "exported": false,
+          "lineCount": 49
+        },
+        {
+          "name": "selectDate",
+          "params": [
+            "dateStr",
+            "status"
+          ],
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "changeMonth",
+          "params": [
+            "delta"
+          ],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "handleBookingSubmit",
+          "params": [],
+          "exported": false,
+          "lineCount": 63
+        },
+        {
+          "name": "renderClientBookings",
+          "params": [],
+          "exported": false,
+          "lineCount": 15
+        },
+        {
+          "name": "viewBookingDetails",
+          "params": [
+            "id"
+          ],
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "renderStaffBookings",
+          "params": [],
+          "exported": false,
+          "lineCount": 34
+        },
+        {
+          "name": "approveBooking",
+          "params": [
+            "id"
+          ],
+          "exported": false,
+          "lineCount": 16
+        },
+        {
+          "name": "rejectBooking",
+          "params": [
+            "id"
+          ],
+          "exported": false,
+          "lineCount": 18
+        },
+        {
+          "name": "completeBooking",
+          "params": [
+            "id"
+          ],
+          "exported": false,
+          "lineCount": 26
+        },
+        {
+          "name": "renderClientPayments",
+          "params": [],
+          "exported": false,
+          "lineCount": 47
+        },
+        {
+          "name": "openPaymentModal",
+          "params": [
+            "paymentId"
+          ],
+          "exported": false,
+          "lineCount": 16
+        },
+        {
+          "name": "togglePaymentAccountInfo",
+          "params": [],
+          "exported": false,
+          "lineCount": 18
+        },
+        {
+          "name": "copyToClipboard",
+          "params": [
+            "text"
+          ],
+          "exported": false,
+          "lineCount": 14
+        },
+        {
+          "name": "submitPaymentProof",
+          "params": [
+            "proofImg"
+          ],
+          "exported": false,
+          "lineCount": 35
+        },
+        {
+          "name": "renderStaffPayments",
+          "params": [],
+          "exported": false,
+          "lineCount": 61
+        },
+        {
+          "name": "filterStaffPayments",
+          "params": [
+            "status"
+          ],
+          "exported": false,
+          "lineCount": 13
+        },
+        {
+          "name": "openVerifyModal",
+          "params": [
+            "paymentId"
+          ],
+          "exported": false,
+          "lineCount": 35
+        },
+        {
+          "name": "openProofFullscreen",
+          "params": [
+            "src"
+          ],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "toggleRejectSection",
+          "params": [],
+          "exported": false,
+          "lineCount": 19
+        },
+        {
+          "name": "verifyPaymentDirect",
+          "params": [
+            "paymentId"
+          ],
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "rejectPaymentDirect",
+          "params": [
+            "paymentId"
+          ],
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "confirmVerifyPayment",
+          "params": [],
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "verifyPaymentNow",
+          "params": [
+            "paymentId"
+          ],
+          "exported": false,
+          "lineCount": 38
+        },
+        {
+          "name": "rejectPaymentWithReason",
+          "params": [
+            "paymentId",
+            "reason"
+          ],
+          "exported": false,
+          "lineCount": 14
+        },
+        {
+          "name": "filterAdminPayments",
+          "params": [
+            "status"
+          ],
+          "exported": false,
+          "lineCount": 13
+        },
+        {
+          "name": "renderAdminPayments",
+          "params": [],
+          "exported": false,
+          "lineCount": 40
+        },
+        {
+          "name": "renderInventory",
+          "params": [],
+          "exported": false,
+          "lineCount": 23
+        },
+        {
+          "name": "updateInventory",
+          "params": [
+            "id",
+            "change"
+          ],
+          "exported": false,
+          "lineCount": 11
+        },
+        {
+          "name": "addInventoryItem",
+          "params": [],
+          "exported": false,
+          "lineCount": 25
+        },
+        {
+          "name": "renderAdminAnalytics",
+          "params": [],
+          "exported": false,
+          "lineCount": 72
+        },
+        {
+          "name": "renderAdminBookings",
+          "params": [],
+          "exported": false,
+          "lineCount": 23
+        },
+        {
+          "name": "submitFeedback",
+          "params": [],
+          "exported": false,
+          "lineCount": 54
+        },
+        {
+          "name": "renderClientFeedbackHistory",
+          "params": [],
+          "exported": false,
+          "lineCount": 23
+        },
+        {
+          "name": "renderFeedbackAnalytics",
+          "params": [],
+          "exported": false,
+          "lineCount": 15
+        },
+        {
+          "name": "getLoyaltyStatus",
+          "params": [
+            "clientName"
+          ],
+          "exported": false,
+          "lineCount": 19
+        },
+        {
+          "name": "renderLoyaltyCard",
+          "params": [],
+          "exported": false,
+          "lineCount": 42
+        },
+        {
+          "name": "renderAdminLoyalty",
+          "params": [],
+          "exported": false,
+          "lineCount": 45
+        },
+        {
+          "name": "showToast",
+          "params": [
+            "message"
+          ],
+          "exported": false,
+          "lineCount": 17
+        },
+        {
+          "name": "closeModal",
+          "params": [
+            "modalId"
+          ],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "showCancellationPolicy",
+          "params": [],
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "previewPhotos",
+          "params": [
+            "event"
+          ],
+          "exported": false,
+          "lineCount": 18
+        },
+        {
+          "name": "handleFileSelect",
+          "params": [
+            "input"
+          ],
+          "exported": false,
+          "lineCount": 16
+        },
+        {
+          "name": "confirmCancel",
+          "params": [],
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "closeModal",
+          "params": [
+            "modalId"
+          ],
+          "exported": false,
+          "lineCount": 10
+        },
+        {
+          "name": "openLightbox",
+          "params": [
+            "url"
+          ],
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "closeLightbox",
+          "params": [],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "renderClientPhotos",
+          "params": [],
+          "exported": false,
+          "lineCount": 27
+        },
+        {
+          "name": "renderNotifications",
+          "params": [],
+          "exported": false,
+          "lineCount": 18
+        },
+        {
+          "name": "renderProfile",
+          "params": [],
+          "exported": false,
+          "lineCount": 19
+        },
+        {
+          "name": "saveProfile",
+          "params": [],
+          "exported": false,
+          "lineCount": 16
+        },
+        {
+          "name": "updatePassword",
+          "params": [],
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "confirmVerifyPayment",
+          "params": [],
+          "exported": false,
+          "lineCount": 21
+        },
+        {
+          "name": "openProofFullscreen",
+          "params": [
+            "src"
+          ],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "toggleChatbot",
+          "params": [],
+          "exported": false,
+          "lineCount": 14
+        },
+        {
+          "name": "sendChatMsg",
+          "params": [],
+          "exported": false,
+          "lineCount": 38
+        },
+        {
+          "name": "getBotResponse",
+          "params": [
+            "input"
+          ],
+          "exported": false,
+          "lineCount": 61
+        },
+        {
+          "name": "initDraggableChatbot",
+          "params": [],
+          "exported": false,
+          "lineCount": 39
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1894,
+      "hasStructuralAnalysis": true
+    },
+    "assets/css/styles.css": {
+      "filePath": "assets/css/styles.css",
+      "contentHash": "0ac6426166365dc6ae112788f43173cfeb1dda425643f319a1e41604667abd6b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2152,
+      "hasStructuralAnalysis": false
+    },
+    "assets/images/css/styles.css": {
+      "filePath": "assets/images/css/styles.css",
+      "contentHash": "6f89041d04659f7f8b22061d61586e33c5f6c83b61ac4c9345c3863d913b65d6",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 804,
+      "hasStructuralAnalysis": false
+    },
+    "assets/js/app.js": {
+      "filePath": "assets/js/app.js",
+      "contentHash": "b7ae8b7e9edc2a027b61f3730fde0330bc4d4a0cd36319635e0ed8872e8e23c5",
+      "functions": [
+        {
+          "name": "toggleSidebar",
+          "params": [],
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "showToast",
+          "params": [
+            "message"
+          ],
+          "exported": false,
+          "lineCount": 30
+        },
+        {
+          "name": "confirmAction",
+          "params": [
+            "msg",
+            "callback"
+          ],
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "filterTable",
+          "params": [
+            "inputId",
+            "tableId"
+          ],
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "openModal",
+          "params": [
+            "id"
+          ],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "closeModal",
+          "params": [
+            "id"
+          ],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "validateForm",
+          "params": [
+            "formEl"
+          ],
+          "exported": false,
+          "lineCount": 12
+        },
+        {
+          "name": "printSection",
+          "params": [
+            "id"
+          ],
+          "exported": false,
+          "lineCount": 10
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 127,
+      "hasStructuralAnalysis": true
+    },
+    "assets/uploads/.gitkeep": {
+      "filePath": "assets/uploads/.gitkeep",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1,
+      "hasStructuralAnalysis": false
+    },
+    "change_password.php": {
+      "filePath": "change_password.php",
+      "contentHash": "f9593ca8758fa3d7b482136f45a076b14e0368f3a6cf718cd1c232fff9e0ec47",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 32,
+      "hasStructuralAnalysis": true
+    },
+    "composer.json": {
+      "filePath": "composer.json",
+      "contentHash": "017c92a02d2a2f66fe3f45e00a6364434a74626ac5ddbf485352944f1b0a0297",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 17,
+      "hasStructuralAnalysis": false
+    },
+    "config.php": {
+      "filePath": "config.php",
+      "contentHash": "4ba944121ef9bbdfc9533025e87ce85403bd4fda411975065edcc6fbdd3ffc9d",
+      "functions": [
+        {
+          "name": "loadEnv",
+          "params": [
+            "$path"
+          ],
+          "exported": true,
+          "lineCount": 26
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "loadEnv"
+      ],
+      "totalLines": 143,
+      "hasStructuralAnalysis": true
+    },
+    "footer.php": {
+      "filePath": "footer.php",
+      "contentHash": "9aff777ee2396ce42214d75ab5d82eb39d862531e0634bb11a5ffaec81648bbb",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 161,
+      "hasStructuralAnalysis": true
+    },
+    "functions.php": {
+      "filePath": "functions.php",
+      "contentHash": "fc62901aebd871a3a0b0baf2ac74e9477e1d58e44e30439afedcaf70f9ccaea9",
+      "functions": [
+        {
+          "name": "db",
+          "params": [],
+          "returnType": "PDO",
+          "exported": true,
+          "lineCount": 47
+        },
+        {
+          "name": "ensureDatabaseSchema",
+          "params": [
+            "$pdo"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 108
+        },
+        {
+          "name": "startSession",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "isLoggedIn",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "currentUser",
+          "params": [],
+          "returnType": "?array",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "requireLogin",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "requireRole",
+          "params": [
+            "$roles"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "redirectToDashboard",
+          "params": [
+            "$role"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "csrfToken",
+          "params": [],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "csrfField",
+          "params": [],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "verifyCsrf",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "clean",
+          "params": [
+            "$val"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "cleanInt",
+          "params": [
+            "$val"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "cleanFloat",
+          "params": [
+            "$val"
+          ],
+          "returnType": "float",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "setFlash",
+          "params": [
+            "$type",
+            "$msg"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "getFlash",
+          "params": [],
+          "returnType": "?array",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "showFlash",
+          "params": [],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "timeAgo",
+          "params": [
+            "$datetime"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 22
+        },
+        {
+          "name": "formatDate",
+          "params": [
+            "$date"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "formatDateTime",
+          "params": [
+            "$datetime"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "formatMoney",
+          "params": [
+            "$amount"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "statusBadge",
+          "params": [
+            "$status"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 38
+        },
+        {
+          "name": "addNotification",
+          "params": [
+            "$userId",
+            "$title",
+            "$message",
+            "$type",
+            "$icon",
+            "$link"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 68
+        },
+        {
+          "name": "addNotificationByRole",
+          "params": [
+            "$role",
+            "$title",
+            "$message",
+            "$type",
+            "$icon",
+            "$link"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 53
+        },
+        {
+          "name": "getUnreadCount",
+          "params": [
+            "$userId"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 25
+        },
+        {
+          "name": "getNotifications",
+          "params": [
+            "$userId",
+            "$limit"
+          ],
+          "returnType": "array",
+          "exported": true,
+          "lineCount": 42
+        },
+        {
+          "name": "getNotification",
+          "params": [
+            "$notificationId",
+            "$userId"
+          ],
+          "returnType": "?array",
+          "exported": true,
+          "lineCount": 43
+        },
+        {
+          "name": "markNotificationRead",
+          "params": [
+            "$notificationId",
+            "$userId"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 29
+        },
+        {
+          "name": "markAllNotificationsRead",
+          "params": [
+            "$userId"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 25
+        },
+        {
+          "name": "deleteNotification",
+          "params": [
+            "$notificationId",
+            "$userId"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 28
+        },
+        {
+          "name": "deleteReadNotifications",
+          "params": [
+            "$userId"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "notifyNewBooking",
+          "params": [
+            "$clientName"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "notifyPaymentSubmitted",
+          "params": [
+            "$clientName"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "notifyNewFeedback",
+          "params": [],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "notifyUrgentFeedback",
+          "params": [],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "notifyNewClient",
+          "params": [
+            "$clientName"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "getVapidKeys",
+          "params": [],
+          "returnType": "array",
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "hasVapidKeys",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "sendPushNotification",
+          "params": [
+            "$userId",
+            "$title",
+            "$message",
+            "$link"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 107
+        },
+        {
+          "name": "getUserById",
+          "params": [
+            "$userId"
+          ],
+          "returnType": "?array",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "getUserByEmail",
+          "params": [
+            "$email"
+          ],
+          "returnType": "?array",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "getUserName",
+          "params": [
+            "$userId"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "getUserRole",
+          "params": [
+            "$userId"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "getLoyaltyTier",
+          "params": [
+            "$bookings"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "getLoyaltyRewards",
+          "params": [
+            "$bookings"
+          ],
+          "returnType": "array",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "getLoyaltyProgress",
+          "params": [
+            "$bookings"
+          ],
+          "returnType": "array",
+          "exported": true,
+          "lineCount": 41
+        },
+        {
+          "name": "getClientBookingCount",
+          "params": [
+            "$userId"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "extractHoursFromDuration",
+          "params": [
+            "$duration"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 31
+        },
+        {
+          "name": "checkBookingConflict",
+          "params": [
+            "$date",
+            "$time",
+            "$excludeId",
+            "$durationHours"
+          ],
+          "returnType": "array",
+          "exported": true,
+          "lineCount": 61
+        },
+        {
+          "name": "isSlotAvailable",
+          "params": [
+            "$date",
+            "$time",
+            "$packageId",
+            "$excludeBookingId"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "getBookingStatusBadge",
+          "params": [
+            "$status"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "getPackageById",
+          "params": [
+            "$packageId"
+          ],
+          "returnType": "?array",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "getPackagePrice",
+          "params": [
+            "$packageId"
+          ],
+          "returnType": "float",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "getPackageDuration",
+          "params": [
+            "$packageId"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "paginate",
+          "params": [
+            "$total",
+            "$perPage",
+            "$current"
+          ],
+          "returnType": "array",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "outputCSV",
+          "params": [
+            "$headers",
+            "$rows",
+            "$filename"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 28
+        },
+        {
+          "name": "uploadFile",
+          "params": [
+            "$file",
+            "$targetDir",
+            "$allowedTypes"
+          ],
+          "returnType": "array",
+          "exported": true,
+          "lineCount": 36
+        },
+        {
+          "name": "getPackageInventory",
+          "params": [
+            "$packageId"
+          ],
+          "returnType": "array",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "deductInventoryOnComplete",
+          "params": [
+            "$bookingId",
+            "$packageId"
+          ],
+          "returnType": "array",
+          "exported": true,
+          "lineCount": 180
+        },
+        {
+          "name": "restoreInventory",
+          "params": [
+            "$bookingId"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 58
+        },
+        {
+          "name": "checkLowStockAndNotify",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 55
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "Minishlink\\WebPush\\WebPush",
+          "specifiers": [
+            "WebPush"
+          ]
+        },
+        {
+          "source": "Minishlink\\WebPush\\Subscription",
+          "specifiers": [
+            "Subscription"
+          ]
+        }
+      ],
+      "exports": [
+        "db",
+        "ensureDatabaseSchema",
+        "startSession",
+        "isLoggedIn",
+        "currentUser",
+        "requireLogin",
+        "requireRole",
+        "redirectToDashboard",
+        "csrfToken",
+        "csrfField",
+        "verifyCsrf",
+        "clean",
+        "cleanInt",
+        "cleanFloat",
+        "setFlash",
+        "getFlash",
+        "showFlash",
+        "timeAgo",
+        "formatDate",
+        "formatDateTime",
+        "formatMoney",
+        "statusBadge",
+        "addNotification",
+        "addNotificationByRole",
+        "getUnreadCount",
+        "getNotifications",
+        "getNotification",
+        "markNotificationRead",
+        "markAllNotificationsRead",
+        "deleteNotification",
+        "deleteReadNotifications",
+        "notifyNewBooking",
+        "notifyPaymentSubmitted",
+        "notifyNewFeedback",
+        "notifyUrgentFeedback",
+        "notifyNewClient",
+        "getVapidKeys",
+        "hasVapidKeys",
+        "sendPushNotification",
+        "getUserById",
+        "getUserByEmail",
+        "getUserName",
+        "getUserRole",
+        "getLoyaltyTier",
+        "getLoyaltyRewards",
+        "getLoyaltyProgress",
+        "getClientBookingCount",
+        "extractHoursFromDuration",
+        "checkBookingConflict",
+        "isSlotAvailable",
+        "getBookingStatusBadge",
+        "getPackageById",
+        "getPackagePrice",
+        "getPackageDuration",
+        "paginate",
+        "outputCSV",
+        "uploadFile",
+        "getPackageInventory",
+        "deductInventoryOnComplete",
+        "restoreInventory",
+        "checkLowStockAndNotify"
+      ],
+      "totalLines": 1783,
+      "hasStructuralAnalysis": true
+    },
+    "google-callback.php": {
+      "filePath": "google-callback.php",
+      "contentHash": "719e533171a04185a43fff7d7334022627fe221413f28fc0332ac5b51e24229e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 135,
+      "hasStructuralAnalysis": true
+    },
+    "google-config.php": {
+      "filePath": "google-config.php",
+      "contentHash": "1036c0270a2526efce79837ed51eb07c944f7368ab85953a0030a9f596d7e52e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 8,
+      "hasStructuralAnalysis": true
+    },
+    "google-login.php": {
+      "filePath": "google-login.php",
+      "contentHash": "8c67fc729a9b7d4cce6fecef44caaad6fbfa697f086bea881c592af71c121f21",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 26,
+      "hasStructuralAnalysis": true
+    },
+    "header.php": {
+      "filePath": "header.php",
+      "contentHash": "759f1d893aadbf84f211ed95ff306d14ac32d77382cd4ca75e3666b22cb03395",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 16,
+      "hasStructuralAnalysis": true
+    },
+    "includes/booking.php": {
+      "filePath": "includes/booking.php",
+      "contentHash": "7427374f986a9ec185aa62dc8260440c03baea82038ea3cb653aa856aab9d4f5",
+      "functions": [
+        {
+          "name": "saveBooking",
+          "params": [
+            "$bookingData"
+          ],
+          "exported": true,
+          "lineCount": 103
+        },
+        {
+          "name": "saveBookingToFile",
+          "params": [
+            "$bookingData"
+          ],
+          "exported": true,
+          "lineCount": 36
+        },
+        {
+          "name": "getBookings",
+          "params": [
+            "$status"
+          ],
+          "exported": true,
+          "lineCount": 25
+        },
+        {
+          "name": "getBookingStats",
+          "params": [],
+          "exported": true,
+          "lineCount": 40
+        },
+        {
+          "name": "getBookingsFromFile",
+          "params": [],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "getBookingStatsFromFile",
+          "params": [],
+          "exported": true,
+          "lineCount": 19
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "saveBooking",
+        "saveBookingToFile",
+        "getBookings",
+        "getBookingStats",
+        "getBookingsFromFile",
+        "getBookingStatsFromFile"
+      ],
+      "totalLines": 256,
+      "hasStructuralAnalysis": true
+    },
+    "includes/chatbot.php": {
+      "filePath": "includes/chatbot.php",
+      "contentHash": "7b83546254fa672a66cc8f2697cb5d3fc09a4e7ee506f47fd040c5519e38ef43",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 626,
+      "hasStructuralAnalysis": true
+    },
+    "includes/deduct_inventory.php": {
+      "filePath": "includes/deduct_inventory.php",
+      "contentHash": "bf1699b8d107a87be97f318b64d0ea2d879755fb6d9ab292008fb57e7e5c6937",
+      "functions": [
+        {
+          "name": "deductInventory",
+          "params": [
+            "$bookingId",
+            "$packageId",
+            "$pdo"
+          ],
+          "exported": true,
+          "lineCount": 87
+        },
+        {
+          "name": "recordReusableItemUsage",
+          "params": [
+            "$bookingId",
+            "$inventoryId",
+            "$pdo"
+          ],
+          "exported": true,
+          "lineCount": 4
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "deductInventory",
+        "recordReusableItemUsage"
+      ],
+      "totalLines": 97,
+      "hasStructuralAnalysis": true
+    },
+    "index.php": {
+      "filePath": "index.php",
+      "contentHash": "65f63e53c285fed5169950ce43f6650cd0a1503d917eacf7ba341b40a4ff63c8",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 514,
+      "hasStructuralAnalysis": true
+    },
+    "landing.php": {
+      "filePath": "landing.php",
+      "contentHash": "9581ac098e5495b63abef716a64d03324111316b2c95b348e1e1d4adbb4b7a8d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 503,
+      "hasStructuralAnalysis": true
+    },
+    "login.php": {
+      "filePath": "login.php",
+      "contentHash": "74a5eb27c56c8756d7c2acc8122bdde4ea4163988a31f2fa952514642384cffd",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 460,
+      "hasStructuralAnalysis": true
+    },
+    "logout.php": {
+      "filePath": "logout.php",
+      "contentHash": "6c2163085c7e963ba763984dc5c0e79eb91d3db782b44174f0104f4d7d2bb2ea",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 12,
+      "hasStructuralAnalysis": true
+    },
+    "mfa-helper.php": {
+      "filePath": "mfa-helper.php",
+      "contentHash": "c158734dbb8ff3441889fcdedbb68b13b12e771d674d7710d24a3e76a1763dd0",
+      "functions": [
+        {
+          "name": "generateSecret",
+          "params": [
+            "$length"
+          ],
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "base32Decode",
+          "params": [
+            "$secret"
+          ],
+          "exported": false,
+          "lineCount": 24
+        },
+        {
+          "name": "generateCode",
+          "params": [
+            "$secret",
+            "$timeSlice"
+          ],
+          "exported": false,
+          "lineCount": 20
+        },
+        {
+          "name": "verifyCode",
+          "params": [
+            "$secret",
+            "$code",
+            "$discrepancy"
+          ],
+          "exported": false,
+          "lineCount": 16
+        },
+        {
+          "name": "getOTPAuthURI",
+          "params": [
+            "$secret",
+            "$email",
+            "$issuer"
+          ],
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "getQRCodeDataURI",
+          "params": [
+            "$secret",
+            "$email",
+            "$issuer"
+          ],
+          "exported": false,
+          "lineCount": 29
+        },
+        {
+          "name": "generateBackupCodes",
+          "params": [
+            "$count"
+          ],
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "hashBackupCodes",
+          "params": [
+            "$codes"
+          ],
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "verifyBackupCode",
+          "params": [
+            "$code",
+            "$hashedCodesJson"
+          ],
+          "exported": false,
+          "lineCount": 16
+        }
+      ],
+      "classes": [
+        {
+          "name": "MFAHelper",
+          "methods": [
+            "generateSecret",
+            "base32Decode",
+            "generateCode",
+            "verifyCode",
+            "getOTPAuthURI",
+            "getQRCodeDataURI",
+            "generateBackupCodes",
+            "hashBackupCodes",
+            "verifyBackupCode"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 170
+        }
+      ],
+      "imports": [],
+      "exports": [
+        "MFAHelper"
+      ],
+      "totalLines": 177,
+      "hasStructuralAnalysis": true
+    },
+    "mfa-setup.php": {
+      "filePath": "mfa-setup.php",
+      "contentHash": "d87ac4bd781e178cae9f0119f18b82694f0f3660db1e326f4f6f358128b7bf33",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 241,
+      "hasStructuralAnalysis": true
+    },
+    "nixpacks.toml": {
+      "filePath": "nixpacks.toml",
+      "contentHash": "1387f6ab4bfe681c707e50197b04a9c6bc54b9a4d00a9ffe09b1ff36490fc966",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 3,
+      "hasStructuralAnalysis": false
+    },
+    "pages/admin/DFD.HTML": {
+      "filePath": "pages/admin/DFD.HTML",
+      "contentHash": "61036f14cb7fe5a4acf82878a1d2d870925af52a8420e6774fc6b9542db672f9",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 719,
+      "hasStructuralAnalysis": false
+    },
+    "pages/admin/bookings.php": {
+      "filePath": "pages/admin/bookings.php",
+      "contentHash": "8268ec427007d024240de2584189de664aa16ba572ce3e36db65edc3ef9cad67",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 126,
+      "hasStructuralAnalysis": true
+    },
+    "pages/admin/clients.php": {
+      "filePath": "pages/admin/clients.php",
+      "contentHash": "73025dd0e21c10556a31ac6cb30cd7ce1bfe695265b0beb82113746a2dcb35d0",
+      "functions": [
+        {
+          "name": "getSegment",
+          "params": [
+            "$totalBookings"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "getSegmentInfo",
+          "params": [
+            "$segment"
+          ],
+          "exported": true,
+          "lineCount": 24
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "getSegment",
+        "getSegmentInfo"
+      ],
+      "totalLines": 326,
+      "hasStructuralAnalysis": true
+    },
+    "pages/admin/dashboard.php": {
+      "filePath": "pages/admin/dashboard.php",
+      "contentHash": "cada610a0dc63bcc37be259142d6bfb504f6bf510f08d43a3815f5c668e4552e",
+      "functions": [
+        {
+          "name": "dashboardMoney",
+          "params": [
+            "$value"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "dashboardEsc",
+          "params": [
+            "$value"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 4
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "dashboardMoney",
+        "dashboardEsc"
+      ],
+      "totalLines": 2350,
+      "hasStructuralAnalysis": true
+    },
+    "pages/admin/feedback.php": {
+      "filePath": "pages/admin/feedback.php",
+      "contentHash": "1855a71fb8588dd7b48e2429b85d4f7314f9be00b4c1eeefd751bd325e012687",
+      "functions": [
+        {
+          "name": "getTopicIcon",
+          "params": [
+            "$topic"
+          ],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "getTopicLabel",
+          "params": [
+            "$topic"
+          ],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "getTopicColor",
+          "params": [
+            "$topic"
+          ],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "analyzeSentimentLocal",
+          "params": [
+            "$comment",
+            "$rating"
+          ],
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "getSentimentBadge",
+          "params": [
+            "$s"
+          ],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "getSentimentIcon",
+          "params": [
+            "$s"
+          ],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "getSentimentLabel",
+          "params": [
+            "$s"
+          ],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "getSentimentInlineStyle",
+          "params": [
+            "$s"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "isUrgentFeedback",
+          "params": [
+            "$f"
+          ],
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "getTopicIcon",
+        "getTopicLabel",
+        "getTopicColor",
+        "analyzeSentimentLocal",
+        "getSentimentBadge",
+        "getSentimentIcon",
+        "getSentimentLabel",
+        "getSentimentInlineStyle",
+        "isUrgentFeedback"
+      ],
+      "totalLines": 730,
+      "hasStructuralAnalysis": true
+    },
+    "pages/admin/inventory.php": {
+      "filePath": "pages/admin/inventory.php",
+      "contentHash": "5723322cc84aa101eaccab9c4be279104bbb1a78fe7c8fa4eec8cadafb3d5649",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 718,
+      "hasStructuralAnalysis": true
+    },
+    "pages/admin/loyalty-cards.php": {
+      "filePath": "pages/admin/loyalty-cards.php",
+      "contentHash": "e1d517fd7ca7431c4bd2e72e3caf0c838071d184e808a755a6c865156bb8932a",
+      "functions": [
+        {
+          "name": "getLoyaltyBadge",
+          "params": [
+            "$totalBookings"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "getProgressToNextTier",
+          "params": [
+            "$totalBookings"
+          ],
+          "exported": true,
+          "lineCount": 32
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "getLoyaltyBadge",
+        "getProgressToNextTier"
+      ],
+      "totalLines": 369,
+      "hasStructuralAnalysis": true
+    },
+    "pages/admin/notifications.php": {
+      "filePath": "pages/admin/notifications.php",
+      "contentHash": "017ce803d9fac6c14c76abbb4b4b981e0eec8a7926214ec7a7982b3e8e75578d",
+      "functions": [
+        {
+          "name": "isSafeNotificationLink",
+          "params": [
+            "$link"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 37
+        },
+        {
+          "name": "formatNotificationDate",
+          "params": [
+            "$date"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "getNotificationIcon",
+          "params": [
+            "$notification"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 48
+        },
+        {
+          "name": "getNotificationTypeClass",
+          "params": [
+            "$notification"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 35
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "isSafeNotificationLink",
+        "formatNotificationDate",
+        "getNotificationIcon",
+        "getNotificationTypeClass"
+      ],
+      "totalLines": 1429,
+      "hasStructuralAnalysis": true
+    },
+    "pages/admin/packages.php": {
+      "filePath": "pages/admin/packages.php",
+      "contentHash": "2c5999937a113bd25ef2d92d8f4fc76534dffb9d376a260cc3ed4a015444a033",
+      "functions": [
+        {
+          "name": "handleImageUpload",
+          "params": [
+            "$fileKey"
+          ],
+          "exported": true,
+          "lineCount": 48
+        },
+        {
+          "name": "deletePackageImage",
+          "params": [
+            "$imagePath"
+          ],
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "handleImageUpload",
+        "deletePackageImage"
+      ],
+      "totalLines": 476,
+      "hasStructuralAnalysis": true
+    },
+    "pages/admin/payments.php": {
+      "filePath": "pages/admin/payments.php",
+      "contentHash": "ec2d5861f75d9c0dee65b639df71583ae5def21b942da54e314096e5a5670d72",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 359,
+      "hasStructuralAnalysis": true
+    },
+    "pages/admin/profile.php": {
+      "filePath": "pages/admin/profile.php",
+      "contentHash": "5a4e66dddfa89013f6c63964d00a6a4effeb5749031a422bcbb78fdd39827ead",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 488,
+      "hasStructuralAnalysis": true
+    },
+    "pages/admin/reports.php": {
+      "filePath": "pages/admin/reports.php",
+      "contentHash": "1f92ab1b2c3ca9cb7d17452362fd3f289dfd3b4d46dc7d7c7bf9ed088ecf85f9",
+      "functions": [
+        {
+          "name": "getReportData",
+          "params": [
+            "$type",
+            "$from",
+            "$to",
+            "$pdo"
+          ],
+          "exported": true,
+          "lineCount": 737
+        },
+        {
+          "name": "generateReportPDF",
+          "params": [
+            "$type",
+            "$from",
+            "$to",
+            "$result",
+            "$reportTypes"
+          ],
+          "exported": true,
+          "lineCount": 439
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "getReportData",
+        "generateReportPDF"
+      ],
+      "totalLines": 3548,
+      "hasStructuralAnalysis": true
+    },
+    "pages/admin/sales.php": {
+      "filePath": "pages/admin/sales.php",
+      "contentHash": "b9f6bbc96e1da025cb573a8d16a6fae62a69e20b922e8a1645fb4d96b9b22dcf",
+      "functions": [
+        {
+          "name": "salesEsc",
+          "params": [
+            "$value"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "salesMoney",
+          "params": [
+            "$value"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "salesStatusClass",
+          "params": [
+            "$status"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "salesStatusLabel",
+          "params": [
+            "$status"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 18
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "salesEsc",
+        "salesMoney",
+        "salesStatusClass",
+        "salesStatusLabel"
+      ],
+      "totalLines": 2323,
+      "hasStructuralAnalysis": true
+    },
+    "pages/admin/settings.php": {
+      "filePath": "pages/admin/settings.php",
+      "contentHash": "c1c7b8f61aab75b8fb52e0204ebf38b1c08514ebf303eb65d8f787d607a4d3e6",
+      "functions": [
+        {
+          "name": "handleQrUpload",
+          "params": [
+            "$file",
+            "$settingKey",
+            "$uploadDir",
+            "$uploadUrl",
+            "$pdo"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 60
+        },
+        {
+          "name": "s",
+          "params": [
+            "$settings",
+            "$key",
+            "$default"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "handleQrUpload",
+        "s"
+      ],
+      "totalLines": 390,
+      "hasStructuralAnalysis": true
+    },
+    "pages/admin/staff.php": {
+      "filePath": "pages/admin/staff.php",
+      "contentHash": "647e67a2040a971bd0f8f985c2799d654c404e9bbfdd00f601622d83f992065b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 111,
+      "hasStructuralAnalysis": true
+    },
+    "pages/api/chatbot-ai.php": {
+      "filePath": "pages/api/chatbot-ai.php",
+      "contentHash": "d9da50a3ed66228377da19bd17088e609ccc07c92f4638d04231003af9124654",
+      "functions": [
+        {
+          "name": "chatbotReply",
+          "params": [
+            "$reply",
+            "$extra"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "cleanBotText",
+          "params": [
+            "$text"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 22
+        },
+        {
+          "name": "normalizeText",
+          "params": [
+            "$text"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "saveChatLog",
+          "params": [
+            "$pdo",
+            "$userMessage",
+            "$botReply"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "isAvailabilityQuestion",
+          "params": [
+            "$text"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "parseRequestedDate",
+          "params": [
+            "$text"
+          ],
+          "returnType": "?DateTime",
+          "exported": true,
+          "lineCount": 73
+        },
+        {
+          "name": "parseRequestedTime",
+          "params": [
+            "$text"
+          ],
+          "returnType": "?int",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "formatTime",
+          "params": [
+            "$min"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "formatDateLong",
+          "params": [
+            "$d"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "isBlockingStatus",
+          "params": [
+            "$status"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "getBookingsForDate",
+          "params": [
+            "$pdo",
+            "$date"
+          ],
+          "returnType": "array",
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "slotOverlaps",
+          "params": [
+            "$s",
+            "$e",
+            "$bookings"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "mergeSlots",
+          "params": [
+            "$slots"
+          ],
+          "returnType": "array",
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "buildAvailabilityResponse",
+          "params": [
+            "$date",
+            "$bookings",
+            "$reqTime"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 59
+        },
+        {
+          "name": "answerFAQ",
+          "params": [
+            "$text"
+          ],
+          "returnType": "?string",
+          "exported": true,
+          "lineCount": 143
+        },
+        {
+          "name": "callGemini",
+          "params": [
+            "$apiKey",
+            "$message",
+            "$models"
+          ],
+          "returnType": "array",
+          "exported": true,
+          "lineCount": 132
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "chatbotReply",
+        "cleanBotText",
+        "normalizeText",
+        "saveChatLog",
+        "isAvailabilityQuestion",
+        "parseRequestedDate",
+        "parseRequestedTime",
+        "formatTime",
+        "formatDateLong",
+        "isBlockingStatus",
+        "getBookingsForDate",
+        "slotOverlaps",
+        "mergeSlots",
+        "buildAvailabilityResponse",
+        "answerFAQ",
+        "callGemini"
+      ],
+      "totalLines": 814,
+      "hasStructuralAnalysis": true
+    },
+    "pages/api/check-client-loyalty.php": {
+      "filePath": "pages/api/check-client-loyalty.php",
+      "contentHash": "1eaa8fcbd2ad84058114f20244e7b2a637ab7a68d6be3443b26e3fb13dbc8092",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 95,
+      "hasStructuralAnalysis": true
+    },
+    "pages/api/check_availability.php": {
+      "filePath": "pages/api/check_availability.php",
+      "contentHash": "1128fee2522459fb5344f63cd58469f800fcb3cc3e3895240dbfedfb5c80e736",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 267,
+      "hasStructuralAnalysis": true
+    },
+    "pages/api/check_new_notifications.php": {
+      "filePath": "pages/api/check_new_notifications.php",
+      "contentHash": "4af4cb636935be2320d23e3a71331581e946692b5edc38477ad9da88d93adc28",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 152,
+      "hasStructuralAnalysis": true
+    },
+    "pages/api/client-payments.php": {
+      "filePath": "pages/api/client-payments.php",
+      "contentHash": "d2b41112f77a8ffb2c586dd215e0f33141aa01341ffca6235ec326e6f00343d4",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 296,
+      "hasStructuralAnalysis": true
+    },
+    "pages/api/get-day-bookings.php": {
+      "filePath": "pages/api/get-day-bookings.php",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1,
+      "hasStructuralAnalysis": true
+    },
+    "pages/api/inventory-usage.php": {
+      "filePath": "pages/api/inventory-usage.php",
+      "contentHash": "43787343eba1fc0627019bfa647ed41461f75ce32a5fb20ab0feb9b274587905",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 51,
+      "hasStructuralAnalysis": true
+    },
+    "pages/api/record-payment.php": {
+      "filePath": "pages/api/record-payment.php",
+      "contentHash": "7833300ef2ac93890a0c86e74c597c9689352b6050c60f3a7fea8a9260f85712",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 350,
+      "hasStructuralAnalysis": true
+    },
+    "pages/client/booking.php": {
+      "filePath": "pages/client/booking.php",
+      "contentHash": "495d2e750fabc575c0400c99fd0d40b144f4cdb178d07df1f233a53e27690035",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2053,
+      "hasStructuralAnalysis": true
+    },
+    "pages/client/bookings.php": {
+      "filePath": "pages/client/bookings.php",
+      "contentHash": "8083c72d23d6cb04e9c317b7194ac7ea5b6190bc9b2624913ef1c171152a9082",
+      "functions": [
+        {
+          "name": "bookingStatusBadge",
+          "params": [
+            "$status"
+          ],
+          "exported": true,
+          "lineCount": 13
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "bookingStatusBadge"
+      ],
+      "totalLines": 768,
+      "hasStructuralAnalysis": true
+    },
+    "pages/client/dashboard.php": {
+      "filePath": "pages/client/dashboard.php",
+      "contentHash": "76b607124cd9bf7bb7c7b8dcac39bd987df037d8bf1e35bc8a679daf2b9304b8",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 699,
+      "hasStructuralAnalysis": true
+    },
+    "pages/client/feedback.php": {
+      "filePath": "pages/client/feedback.php",
+      "contentHash": "186a9b0cf7726c8b70b482e61f3771249030c21822f68171984772354af5fe04",
+      "functions": [
+        {
+          "name": "analyzeSentimentLocal",
+          "params": [
+            "$comment"
+          ],
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "detectTopicsLocal",
+          "params": [
+            "$comment"
+          ],
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "classifyFeedbackByService",
+          "params": [
+            "$pkgName"
+          ],
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "getTopicIcon",
+          "params": [
+            "$topic"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "getTopicLabel",
+          "params": [
+            "$topic"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "getTopicColor",
+          "params": [
+            "$topic"
+          ],
+          "exported": true,
+          "lineCount": 4
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "analyzeSentimentLocal",
+        "detectTopicsLocal",
+        "classifyFeedbackByService",
+        "getTopicIcon",
+        "getTopicLabel",
+        "getTopicColor"
+      ],
+      "totalLines": 1204,
+      "hasStructuralAnalysis": true
+    },
+    "pages/client/notifications.php": {
+      "filePath": "pages/client/notifications.php",
+      "contentHash": "b028651bcb3e83dbf77cbcb2433abc61c953a7b0c44243574c7169afb23f84ea",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 641,
+      "hasStructuralAnalysis": true
+    },
+    "pages/client/payments.php": {
+      "filePath": "pages/client/payments.php",
+      "contentHash": "7032c37e0ea3d7a22870dcb7201faa32cec03c8ebd976cce63a3ceac2ed54dd2",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1528,
+      "hasStructuralAnalysis": true
+    },
+    "pages/client/photos.php": {
+      "filePath": "pages/client/photos.php",
+      "contentHash": "9d65019a3c5b06c3aed2fb3772f9a5a9170965854d7984d5993cfae2e28f72a9",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 97,
+      "hasStructuralAnalysis": true
+    },
+    "pages/client/profile.php": {
+      "filePath": "pages/client/profile.php",
+      "contentHash": "49020b052c2f3f535ccffb7286e46fe5aafd2e3830809ea444e3c79410dc4e08",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 642,
+      "hasStructuralAnalysis": true
+    },
+    "pages/staff/bookings.php": {
+      "filePath": "pages/staff/bookings.php",
+      "contentHash": "384b709da021d87ba42b35807885b6a2943694cb2d7249cc77a9b50b9fbaafd1",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1533,
+      "hasStructuralAnalysis": true
+    },
+    "pages/staff/clients.php": {
+      "filePath": "pages/staff/clients.php",
+      "contentHash": "da9e373cbe4e5e11d1f8dbc2c133e542c9a91dd1c7239535c487423a309b7af2",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 159,
+      "hasStructuralAnalysis": true
+    },
+    "pages/staff/dashboard.php": {
+      "filePath": "pages/staff/dashboard.php",
+      "contentHash": "88c46ad1ae88e9cd3d0f1ba81321e0fe9a6773c24e200c6cc747d2c3c9410c26",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 810,
+      "hasStructuralAnalysis": true
+    },
+    "pages/staff/feedback.php": {
+      "filePath": "pages/staff/feedback.php",
+      "contentHash": "d4270fa97a7a8cb2198d6e24e48df1aea6bfa386daa5f5f0c897fa5ac6de8910",
+      "functions": [
+        {
+          "name": "getTopicIcon",
+          "params": [
+            "$topic"
+          ],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "getTopicLabel",
+          "params": [
+            "$topic"
+          ],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "getTopicColor",
+          "params": [
+            "$topic"
+          ],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "analyzeSentimentLocal",
+          "params": [
+            "$comment",
+            "$rating"
+          ],
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "getSentimentBadge",
+          "params": [
+            "$s"
+          ],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "getSentimentIcon",
+          "params": [
+            "$s"
+          ],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "getSentimentLabel",
+          "params": [
+            "$s"
+          ],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "getSentimentInlineStyle",
+          "params": [
+            "$s"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "isUrgentFeedback",
+          "params": [
+            "$f"
+          ],
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "getTopicIcon",
+        "getTopicLabel",
+        "getTopicColor",
+        "analyzeSentimentLocal",
+        "getSentimentBadge",
+        "getSentimentIcon",
+        "getSentimentLabel",
+        "getSentimentInlineStyle",
+        "isUrgentFeedback"
+      ],
+      "totalLines": 538,
+      "hasStructuralAnalysis": true
+    },
+    "pages/staff/inventory.php": {
+      "filePath": "pages/staff/inventory.php",
+      "contentHash": "656d2b4f5f83434d810324263e4ccb5ed0d031a77422c4e6c8060a50c838e6e3",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 438,
+      "hasStructuralAnalysis": true
+    },
+    "pages/staff/notifications.php": {
+      "filePath": "pages/staff/notifications.php",
+      "contentHash": "045e140623fad1550a2921a2312dcb0bf8f241ddbdf72aadb0a5f3c257d75ced",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 50,
+      "hasStructuralAnalysis": true
+    },
+    "pages/staff/payments.php": {
+      "filePath": "pages/staff/payments.php",
+      "contentHash": "a3842b9e789f8f6f4f6fc3f1df2f87850ee65d22a71b591c39bad9620b51d8a1",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 714,
+      "hasStructuralAnalysis": true
+    },
+    "pages/staff/profile.php": {
+      "filePath": "pages/staff/profile.php",
+      "contentHash": "de85dab996d379704332a0cc0d966bda0620e07660af64c60d5f1886c034e158",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 433,
+      "hasStructuralAnalysis": true
+    },
+    "pages/staff/schedule.php": {
+      "filePath": "pages/staff/schedule.php",
+      "contentHash": "4b21bd252ef49c7eedce0e92796a294e5973970beb7f8892631802c263d0e277",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 248,
+      "hasStructuralAnalysis": true
+    },
+    "pages/staff/upload.php": {
+      "filePath": "pages/staff/upload.php",
+      "contentHash": "7125114295c52fb1c37c70dec89c495e7086d8fc2d852b338759072c53e6cece",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 164,
+      "hasStructuralAnalysis": true
+    },
+    "pages/staff/walkin.php": {
+      "filePath": "pages/staff/walkin.php",
+      "contentHash": "7d9f3e0f29cfcb92ac9ec7531adf03840c0c2a4ef732de43a56aa10da7d545b3",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1197,
+      "hasStructuralAnalysis": true
+    },
+    "public/service-workers.js": {
+      "filePath": "public/service-workers.js",
+      "contentHash": "273f348908fc31795274e757e8fd0b1deef32a6c7c9a9ffb3d22a00ab1b16a98",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 82,
+      "hasStructuralAnalysis": true
+    },
+    "send-verification.php": {
+      "filePath": "send-verification.php",
+      "contentHash": "4a1fc89e618a2fe9ec4806c64529a347f461f49528a47e8de0574fc6f62e440d",
+      "functions": [
+        {
+          "name": "isMailConfigured",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "sendViaResend",
+          "params": [
+            "$toEmail",
+            "$subject",
+            "$htmlContent"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 35
+        },
+        {
+          "name": "sendViaPhpMailer",
+          "params": [
+            "$toEmail",
+            "$toName",
+            "$subject",
+            "$htmlContent",
+            "$altBody"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 67
+        },
+        {
+          "name": "sendVerificationEmail",
+          "params": [
+            "$toEmail",
+            "$toName",
+            "$token"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 40
+        },
+        {
+          "name": "sendPasswordResetEmail",
+          "params": [
+            "$toEmail",
+            "$toName",
+            "$token"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 39
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "PHPMailer\\PHPMailer\\PHPMailer",
+          "specifiers": [
+            "PHPMailer"
+          ]
+        },
+        {
+          "source": "PHPMailer\\PHPMailer\\SMTP",
+          "specifiers": [
+            "SMTP"
+          ]
+        },
+        {
+          "source": "PHPMailer\\PHPMailer\\Exception",
+          "specifiers": [
+            "Exception"
+          ]
+        }
+      ],
+      "exports": [
+        "isMailConfigured",
+        "sendViaResend",
+        "sendViaPhpMailer",
+        "sendVerificationEmail",
+        "sendPasswordResetEmail"
+      ],
+      "totalLines": 223,
+      "hasStructuralAnalysis": true
+    },
+    "sidebar.php": {
+      "filePath": "sidebar.php",
+      "contentHash": "dba34fa737cc43313701494ae18a142570ee32a19e1056922ca2a60a918cfe02",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 619,
+      "hasStructuralAnalysis": true
+    },
+    "sql/hash.php": {
+      "filePath": "sql/hash.php",
+      "contentHash": "880f570171d7e56860b65eef24ccacd8564d20bce4c80f065080904e4f9f7b45",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 10,
+      "hasStructuralAnalysis": true
+    },
+    "sql/install.php": {
+      "filePath": "sql/install.php",
+      "contentHash": "07a12b7c431989f259fb383b35b97a0ed77da555329d399607bef606187e5010",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 145,
+      "hasStructuralAnalysis": true
+    },
+    "sql/install.sql": {
+      "filePath": "sql/install.sql",
+      "contentHash": "86fc36e2e60033ac5b18f396bd4f402790d2b7b6bb68fe1d5f9f978dea0acefb",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 397,
+      "hasStructuralAnalysis": false
+    },
+    "styles.css": {
+      "filePath": "styles.css",
+      "contentHash": "6f89041d04659f7f8b22061d61586e33c5f6c83b61ac4c9345c3863d913b65d6",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 804,
+      "hasStructuralAnalysis": false
+    },
+    "uploads/.gitkeep": {
+      "filePath": "uploads/.gitkeep",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1,
+      "hasStructuralAnalysis": false
+    }
+  }
+}

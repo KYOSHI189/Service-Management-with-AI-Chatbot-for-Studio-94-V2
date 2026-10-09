@@ -1,0 +1,213 @@
+{
+  "nodes": [
+    {
+      "id": "file:pages/client/notifications.php",
+      "type": "file",
+      "name": "notifications.php",
+      "filePath": "pages/client/notifications.php",
+      "summary": "Client notification inbox that handles mark-all-read, single-read, single-delete and delete-all-read through GET parameters, then queries the notifications table filtered by all/unread/read and renders the list with an unread badge. Not a standalone script: it opens with requireRole('client') and depends on index.php having already loaded config.php and functions.php and defined $user.",
+      "tags": ["notification-inbox", "client-portal", "procedural-php", "read-filter", "router-dependent"],
+      "complexity": "complex",
+      "languageNotes": "State changes are done with GET redirects rather than CSRF-protected POSTs; the per-user ownership check is enforced in the WHERE clause instead (id AND user_id)."
+    },
+    {
+      "id": "file:pages/client/payments.php",
+      "type": "file",
+      "name": "payments.php",
+      "filePath": "pages/client/payments.php",
+      "summary": "Client 'My Payments' page that is ~99% inline CSS plus a large vanilla-JS single-page app: it fetches settings and grouped payment lists from pages/api/client-payments.php, renders GCash and Maribank QR codes, handles deposit vs. remaining-balance payment submission, and applies the 10-booking loyalty discount. The only PHP logic is the requireRole('client') auth gate.",
+      "tags": ["client-portal", "payments", "vanilla-js", "ajax", "qr-payments"],
+      "complexity": "complex",
+      "languageNotes": "Duplicates server-side rendering helpers (fmtMoney, esc, statusBadgeJS, formatDateJS) in JavaScript; all data access is delegated to the pages/api/client-payments.php JSON endpoint rather than inline PHP queries."
+    },
+    {
+      "id": "file:pages/client/photos.php",
+      "type": "file",
+      "name": "photos.php",
+      "filePath": "pages/client/photos.php",
+      "summary": "Client photo-gallery page that lists the user's Completed bookings joined to packages with a photo count and latest upload date, then lazily loads a per-session thumbnail grid on demand. Read-only: it issues no writes and relies on the router having loaded config.php and functions.php.",
+      "tags": ["client-portal", "photo-gallery", "procedural-php", "read-only", "lazy-load"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:pages/client/profile.php",
+      "type": "file",
+      "name": "profile.php",
+      "filePath": "pages/client/profile.php",
+      "summary": "User profile page (header comment marks it 'Shared') that processes three POST actions - update_profile, change_password and upload_avatar - re-reads the user row afterwards, and renders the profile form and avatar. Unlike the other pages in this batch it does not call requireRole(); it falls back to redirecting to login.php when $user or $role is unset, so it serves as the pages/<page>.php fallback when a role-specific profile page is missing.",
+      "tags": ["profile", "form-handler", "avatar-upload", "validation", "shared-page"],
+      "complexity": "complex",
+      "languageNotes": "Avatar uploads are written to a pages-scoped uploads directory rather than the UPLOAD_DIR constant defined in config.php."
+    },
+    {
+      "id": "file:pages/staff/bookings.php",
+      "type": "file",
+      "name": "bookings.php",
+      "filePath": "pages/staff/bookings.php",
+      "summary": "Admin/staff bookings management page covering the full booking lifecycle: CSRF-verified approve/complete/cancel transitions that trigger notifications and inventory deduction on completion, walk-in booking creation with checkBookingConflict() and automatic loyalty-card enrollment, plus an on-site payment modal recording deposit or remaining balance. Models a fixed 100-peso reservation fee and shows loyalty milestones (2/4/7/10 bookings).",
+      "tags": ["bookings", "staff-portal", "form-handler", "loyalty", "walk-in"],
+      "complexity": "complex",
+      "languageNotes": "Declares a file-level const RESERVATION_FEE = 100 inside the included page scope and computes a 50% loyalty discount inline in the template rather than through getLoyaltyRewards() in functions.php."
+    },
+    {
+      "id": "file:pages/staff/clients.php",
+      "type": "file",
+      "name": "clients.php",
+      "filePath": "pages/staff/clients.php",
+      "summary": "Staff client directory supporting a name/email LIKE search that aggregates each client's total booking count, total PAID spend and most recent booking date via LEFT JOINs against bookings and payments. Pure read-only listing page with no POST handling.",
+      "tags": ["staff-portal", "client-directory", "search", "aggregate-query", "read-only"],
+      "complexity": "moderate",
+      "languageNotes": "The LIKE clause is conditionally concatenated into the SQL string and the parameter array is built alongside it, since prepared statements cannot bind an identifier."
+    },
+    {
+      "id": "file:pages/staff/dashboard.php",
+      "type": "file",
+      "name": "dashboard.php",
+      "filePath": "pages/staff/dashboard.php",
+      "summary": "Admin/staff landing dashboard that aggregates booking status counts, same-day conflict detection, pending approvals, confirmed-today bookings, upcoming bookings, today's full schedule and today's walk-ins, then renders them as stat cards and lists. Chooses a 'Welcome back' vs 'Hello' greeting from the session login_count.",
+      "tags": ["dashboard", "staff-portal", "analytics", "aggregation", "procedural-php"],
+      "complexity": "complex",
+      "languageNotes": "Issues seven separate unparameterized COUNT/SELECT queries per request instead of one aggregate pass; the conflicting-package logic duplicates the domain rule that checkBookingConflict() implements in functions.php."
+    },
+    {
+      "id": "file:pages/staff/feedback.php",
+      "type": "file",
+      "name": "feedback.php",
+      "filePath": "pages/staff/feedback.php",
+      "summary": "Staff feedback console that lists all client reviews joined to users, normalizes sentiment per row (preferring the stored ai_sentiment column and falling back to a local keyword analyzer), flags urgent items, and lets staff store a reply that fires addNotification() to the client. The only page in this batch that explicitly require_once's ai_helper.php, and the only one that declares PHP functions.",
+      "tags": ["feedback", "staff-portal", "sentiment-analysis", "notification", "ai-integration"],
+      "complexity": "complex",
+      "languageNotes": "Probes the schema at runtime with SHOW COLUMNS FROM feedback LIKE ... for ai_sentiment, topics and reply_sent_at, wrapping each in try/catch and degrading to the local analyzer when a column is missing - the same ALTER-at-runtime tolerance as ensureDatabaseSchema()."
+    },
+
+    {
+      "id": "function:pages/staff/feedback.php:getTopicIcon",
+      "type": "function",
+      "name": "getTopicIcon",
+      "filePath": "pages/staff/feedback.php",
+      "lineRange": [67, 76],
+      "summary": "Maps a normalized feedback topic string to an emoji icon used in the review list.",
+      "tags": ["utility", "topic-mapping", "presentation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:pages/staff/feedback.php:getTopicLabel",
+      "type": "function",
+      "name": "getTopicLabel",
+      "filePath": "pages/staff/feedback.php",
+      "lineRange": [78, 87],
+      "summary": "Converts a feedback topic slug into a trimmed, capitalized human-readable label.",
+      "tags": ["utility", "topic-mapping", "formatting"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:pages/staff/feedback.php:getTopicColor",
+      "type": "function",
+      "name": "getTopicColor",
+      "filePath": "pages/staff/feedback.php",
+      "lineRange": [89, 98],
+      "summary": "Returns the accent color associated with a feedback topic for consistent theming across the review cards.",
+      "tags": ["utility", "topic-mapping", "styling"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:pages/staff/feedback.php:analyzeSentimentLocal",
+      "type": "function",
+      "name": "analyzeSentimentLocal",
+      "filePath": "pages/staff/feedback.php",
+      "lineRange": [103, 122],
+      "summary": "Offline fallback sentiment classifier: substring-counts Tagalog and English positive/negative keyword lists in the comment and weights the numeric rating (+/-2 at 4+ and 2-), returning positive, negative or neutral. Used whenever the Gemini-backed ai_sentiment column is absent or empty.",
+      "tags": ["sentiment-analysis", "fallback", "utility", "text-processing"],
+      "complexity": "moderate",
+      "languageNotes": "Purely lexical substring matching (strpos), so no tokenizer or external service is required - it works with the Gemini integration completely unavailable."
+    },
+    {
+      "id": "function:pages/staff/feedback.php:getSentimentBadge",
+      "type": "function",
+      "name": "getSentimentBadge",
+      "filePath": "pages/staff/feedback.php",
+      "lineRange": [124, 131],
+      "summary": "Maps a sentiment value to its CSS badge class using a PHP match expression (green/red/purple, amber default).",
+      "tags": ["utility", "sentiment", "presentation"],
+      "complexity": "simple",
+      "languageNotes": "Uses PHP 8 match(true-style) expression semantics with a default arm, so unknown or null sentiment values fall back safely."
+    },
+    {
+      "id": "function:pages/staff/feedback.php:getSentimentIcon",
+      "type": "function",
+      "name": "getSentimentIcon",
+      "filePath": "pages/staff/feedback.php",
+      "lineRange": [133, 140],
+      "summary": "Returns the emoji glyph corresponding to a sentiment value (positive, negative, mixed, neutral).",
+      "tags": ["utility", "sentiment", "presentation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:pages/staff/feedback.php:getSentimentLabel",
+      "type": "function",
+      "name": "getSentimentLabel",
+      "filePath": "pages/staff/feedback.php",
+      "lineRange": [142, 149],
+      "summary": "Returns the capitalized display text for a sentiment value.",
+      "tags": ["utility", "sentiment", "formatting"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:pages/staff/feedback.php:getSentimentInlineStyle",
+      "type": "function",
+      "name": "getSentimentInlineStyle",
+      "filePath": "pages/staff/feedback.php",
+      "lineRange": [151, 154],
+      "summary": "Returns an inline CSS declaration overriding the badge colors, applied only to the 'mixed' sentiment; returns an empty string otherwise.",
+      "tags": ["utility", "sentiment", "styling"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:pages/staff/feedback.php:isUrgentFeedback",
+      "type": "function",
+      "name": "isUrgentFeedback",
+      "filePath": "pages/staff/feedback.php",
+      "lineRange": [156, 163],
+      "summary": "Business rule that flags a review for staff escalation: honours an explicit is_urgent flag, or infers urgency from a negative sentiment, or from mixed sentiment combined with an overall rating of 3 or below.",
+      "tags": ["validation", "business-rule", "utility", "sentiment"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    { "source": "file:pages/staff/feedback.php", "target": "file:ai_helper.php", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:pages/client/notifications.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/client/payments.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/client/photos.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/client/profile.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/staff/bookings.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/staff/clients.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/staff/dashboard.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/staff/feedback.php", "target": "file:functions.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+
+    { "source": "file:pages/client/payments.php", "target": "file:config.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+    { "source": "file:pages/client/profile.php", "target": "file:config.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+
+    { "source": "file:pages/client/payments.php", "target": "file:pages/api/client-payments.php", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:getTopicIcon", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:getTopicLabel", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:getTopicColor", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:analyzeSentimentLocal", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:getSentimentBadge", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:getSentimentIcon", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:getSentimentLabel", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:getSentimentInlineStyle", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:isUrgentFeedback", "type": "contains", "direction": "forward", "weight": 1.0 },
+
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:getTopicIcon", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:getTopicLabel", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:getTopicColor", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:analyzeSentimentLocal", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:getSentimentBadge", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:getSentimentIcon", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:getSentimentLabel", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:getSentimentInlineStyle", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:pages/staff/feedback.php", "target": "function:pages/staff/feedback.php:isUrgentFeedback", "type": "exports", "direction": "forward", "weight": 0.8 }
+  ]
+}

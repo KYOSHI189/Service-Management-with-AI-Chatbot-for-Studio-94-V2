@@ -1,0 +1,16 @@
+{
+    "projectRoot":  "C:\\Users\\Jian\\Documents\\Studio92 v2\\snaptrack",
+    "batchFiles":  [
+                       {
+                           "path":  "pages/client/feedback.php",
+                           "language":  "php",
+                           "sizeLines":  1203,
+                           "fileCategory":  "code"
+                       }
+                   ],
+    "batchImportData":  {
+                            "pages/client/feedback.php":  [
+
+                                                          ]
+                        }
+}

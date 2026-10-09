@@ -1,0 +1,30 @@
+{
+  "nodes": [
+    {
+      "id": "file:pages/admin/bookings.php",
+      "type": "file",
+      "name": "bookings.php",
+      "filePath": "pages/admin/bookings.php",
+      "summary": "Admin read-only bookings listing page. Builds a dynamic WHERE clause from the `status` and `q` query params, then runs a prepared statement joining bookings to users and packages with a correlated subquery that counts `booking_inventory` rows per booking; results are ordered newest-first and rendered as a table with client, package, schedule, type, inventory count and status badges. Deliberately exposes no status-mutation controls — an inline banner states admins may view but not approve, complete or cancel bookings, which is staff-only. Not a standalone script: the bare `requireRole('admin')` on line 2 assumes `index.php` has already loaded config.php/functions.php and defined the role, page and user variables, so opening the file directly is a fatal error.",
+      "tags": ["admin-panel", "bookings", "read-only", "listing-view", "search-filter"],
+      "complexity": "moderate",
+      "languageNotes": "Pure procedural PHP with no class or function declarations. Every SQL value is bound through a `?` placeholder because `db()` sets `ATTR_EMULATE_PREPARES => false`, and all echoed values pass through `clean()` for output escaping."
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:pages/admin/bookings.php",
+      "target": "file:functions.php",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:pages/admin/bookings.php",
+      "target": "file:index.php",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

@@ -1,0 +1,553 @@
+{
+    "projectRoot":  "C:\\Users\\Jian\\Documents\\Studio92 v2\\snaptrack",
+    "files":  [
+                  {
+                      "path":  ".env.example",
+                      "language":  "config",
+                      "sizeLines":  33,
+                      "fileCategory":  "config"
+                  },
+                  {
+                      "path":  "AGENTS.md",
+                      "language":  "markdown",
+                      "sizeLines":  61,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  "GEMINI.md",
+                      "language":  "markdown",
+                      "sizeLines":  74,
+                      "fileCategory":  "docs"
+                  },
+                  {
+                      "path":  "ai_helper.php",
+                      "language":  "php",
+                      "sizeLines":  92,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "app.js",
+                      "language":  "javascript",
+                      "sizeLines":  1893,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "assets/css/styles.css",
+                      "language":  "css",
+                      "sizeLines":  2151,
+                      "fileCategory":  "markup"
+                  },
+                  {
+                      "path":  "assets/images/css/styles.css",
+                      "language":  "css",
+                      "sizeLines":  803,
+                      "fileCategory":  "markup"
+                  },
+                  {
+                      "path":  "assets/js/app.js",
+                      "language":  "javascript",
+                      "sizeLines":  126,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "assets/uploads/.gitkeep",
+                      "language":  "unknown",
+                      "sizeLines":  0,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "change_password.php",
+                      "language":  "php",
+                      "sizeLines":  31,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "composer.json",
+                      "language":  "json",
+                      "sizeLines":  16,
+                      "fileCategory":  "config"
+                  },
+                  {
+                      "path":  "config.php",
+                      "language":  "php",
+                      "sizeLines":  142,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "footer.php",
+                      "language":  "php",
+                      "sizeLines":  160,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "functions.php",
+                      "language":  "php",
+                      "sizeLines":  1782,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "google-callback.php",
+                      "language":  "php",
+                      "sizeLines":  134,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "google-config.php",
+                      "language":  "php",
+                      "sizeLines":  7,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "google-login.php",
+                      "language":  "php",
+                      "sizeLines":  25,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "header.php",
+                      "language":  "php",
+                      "sizeLines":  15,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "includes/booking.php",
+                      "language":  "php",
+                      "sizeLines":  255,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "includes/chatbot.php",
+                      "language":  "php",
+                      "sizeLines":  625,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "includes/deduct_inventory.php",
+                      "language":  "php",
+                      "sizeLines":  96,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "index.php",
+                      "language":  "php",
+                      "sizeLines":  513,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "landing.php",
+                      "language":  "php",
+                      "sizeLines":  502,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "login.php",
+                      "language":  "php",
+                      "sizeLines":  459,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "logout.php",
+                      "language":  "php",
+                      "sizeLines":  11,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "mfa-helper.php",
+                      "language":  "php",
+                      "sizeLines":  176,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "mfa-setup.php",
+                      "language":  "php",
+                      "sizeLines":  240,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "nixpacks.toml",
+                      "language":  "toml",
+                      "sizeLines":  2,
+                      "fileCategory":  "config"
+                  },
+                  {
+                      "path":  "pages/admin/DFD.HTML",
+                      "language":  "html",
+                      "sizeLines":  718,
+                      "fileCategory":  "markup"
+                  },
+                  {
+                      "path":  "pages/admin/bookings.php",
+                      "language":  "php",
+                      "sizeLines":  125,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/admin/clients.php",
+                      "language":  "php",
+                      "sizeLines":  325,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/admin/dashboard.php",
+                      "language":  "php",
+                      "sizeLines":  2349,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/admin/feedback.php",
+                      "language":  "php",
+                      "sizeLines":  729,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/admin/inventory.php",
+                      "language":  "php",
+                      "sizeLines":  717,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/admin/loyalty-cards.php",
+                      "language":  "php",
+                      "sizeLines":  368,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/admin/notifications.php",
+                      "language":  "php",
+                      "sizeLines":  1428,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/admin/packages.php",
+                      "language":  "php",
+                      "sizeLines":  475,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/admin/payments.php",
+                      "language":  "php",
+                      "sizeLines":  358,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/admin/profile.php",
+                      "language":  "php",
+                      "sizeLines":  487,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/admin/reports.php",
+                      "language":  "php",
+                      "sizeLines":  3547,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/admin/sales.php",
+                      "language":  "php",
+                      "sizeLines":  2322,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/admin/settings.php",
+                      "language":  "php",
+                      "sizeLines":  389,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/admin/staff.php",
+                      "language":  "php",
+                      "sizeLines":  110,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/api/chatbot-ai.php",
+                      "language":  "php",
+                      "sizeLines":  813,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/api/check-client-loyalty.php",
+                      "language":  "php",
+                      "sizeLines":  94,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/api/check_availability.php",
+                      "language":  "php",
+                      "sizeLines":  266,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/api/check_new_notifications.php",
+                      "language":  "php",
+                      "sizeLines":  151,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/api/client-payments.php",
+                      "language":  "php",
+                      "sizeLines":  295,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/api/get-day-bookings.php",
+                      "language":  "php",
+                      "sizeLines":  0,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/api/inventory-usage.php",
+                      "language":  "php",
+                      "sizeLines":  50,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/api/record-payment.php",
+                      "language":  "php",
+                      "sizeLines":  349,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/client/booking.php",
+                      "language":  "php",
+                      "sizeLines":  2052,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/client/bookings.php",
+                      "language":  "php",
+                      "sizeLines":  767,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/client/dashboard.php",
+                      "language":  "php",
+                      "sizeLines":  698,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/client/feedback.php",
+                      "language":  "php",
+                      "sizeLines":  1203,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/client/notifications.php",
+                      "language":  "php",
+                      "sizeLines":  640,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/client/payments.php",
+                      "language":  "php",
+                      "sizeLines":  1527,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/client/photos.php",
+                      "language":  "php",
+                      "sizeLines":  96,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/client/profile.php",
+                      "language":  "php",
+                      "sizeLines":  641,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/staff/bookings.php",
+                      "language":  "php",
+                      "sizeLines":  1532,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/staff/clients.php",
+                      "language":  "php",
+                      "sizeLines":  158,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/staff/dashboard.php",
+                      "language":  "php",
+                      "sizeLines":  809,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/staff/feedback.php",
+                      "language":  "php",
+                      "sizeLines":  537,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/staff/inventory.php",
+                      "language":  "php",
+                      "sizeLines":  437,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/staff/notifications.php",
+                      "language":  "php",
+                      "sizeLines":  49,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/staff/payments.php",
+                      "language":  "php",
+                      "sizeLines":  713,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/staff/profile.php",
+                      "language":  "php",
+                      "sizeLines":  432,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/staff/schedule.php",
+                      "language":  "php",
+                      "sizeLines":  247,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/staff/upload.php",
+                      "language":  "php",
+                      "sizeLines":  163,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "pages/staff/walkin.php",
+                      "language":  "php",
+                      "sizeLines":  1196,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "public/service-workers.js",
+                      "language":  "javascript",
+                      "sizeLines":  81,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "send-verification.php",
+                      "language":  "php",
+                      "sizeLines":  222,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "sidebar.php",
+                      "language":  "php",
+                      "sizeLines":  618,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "sql/hash.php",
+                      "language":  "php",
+                      "sizeLines":  9,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "sql/install.php",
+                      "language":  "php",
+                      "sizeLines":  144,
+                      "fileCategory":  "code"
+                  },
+                  {
+                      "path":  "sql/install.sql",
+                      "language":  "sql",
+                      "sizeLines":  396,
+                      "fileCategory":  "data"
+                  },
+                  {
+                      "path":  "styles.css",
+                      "language":  "css",
+                      "sizeLines":  803,
+                      "fileCategory":  "markup"
+                  },
+                  {
+                      "path":  "uploads/.gitkeep",
+                      "language":  "unknown",
+                      "sizeLines":  0,
+                      "fileCategory":  "code"
+                  }
+              ],
+    "analysisPaths":  [
+                          ".env.example",
+                          "AGENTS.md",
+                          "GEMINI.md",
+                          "ai_helper.php",
+                          "app.js",
+                          "assets/css/styles.css",
+                          "assets/images/css/styles.css",
+                          "assets/js/app.js",
+                          "assets/uploads/.gitkeep",
+                          "change_password.php",
+                          "composer.json",
+                          "config.php",
+                          "footer.php",
+                          "functions.php",
+                          "google-callback.php",
+                          "google-config.php",
+                          "google-login.php",
+                          "header.php",
+                          "includes/booking.php",
+                          "includes/chatbot.php",
+                          "includes/deduct_inventory.php",
+                          "index.php",
+                          "landing.php",
+                          "login.php",
+                          "logout.php",
+                          "mfa-helper.php",
+                          "mfa-setup.php",
+                          "nixpacks.toml",
+                          "pages/admin/DFD.HTML",
+                          "pages/admin/bookings.php",
+                          "pages/admin/clients.php",
+                          "pages/admin/dashboard.php",
+                          "pages/admin/feedback.php",
+                          "pages/admin/inventory.php",
+                          "pages/admin/loyalty-cards.php",
+                          "pages/admin/notifications.php",
+                          "pages/admin/packages.php",
+                          "pages/admin/payments.php",
+                          "pages/admin/profile.php",
+                          "pages/admin/reports.php",
+                          "pages/admin/sales.php",
+                          "pages/admin/settings.php",
+                          "pages/admin/staff.php",
+                          "pages/api/chatbot-ai.php",
+                          "pages/api/check-client-loyalty.php",
+                          "pages/api/check_availability.php",
+                          "pages/api/check_new_notifications.php",
+                          "pages/api/client-payments.php",
+                          "pages/api/get-day-bookings.php",
+                          "pages/api/inventory-usage.php",
+                          "pages/api/record-payment.php",
+                          "pages/client/booking.php",
+                          "pages/client/bookings.php",
+                          "pages/client/dashboard.php",
+                          "pages/client/feedback.php",
+                          "pages/client/notifications.php",
+                          "pages/client/payments.php",
+                          "pages/client/photos.php",
+                          "pages/client/profile.php",
+                          "pages/staff/bookings.php",
+                          "pages/staff/clients.php",
+                          "pages/staff/dashboard.php",
+                          "pages/staff/feedback.php",
+                          "pages/staff/inventory.php",
+                          "pages/staff/notifications.php",
+                          "pages/staff/payments.php",
+                          "pages/staff/profile.php",
+                          "pages/staff/schedule.php",
+                          "pages/staff/upload.php",
+                          "pages/staff/walkin.php",
+                          "public/service-workers.js",
+                          "send-verification.php",
+                          "sidebar.php",
+                          "sql/hash.php",
+                          "sql/install.php",
+                          "sql/install.sql",
+                          "styles.css",
+                          "uploads/.gitkeep"
+                      ]
+}

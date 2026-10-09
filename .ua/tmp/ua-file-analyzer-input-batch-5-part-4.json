@@ -1,0 +1,16 @@
+{
+    "projectRoot":  "C:\\Users\\Jian\\Documents\\Studio92 v2\\snaptrack",
+    "batchFiles":  [
+                       {
+                           "path":  "pages/admin/bookings.php",
+                           "language":  "php",
+                           "sizeLines":  125,
+                           "fileCategory":  "code"
+                       }
+                   ],
+    "batchImportData":  {
+                            "pages/admin/bookings.php":  [
+
+                                                         ]
+                        }
+}

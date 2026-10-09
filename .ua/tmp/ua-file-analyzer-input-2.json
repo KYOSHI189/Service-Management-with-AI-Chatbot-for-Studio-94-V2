@@ -1,0 +1,14 @@
+{
+  "projectRoot": "C:\\Users\\Jian\\Documents\\Studio92 v2\\snaptrack",
+  "batchFiles": [
+    {"path": "ai_helper.php", "language": "php", "sizeLines": 92, "fileCategory": "code"},
+    {"path": "app.js", "language": "javascript", "sizeLines": 1893, "fileCategory": "code"},
+    {"path": "assets/css/styles.css", "language": "css", "sizeLines": 2151, "fileCategory": "markup"},
+    {"path": "assets/images/css/styles.css", "language": "css", "sizeLines": 803, "fileCategory": "markup"},
+    {"path": "assets/js/app.js", "language": "javascript", "sizeLines": 126, "fileCategory": "code"},
+    {"path": "assets/uploads/.gitkeep", "language": "unknown", "sizeLines": 0, "fileCategory": "code"},
+    {"path": "change_password.php", "language": "php", "sizeLines": 31, "fileCategory": "code"},
+    {"path": "config.php", "language": "php", "sizeLines": 142, "fileCategory": "code"}
+  ],
+  "batchImportData": {"ai_helper.php":[],"app.js":[],"assets/css/styles.css":[],"assets/images/css/styles.css":[],"assets/js/app.js":[],"assets/uploads/.gitkeep":[],"change_password.php":[],"config.php":[],"footer.php":[],"functions.php":[],"google-callback.php":[],"google-config.php":[],"google-login.php":[],"header.php":[],"includes/booking.php":[],"includes/chatbot.php":[],"includes/deduct_inventory.php":[],"index.php":[],"landing.php":[],"login.php":[],"logout.php":[],"mfa-helper.php":[],"mfa-setup.php":[],"pages/admin/DFD.HTML":[],"pages/admin/bookings.php":[]}
+}

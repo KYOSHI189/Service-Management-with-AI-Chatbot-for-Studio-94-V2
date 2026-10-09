@@ -1,0 +1,116 @@
+# .understandignore — patterns for files/dirs to exclude from analysis
+# Syntax: same as .gitignore (globs, # comments, ! negation, trailing / for dirs)
+# Lines below are suggestions — uncomment to activate.
+# Use ! prefix to force-include something excluded by defaults.
+#
+# Built-in defaults (always excluded unless negated):
+#   node_modules/, .git/, dist/, build/, obj/, *.lock, *.min.js, etc.
+#
+
+# --- From .gitignore (uncomment to exclude) ---
+
+# .env
+# .env.*
+# !.env.example
+# *.pem
+# *.key
+# *.cert
+# *.sql
+# !sql/install.sql
+# *.tar.gz
+# *.rar
+# *.7z
+# uploads/*
+# !uploads/.gitkeep
+# assets/uploads/*
+# !assets/uploads/.gitkeep
+# ASSETS/uploads/*
+# !ASSETS/uploads/.gitkeep
+# pages/**/uploads/*
+# pages/uploads/*
+# .DS_Store
+# Thumbs.db
+
+# --- Test file patterns (uncomment to exclude) ---
+
+# JS / TS
+# *.test.*
+# *.spec.*
+# *.snap
+# C# / .NET
+# **/*Tests.cs
+# **/*Test.cs
+# **/*Fixture.cs
+# **/*.Tests.csproj
+# Java / Kotlin
+# **/src/test/**
+# **/*Test.java
+# **/*IT.java
+# **/*Spec.kt
+# Go
+# **/*_test.go
+# C++
+# **/*_test.cc
+# **/*_test.cpp
+# **/*_test.cxx
+# **/*Test.cc
+# **/*Test.cpp
+# **/*_unittest.cc
+# **/*_unittest.cpp
+# **/*_browsertest.cc
+# **/*_benchmark.cc
+# **/*Benchmark.cpp
+# Python
+# **/test_*.py
+# **/*_test.py
+# **/tests.py
+# **/conftest.py
+# Rust
+# **/tests.rs
+# **/test_*.rs
+# **/*_test.rs
+# **/bench_*.rs
+# **/*_bench.rs
+# Ruby
+# **/*_spec.rb
+# **/*_test.rb
+# **/test_*.rb
+# **/spec_helper.rb
+# **/test_helper.rb
+# **/rails_helper.rb
+# Swift
+# **/Tests/**/*.swift
+# **/Specs/**/*.swift
+
+# --- Project-specific (SnapTrack: procedural PHP) ---
+
+# The data directory itself — never analyze the graph it contains.
+.ua/
+
+# Composer third-party code. Already excluded via .gitignore, but stated
+# explicitly so the walk fallback (non-git checkouts) behaves the same.
+vendor/
+
+# Hand-vendored PDF libraries (TCPDF / FPDF) — third-party, not project source.
+includes/tcpdf/
+includes/fpdf/
+
+# Studio photo assets. 33 binary files that add nodes but no architectural
+# signal. Dropped from the graph (user-confirmed 2026-10-09).
+*.png
+*.jpg
+*.jpeg
+*.JPG
+
+# Ad-hoc manual test/verification scripts left in the repo root. Dropped
+# (user-confirmed 2026-10-09).
+test-mfa.php
+test_ai.php
+verify.php
+responsive_test.html
+test_responsive.js
+analyze_all_feedback.php
+
+# Stale one-off fix report from a past mobile pass. Not project documentation;
+# it describes a change already made and would mislead the tour builder.
+RESPONSIVE_FIX_REPORT.md

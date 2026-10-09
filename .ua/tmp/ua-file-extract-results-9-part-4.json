@@ -1,0 +1,291 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 1,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 1,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 1,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "pages/client/feedback.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 1204,
+      "nonEmptyLines": 1083,
+      "functions": [
+        {
+          "name": "analyzeSentimentLocal",
+          "startLine": 14,
+          "endLine": 26,
+          "params": [
+            "$comment"
+          ]
+        },
+        {
+          "name": "detectTopicsLocal",
+          "startLine": 31,
+          "endLine": 46,
+          "params": [
+            "$comment"
+          ]
+        },
+        {
+          "name": "classifyFeedbackByService",
+          "startLine": 51,
+          "endLine": 76,
+          "params": [
+            "$pkgName"
+          ]
+        },
+        {
+          "name": "getTopicIcon",
+          "startLine": 81,
+          "endLine": 84,
+          "params": [
+            "$topic"
+          ]
+        },
+        {
+          "name": "getTopicLabel",
+          "startLine": 86,
+          "endLine": 89,
+          "params": [
+            "$topic"
+          ]
+        },
+        {
+          "name": "getTopicColor",
+          "startLine": 91,
+          "endLine": 94,
+          "params": [
+            "$topic"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "analyzeSentimentLocal",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "detectTopicsLocal",
+          "line": 31,
+          "isDefault": false
+        },
+        {
+          "name": "classifyFeedbackByService",
+          "line": 51,
+          "isDefault": false
+        },
+        {
+          "name": "getTopicIcon",
+          "line": 81,
+          "isDefault": false
+        },
+        {
+          "name": "getTopicLabel",
+          "line": 86,
+          "isDefault": false
+        },
+        {
+          "name": "getTopicColor",
+          "line": 91,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "analyzeSentimentLocal",
+          "callee": "strtolower",
+          "lineNumber": 18
+        },
+        {
+          "caller": "analyzeSentimentLocal",
+          "callee": "strpos",
+          "lineNumber": 20
+        },
+        {
+          "caller": "analyzeSentimentLocal",
+          "callee": "strpos",
+          "lineNumber": 21
+        },
+        {
+          "caller": "detectTopicsLocal",
+          "callee": "strtolower",
+          "lineNumber": 33
+        },
+        {
+          "caller": "detectTopicsLocal",
+          "callee": "preg_match",
+          "lineNumber": 35
+        },
+        {
+          "caller": "detectTopicsLocal",
+          "callee": "preg_match",
+          "lineNumber": 36
+        },
+        {
+          "caller": "detectTopicsLocal",
+          "callee": "preg_match",
+          "lineNumber": 37
+        },
+        {
+          "caller": "detectTopicsLocal",
+          "callee": "preg_match",
+          "lineNumber": 38
+        },
+        {
+          "caller": "detectTopicsLocal",
+          "callee": "preg_match",
+          "lineNumber": 39
+        },
+        {
+          "caller": "detectTopicsLocal",
+          "callee": "preg_match",
+          "lineNumber": 40
+        },
+        {
+          "caller": "detectTopicsLocal",
+          "callee": "preg_match",
+          "lineNumber": 41
+        },
+        {
+          "caller": "detectTopicsLocal",
+          "callee": "array_unique",
+          "lineNumber": 43
+        },
+        {
+          "caller": "detectTopicsLocal",
+          "callee": "empty",
+          "lineNumber": 44
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strtolower",
+          "lineNumber": 52
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "trim",
+          "lineNumber": 52
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strpos",
+          "lineNumber": 54
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strpos",
+          "lineNumber": 54
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strpos",
+          "lineNumber": 55
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strpos",
+          "lineNumber": 55
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strpos",
+          "lineNumber": 56
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strpos",
+          "lineNumber": 56
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strpos",
+          "lineNumber": 57
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strpos",
+          "lineNumber": 61
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strpos",
+          "lineNumber": 61
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strpos",
+          "lineNumber": 62
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strpos",
+          "lineNumber": 66
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strpos",
+          "lineNumber": 66
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strpos",
+          "lineNumber": 70
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strpos",
+          "lineNumber": 70
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strpos",
+          "lineNumber": 71
+        },
+        {
+          "caller": "classifyFeedbackByService",
+          "callee": "strpos",
+          "lineNumber": 71
+        },
+        {
+          "caller": "getTopicIcon",
+          "callee": "trim",
+          "lineNumber": 83
+        },
+        {
+          "caller": "getTopicLabel",
+          "callee": "trim",
+          "lineNumber": 88
+        },
+        {
+          "caller": "getTopicLabel",
+          "callee": "ucfirst",
+          "lineNumber": 88
+        },
+        {
+          "caller": "getTopicColor",
+          "callee": "trim",
+          "lineNumber": 93
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 6,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    }
+  ]
+}

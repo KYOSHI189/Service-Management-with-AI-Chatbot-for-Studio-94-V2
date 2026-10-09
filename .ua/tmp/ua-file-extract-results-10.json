@@ -1,0 +1,292 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 8,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 8,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 8,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "pages/client/notifications.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 641,
+      "nonEmptyLines": 577,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "pages/client/payments.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 1527,
+      "nonEmptyLines": 1389,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "pages/client/photos.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 96,
+      "nonEmptyLines": 92,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "pages/client/profile.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 642,
+      "nonEmptyLines": 551,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "pages/staff/bookings.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 1533,
+      "nonEmptyLines": 1380,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "pages/staff/clients.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 159,
+      "nonEmptyLines": 144,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "pages/staff/dashboard.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 810,
+      "nonEmptyLines": 738,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "pages/staff/feedback.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 538,
+      "nonEmptyLines": 487,
+      "functions": [
+        {
+          "name": "getTopicIcon",
+          "startLine": 67,
+          "endLine": 76,
+          "params": [
+            "$topic"
+          ]
+        },
+        {
+          "name": "getTopicLabel",
+          "startLine": 78,
+          "endLine": 87,
+          "params": [
+            "$topic"
+          ]
+        },
+        {
+          "name": "getTopicColor",
+          "startLine": 89,
+          "endLine": 98,
+          "params": [
+            "$topic"
+          ]
+        },
+        {
+          "name": "analyzeSentimentLocal",
+          "startLine": 103,
+          "endLine": 122,
+          "params": [
+            "$comment",
+            "$rating"
+          ]
+        },
+        {
+          "name": "getSentimentBadge",
+          "startLine": 124,
+          "endLine": 131,
+          "params": [
+            "$s"
+          ]
+        },
+        {
+          "name": "getSentimentIcon",
+          "startLine": 133,
+          "endLine": 140,
+          "params": [
+            "$s"
+          ]
+        },
+        {
+          "name": "getSentimentLabel",
+          "startLine": 142,
+          "endLine": 149,
+          "params": [
+            "$s"
+          ]
+        },
+        {
+          "name": "getSentimentInlineStyle",
+          "startLine": 151,
+          "endLine": 154,
+          "params": [
+            "$s"
+          ]
+        },
+        {
+          "name": "isUrgentFeedback",
+          "startLine": 156,
+          "endLine": 163,
+          "params": [
+            "$f"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "getTopicIcon",
+          "line": 67,
+          "isDefault": false
+        },
+        {
+          "name": "getTopicLabel",
+          "line": 78,
+          "isDefault": false
+        },
+        {
+          "name": "getTopicColor",
+          "line": 89,
+          "isDefault": false
+        },
+        {
+          "name": "analyzeSentimentLocal",
+          "line": 103,
+          "isDefault": false
+        },
+        {
+          "name": "getSentimentBadge",
+          "line": 124,
+          "isDefault": false
+        },
+        {
+          "name": "getSentimentIcon",
+          "line": 133,
+          "isDefault": false
+        },
+        {
+          "name": "getSentimentLabel",
+          "line": 142,
+          "isDefault": false
+        },
+        {
+          "name": "getSentimentInlineStyle",
+          "line": 151,
+          "isDefault": false
+        },
+        {
+          "name": "isUrgentFeedback",
+          "line": 156,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getTopicIcon",
+          "callee": "trim",
+          "lineNumber": 68
+        },
+        {
+          "caller": "getTopicLabel",
+          "callee": "trim",
+          "lineNumber": 79
+        },
+        {
+          "caller": "getTopicLabel",
+          "callee": "ucfirst",
+          "lineNumber": 86
+        },
+        {
+          "caller": "getTopicColor",
+          "callee": "trim",
+          "lineNumber": 90
+        },
+        {
+          "caller": "analyzeSentimentLocal",
+          "callee": "strtolower",
+          "lineNumber": 104
+        },
+        {
+          "caller": "analyzeSentimentLocal",
+          "callee": "trim",
+          "lineNumber": 104
+        },
+        {
+          "caller": "analyzeSentimentLocal",
+          "callee": "strpos",
+          "lineNumber": 114
+        },
+        {
+          "caller": "analyzeSentimentLocal",
+          "callee": "strpos",
+          "lineNumber": 115
+        },
+        {
+          "caller": "isUrgentFeedback",
+          "callee": "empty",
+          "lineNumber": 157
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 9,
+        "functionCount": 9,
+        "classCount": 0
+      }
+    }
+  ]
+}

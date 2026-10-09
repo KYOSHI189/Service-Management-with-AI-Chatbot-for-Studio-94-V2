@@ -1,0 +1,127 @@
+{
+    "projectRoot":  "C:\\Users\\Jian\\Documents\\Studio92 v2\\snaptrack",
+    "batchFiles":  [
+                       {
+                           "path":  "pages/admin/profile.php",
+                           "language":  "php",
+                           "sizeLines":  487,
+                           "fileCategory":  "code"
+                       },
+                       {
+                           "path":  "pages/admin/reports.php",
+                           "language":  "php",
+                           "sizeLines":  3547,
+                           "fileCategory":  "code"
+                       },
+                       {
+                           "path":  "pages/admin/sales.php",
+                           "language":  "php",
+                           "sizeLines":  2322,
+                           "fileCategory":  "code"
+                       },
+                       {
+                           "path":  "pages/admin/settings.php",
+                           "language":  "php",
+                           "sizeLines":  389,
+                           "fileCategory":  "code"
+                       },
+                       {
+                           "path":  "pages/admin/staff.php",
+                           "language":  "php",
+                           "sizeLines":  110,
+                           "fileCategory":  "code"
+                       },
+                       {
+                           "path":  "pages/api/chatbot-ai.php",
+                           "language":  "php",
+                           "sizeLines":  813,
+                           "fileCategory":  "code"
+                       },
+                       {
+                           "path":  "pages/api/check-client-loyalty.php",
+                           "language":  "php",
+                           "sizeLines":  94,
+                           "fileCategory":  "code"
+                       },
+                       {
+                           "path":  "pages/api/check_availability.php",
+                           "language":  "php",
+                           "sizeLines":  266,
+                           "fileCategory":  "code"
+                       }
+                   ],
+    "batchImportData":  {
+                            "pages/admin/profile.php":  [
+
+                                                        ],
+                            "pages/admin/dashboard.php":  [
+
+                                                          ],
+                            "pages/admin/feedback.php":  [
+
+                                                         ],
+                            "pages/admin/inventory.php":  [
+
+                                                          ],
+                            "pages/admin/loyalty-cards.php":  [
+
+                                                              ],
+                            "pages/admin/notifications.php":  [
+
+                                                              ],
+                            "pages/admin/packages.php":  [
+
+                                                         ],
+                            "pages/admin/payments.php":  [
+
+                                                         ],
+                            "pages/admin/reports.php":  [
+
+                                                        ],
+                            "pages/admin/sales.php":  [
+
+                                                      ],
+                            "pages/admin/settings.php":  [
+
+                                                         ],
+                            "pages/admin/staff.php":  [
+
+                                                      ],
+                            "pages/api/chatbot-ai.php":  [
+
+                                                         ],
+                            "pages/api/check-client-loyalty.php":  [
+
+                                                                   ],
+                            "pages/api/check_availability.php":  [
+
+                                                                 ],
+                            "pages/api/check_new_notifications.php":  [
+
+                                                                      ],
+                            "pages/api/client-payments.php":  [
+
+                                                              ],
+                            "pages/api/get-day-bookings.php":  [
+
+                                                               ],
+                            "pages/api/inventory-usage.php":  [
+
+                                                              ],
+                            "pages/api/record-payment.php":  [
+
+                                                             ],
+                            "pages/client/booking.php":  [
+
+                                                         ],
+                            "pages/client/bookings.php":  [
+
+                                                          ],
+                            "pages/client/dashboard.php":  [
+
+                                                           ],
+                            "pages/client/feedback.php":  [
+
+                                                          ]
+                        }
+}

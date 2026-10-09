@@ -1,0 +1,2931 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 8,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 8,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 8,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "footer.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 161,
+      "nonEmptyLines": 150,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "functions.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 1783,
+      "nonEmptyLines": 1422,
+      "functions": [
+        {
+          "name": "db",
+          "startLine": 19,
+          "endLine": 65,
+          "params": []
+        },
+        {
+          "name": "ensureDatabaseSchema",
+          "startLine": 70,
+          "endLine": 177,
+          "params": [
+            "$pdo"
+          ]
+        },
+        {
+          "name": "startSession",
+          "startLine": 183,
+          "endLine": 197,
+          "params": []
+        },
+        {
+          "name": "isLoggedIn",
+          "startLine": 199,
+          "endLine": 205,
+          "params": []
+        },
+        {
+          "name": "currentUser",
+          "startLine": 207,
+          "endLine": 222,
+          "params": []
+        },
+        {
+          "name": "requireLogin",
+          "startLine": 224,
+          "endLine": 231,
+          "params": []
+        },
+        {
+          "name": "requireRole",
+          "startLine": 242,
+          "endLine": 265,
+          "params": [
+            "$roles"
+          ]
+        },
+        {
+          "name": "redirectToDashboard",
+          "startLine": 267,
+          "endLine": 287,
+          "params": [
+            "$role"
+          ]
+        },
+        {
+          "name": "csrfToken",
+          "startLine": 293,
+          "endLine": 304,
+          "params": []
+        },
+        {
+          "name": "csrfField",
+          "startLine": 306,
+          "endLine": 312,
+          "params": []
+        },
+        {
+          "name": "verifyCsrf",
+          "startLine": 314,
+          "endLine": 324,
+          "params": []
+        },
+        {
+          "name": "clean",
+          "startLine": 330,
+          "endLine": 337,
+          "params": [
+            "$val"
+          ]
+        },
+        {
+          "name": "cleanInt",
+          "startLine": 339,
+          "endLine": 345,
+          "params": [
+            "$val"
+          ]
+        },
+        {
+          "name": "cleanFloat",
+          "startLine": 347,
+          "endLine": 354,
+          "params": [
+            "$val"
+          ]
+        },
+        {
+          "name": "setFlash",
+          "startLine": 360,
+          "endLine": 368,
+          "params": [
+            "$type",
+            "$msg"
+          ]
+        },
+        {
+          "name": "getFlash",
+          "startLine": 370,
+          "endLine": 384,
+          "params": []
+        },
+        {
+          "name": "showFlash",
+          "startLine": 386,
+          "endLine": 409,
+          "params": []
+        },
+        {
+          "name": "timeAgo",
+          "startLine": 415,
+          "endLine": 436,
+          "params": [
+            "$datetime"
+          ]
+        },
+        {
+          "name": "formatDate",
+          "startLine": 438,
+          "endLine": 441,
+          "params": [
+            "$date"
+          ]
+        },
+        {
+          "name": "formatDateTime",
+          "startLine": 443,
+          "endLine": 446,
+          "params": [
+            "$datetime"
+          ]
+        },
+        {
+          "name": "formatMoney",
+          "startLine": 455,
+          "endLine": 459,
+          "params": [
+            "$amount"
+          ]
+        },
+        {
+          "name": "statusBadge",
+          "startLine": 465,
+          "endLine": 502,
+          "params": [
+            "$status"
+          ]
+        },
+        {
+          "name": "addNotification",
+          "startLine": 508,
+          "endLine": 575,
+          "params": [
+            "$userId",
+            "$title",
+            "$message",
+            "$type",
+            "$icon",
+            "$link"
+          ]
+        },
+        {
+          "name": "addNotificationByRole",
+          "startLine": 577,
+          "endLine": 629,
+          "params": [
+            "$role",
+            "$title",
+            "$message",
+            "$type",
+            "$icon",
+            "$link"
+          ]
+        },
+        {
+          "name": "getUnreadCount",
+          "startLine": 631,
+          "endLine": 655,
+          "params": [
+            "$userId"
+          ]
+        },
+        {
+          "name": "getNotifications",
+          "startLine": 657,
+          "endLine": 698,
+          "params": [
+            "$userId",
+            "$limit"
+          ]
+        },
+        {
+          "name": "getNotification",
+          "startLine": 700,
+          "endLine": 742,
+          "params": [
+            "$notificationId",
+            "$userId"
+          ]
+        },
+        {
+          "name": "markNotificationRead",
+          "startLine": 744,
+          "endLine": 772,
+          "params": [
+            "$notificationId",
+            "$userId"
+          ]
+        },
+        {
+          "name": "markAllNotificationsRead",
+          "startLine": 774,
+          "endLine": 798,
+          "params": [
+            "$userId"
+          ]
+        },
+        {
+          "name": "deleteNotification",
+          "startLine": 800,
+          "endLine": 827,
+          "params": [
+            "$notificationId",
+            "$userId"
+          ]
+        },
+        {
+          "name": "deleteReadNotifications",
+          "startLine": 829,
+          "endLine": 852,
+          "params": [
+            "$userId"
+          ]
+        },
+        {
+          "name": "notifyNewBooking",
+          "startLine": 858,
+          "endLine": 872,
+          "params": [
+            "$clientName"
+          ]
+        },
+        {
+          "name": "notifyPaymentSubmitted",
+          "startLine": 874,
+          "endLine": 888,
+          "params": [
+            "$clientName"
+          ]
+        },
+        {
+          "name": "notifyNewFeedback",
+          "startLine": 890,
+          "endLine": 900,
+          "params": []
+        },
+        {
+          "name": "notifyUrgentFeedback",
+          "startLine": 902,
+          "endLine": 912,
+          "params": []
+        },
+        {
+          "name": "notifyNewClient",
+          "startLine": 914,
+          "endLine": 928,
+          "params": [
+            "$clientName"
+          ]
+        },
+        {
+          "name": "getVapidKeys",
+          "startLine": 934,
+          "endLine": 953,
+          "params": []
+        },
+        {
+          "name": "hasVapidKeys",
+          "startLine": 955,
+          "endLine": 961,
+          "params": []
+        },
+        {
+          "name": "sendPushNotification",
+          "startLine": 963,
+          "endLine": 1069,
+          "params": [
+            "$userId",
+            "$title",
+            "$message",
+            "$link"
+          ]
+        },
+        {
+          "name": "getUserById",
+          "startLine": 1075,
+          "endLine": 1082,
+          "params": [
+            "$userId"
+          ]
+        },
+        {
+          "name": "getUserByEmail",
+          "startLine": 1084,
+          "endLine": 1091,
+          "params": [
+            "$email"
+          ]
+        },
+        {
+          "name": "getUserName",
+          "startLine": 1093,
+          "endLine": 1100,
+          "params": [
+            "$userId"
+          ]
+        },
+        {
+          "name": "getUserRole",
+          "startLine": 1102,
+          "endLine": 1109,
+          "params": [
+            "$userId"
+          ]
+        },
+        {
+          "name": "getLoyaltyTier",
+          "startLine": 1115,
+          "endLine": 1122,
+          "params": [
+            "$bookings"
+          ]
+        },
+        {
+          "name": "getLoyaltyRewards",
+          "startLine": 1124,
+          "endLine": 1134,
+          "params": [
+            "$bookings"
+          ]
+        },
+        {
+          "name": "getLoyaltyProgress",
+          "startLine": 1136,
+          "endLine": 1176,
+          "params": [
+            "$bookings"
+          ]
+        },
+        {
+          "name": "getClientBookingCount",
+          "startLine": 1178,
+          "endLine": 1194,
+          "params": [
+            "$userId"
+          ]
+        },
+        {
+          "name": "extractHoursFromDuration",
+          "startLine": 1200,
+          "endLine": 1230,
+          "params": [
+            "$duration"
+          ]
+        },
+        {
+          "name": "checkBookingConflict",
+          "startLine": 1232,
+          "endLine": 1292,
+          "params": [
+            "$date",
+            "$time",
+            "$excludeId",
+            "$durationHours"
+          ]
+        },
+        {
+          "name": "isSlotAvailable",
+          "startLine": 1294,
+          "endLine": 1319,
+          "params": [
+            "$date",
+            "$time",
+            "$packageId",
+            "$excludeBookingId"
+          ]
+        },
+        {
+          "name": "getBookingStatusBadge",
+          "startLine": 1321,
+          "endLine": 1331,
+          "params": [
+            "$status"
+          ]
+        },
+        {
+          "name": "getPackageById",
+          "startLine": 1337,
+          "endLine": 1344,
+          "params": [
+            "$packageId"
+          ]
+        },
+        {
+          "name": "getPackagePrice",
+          "startLine": 1346,
+          "endLine": 1353,
+          "params": [
+            "$packageId"
+          ]
+        },
+        {
+          "name": "getPackageDuration",
+          "startLine": 1355,
+          "endLine": 1362,
+          "params": [
+            "$packageId"
+          ]
+        },
+        {
+          "name": "paginate",
+          "startLine": 1368,
+          "endLine": 1386,
+          "params": [
+            "$total",
+            "$perPage",
+            "$current"
+          ]
+        },
+        {
+          "name": "outputCSV",
+          "startLine": 1392,
+          "endLine": 1419,
+          "params": [
+            "$headers",
+            "$rows",
+            "$filename"
+          ]
+        },
+        {
+          "name": "uploadFile",
+          "startLine": 1425,
+          "endLine": 1460,
+          "params": [
+            "$file",
+            "$targetDir",
+            "$allowedTypes"
+          ]
+        },
+        {
+          "name": "getPackageInventory",
+          "startLine": 1466,
+          "endLine": 1483,
+          "params": [
+            "$packageId"
+          ]
+        },
+        {
+          "name": "deductInventoryOnComplete",
+          "startLine": 1485,
+          "endLine": 1664,
+          "params": [
+            "$bookingId",
+            "$packageId"
+          ]
+        },
+        {
+          "name": "restoreInventory",
+          "startLine": 1666,
+          "endLine": 1723,
+          "params": [
+            "$bookingId"
+          ]
+        },
+        {
+          "name": "checkLowStockAndNotify",
+          "startLine": 1725,
+          "endLine": 1779,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "db",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "ensureDatabaseSchema",
+          "line": 70,
+          "isDefault": false
+        },
+        {
+          "name": "startSession",
+          "line": 183,
+          "isDefault": false
+        },
+        {
+          "name": "isLoggedIn",
+          "line": 199,
+          "isDefault": false
+        },
+        {
+          "name": "currentUser",
+          "line": 207,
+          "isDefault": false
+        },
+        {
+          "name": "requireLogin",
+          "line": 224,
+          "isDefault": false
+        },
+        {
+          "name": "requireRole",
+          "line": 242,
+          "isDefault": false
+        },
+        {
+          "name": "redirectToDashboard",
+          "line": 267,
+          "isDefault": false
+        },
+        {
+          "name": "csrfToken",
+          "line": 293,
+          "isDefault": false
+        },
+        {
+          "name": "csrfField",
+          "line": 306,
+          "isDefault": false
+        },
+        {
+          "name": "verifyCsrf",
+          "line": 314,
+          "isDefault": false
+        },
+        {
+          "name": "clean",
+          "line": 330,
+          "isDefault": false
+        },
+        {
+          "name": "cleanInt",
+          "line": 339,
+          "isDefault": false
+        },
+        {
+          "name": "cleanFloat",
+          "line": 347,
+          "isDefault": false
+        },
+        {
+          "name": "setFlash",
+          "line": 360,
+          "isDefault": false
+        },
+        {
+          "name": "getFlash",
+          "line": 370,
+          "isDefault": false
+        },
+        {
+          "name": "showFlash",
+          "line": 386,
+          "isDefault": false
+        },
+        {
+          "name": "timeAgo",
+          "line": 415,
+          "isDefault": false
+        },
+        {
+          "name": "formatDate",
+          "line": 438,
+          "isDefault": false
+        },
+        {
+          "name": "formatDateTime",
+          "line": 443,
+          "isDefault": false
+        },
+        {
+          "name": "formatMoney",
+          "line": 455,
+          "isDefault": false
+        },
+        {
+          "name": "statusBadge",
+          "line": 465,
+          "isDefault": false
+        },
+        {
+          "name": "addNotification",
+          "line": 508,
+          "isDefault": false
+        },
+        {
+          "name": "addNotificationByRole",
+          "line": 577,
+          "isDefault": false
+        },
+        {
+          "name": "getUnreadCount",
+          "line": 631,
+          "isDefault": false
+        },
+        {
+          "name": "getNotifications",
+          "line": 657,
+          "isDefault": false
+        },
+        {
+          "name": "getNotification",
+          "line": 700,
+          "isDefault": false
+        },
+        {
+          "name": "markNotificationRead",
+          "line": 744,
+          "isDefault": false
+        },
+        {
+          "name": "markAllNotificationsRead",
+          "line": 774,
+          "isDefault": false
+        },
+        {
+          "name": "deleteNotification",
+          "line": 800,
+          "isDefault": false
+        },
+        {
+          "name": "deleteReadNotifications",
+          "line": 829,
+          "isDefault": false
+        },
+        {
+          "name": "notifyNewBooking",
+          "line": 858,
+          "isDefault": false
+        },
+        {
+          "name": "notifyPaymentSubmitted",
+          "line": 874,
+          "isDefault": false
+        },
+        {
+          "name": "notifyNewFeedback",
+          "line": 890,
+          "isDefault": false
+        },
+        {
+          "name": "notifyUrgentFeedback",
+          "line": 902,
+          "isDefault": false
+        },
+        {
+          "name": "notifyNewClient",
+          "line": 914,
+          "isDefault": false
+        },
+        {
+          "name": "getVapidKeys",
+          "line": 934,
+          "isDefault": false
+        },
+        {
+          "name": "hasVapidKeys",
+          "line": 955,
+          "isDefault": false
+        },
+        {
+          "name": "sendPushNotification",
+          "line": 963,
+          "isDefault": false
+        },
+        {
+          "name": "getUserById",
+          "line": 1075,
+          "isDefault": false
+        },
+        {
+          "name": "getUserByEmail",
+          "line": 1084,
+          "isDefault": false
+        },
+        {
+          "name": "getUserName",
+          "line": 1093,
+          "isDefault": false
+        },
+        {
+          "name": "getUserRole",
+          "line": 1102,
+          "isDefault": false
+        },
+        {
+          "name": "getLoyaltyTier",
+          "line": 1115,
+          "isDefault": false
+        },
+        {
+          "name": "getLoyaltyRewards",
+          "line": 1124,
+          "isDefault": false
+        },
+        {
+          "name": "getLoyaltyProgress",
+          "line": 1136,
+          "isDefault": false
+        },
+        {
+          "name": "getClientBookingCount",
+          "line": 1178,
+          "isDefault": false
+        },
+        {
+          "name": "extractHoursFromDuration",
+          "line": 1200,
+          "isDefault": false
+        },
+        {
+          "name": "checkBookingConflict",
+          "line": 1232,
+          "isDefault": false
+        },
+        {
+          "name": "isSlotAvailable",
+          "line": 1294,
+          "isDefault": false
+        },
+        {
+          "name": "getBookingStatusBadge",
+          "line": 1321,
+          "isDefault": false
+        },
+        {
+          "name": "getPackageById",
+          "line": 1337,
+          "isDefault": false
+        },
+        {
+          "name": "getPackagePrice",
+          "line": 1346,
+          "isDefault": false
+        },
+        {
+          "name": "getPackageDuration",
+          "line": 1355,
+          "isDefault": false
+        },
+        {
+          "name": "paginate",
+          "line": 1368,
+          "isDefault": false
+        },
+        {
+          "name": "outputCSV",
+          "line": 1392,
+          "isDefault": false
+        },
+        {
+          "name": "uploadFile",
+          "line": 1425,
+          "isDefault": false
+        },
+        {
+          "name": "getPackageInventory",
+          "line": 1466,
+          "isDefault": false
+        },
+        {
+          "name": "deductInventoryOnComplete",
+          "line": 1485,
+          "isDefault": false
+        },
+        {
+          "name": "restoreInventory",
+          "line": 1666,
+          "isDefault": false
+        },
+        {
+          "name": "checkLowStockAndNotify",
+          "line": 1725,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "db",
+          "callee": "defined",
+          "lineNumber": 27
+        },
+        {
+          "caller": "db",
+          "callee": "ensureDatabaseSchema",
+          "lineNumber": 38
+        },
+        {
+          "caller": "db",
+          "callee": "die",
+          "lineNumber": 42
+        },
+        {
+          "caller": "db",
+          "callee": "htmlspecialchars",
+          "lineNumber": 52
+        },
+        {
+          "caller": "db",
+          "callee": "$e->getMessage",
+          "lineNumber": 52
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->query",
+          "lineNumber": 77
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$stmt->fetch",
+          "lineNumber": 78
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->query(\"SHOW COLUMNS FROM users\")->fetchAll",
+          "lineNumber": 82
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->query",
+          "lineNumber": 82
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "in_array",
+          "lineNumber": 99
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->exec",
+          "lineNumber": 100
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->exec",
+          "lineNumber": 104
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->query",
+          "lineNumber": 118
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$bStmt->fetch",
+          "lineNumber": 119
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->query(\"SHOW COLUMNS FROM bookings\")->fetchAll",
+          "lineNumber": 120
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->query",
+          "lineNumber": 120
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "in_array",
+          "lineNumber": 129
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->exec",
+          "lineNumber": 130
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->exec",
+          "lineNumber": 134
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->exec",
+          "lineNumber": 137
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->query",
+          "lineNumber": 142
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pStmt->fetch",
+          "lineNumber": 143
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->query(\"SHOW COLUMNS FROM payments\")->fetchAll",
+          "lineNumber": 144
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->query",
+          "lineNumber": 144
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "in_array",
+          "lineNumber": 145
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->exec",
+          "lineNumber": 146
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->exec",
+          "lineNumber": 149
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->exec",
+          "lineNumber": 152
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->exec",
+          "lineNumber": 155
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->query",
+          "lineNumber": 160
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pkgStmt->fetch",
+          "lineNumber": 161
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->query(\"SHOW COLUMNS FROM packages\")->fetchAll",
+          "lineNumber": 162
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->query",
+          "lineNumber": 162
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "in_array",
+          "lineNumber": 169
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$pdo->exec",
+          "lineNumber": 170
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "error_log",
+          "lineNumber": 175
+        },
+        {
+          "caller": "ensureDatabaseSchema",
+          "callee": "$e->getMessage",
+          "lineNumber": 175
+        },
+        {
+          "caller": "startSession",
+          "callee": "session_status",
+          "lineNumber": 185
+        },
+        {
+          "caller": "startSession",
+          "callee": "session_set_cookie_params",
+          "lineNumber": 187
+        },
+        {
+          "caller": "startSession",
+          "callee": "session_start",
+          "lineNumber": 195
+        },
+        {
+          "caller": "isLoggedIn",
+          "callee": "startSession",
+          "lineNumber": 201
+        },
+        {
+          "caller": "isLoggedIn",
+          "callee": "isset",
+          "lineNumber": 203
+        },
+        {
+          "caller": "isLoggedIn",
+          "callee": "isset",
+          "lineNumber": 204
+        },
+        {
+          "caller": "currentUser",
+          "callee": "startSession",
+          "lineNumber": 209
+        },
+        {
+          "caller": "currentUser",
+          "callee": "isLoggedIn",
+          "lineNumber": 211
+        },
+        {
+          "caller": "requireLogin",
+          "callee": "isLoggedIn",
+          "lineNumber": 226
+        },
+        {
+          "caller": "requireLogin",
+          "callee": "header",
+          "lineNumber": 228
+        },
+        {
+          "caller": "requireRole",
+          "callee": "requireLogin",
+          "lineNumber": 244
+        },
+        {
+          "caller": "requireRole",
+          "callee": "currentUser",
+          "lineNumber": 246
+        },
+        {
+          "caller": "requireRole",
+          "callee": "header",
+          "lineNumber": 249
+        },
+        {
+          "caller": "requireRole",
+          "callee": "is_array",
+          "lineNumber": 253
+        },
+        {
+          "caller": "requireRole",
+          "callee": "array_map",
+          "lineNumber": 254
+        },
+        {
+          "caller": "requireRole",
+          "callee": "strtolower",
+          "lineNumber": 255
+        },
+        {
+          "caller": "requireRole",
+          "callee": "trim",
+          "lineNumber": 255
+        },
+        {
+          "caller": "requireRole",
+          "callee": "strtolower",
+          "lineNumber": 259
+        },
+        {
+          "caller": "requireRole",
+          "callee": "trim",
+          "lineNumber": 259
+        },
+        {
+          "caller": "requireRole",
+          "callee": "in_array",
+          "lineNumber": 261
+        },
+        {
+          "caller": "requireRole",
+          "callee": "header",
+          "lineNumber": 262
+        },
+        {
+          "caller": "redirectToDashboard",
+          "callee": "header",
+          "lineNumber": 281
+        },
+        {
+          "caller": "csrfToken",
+          "callee": "startSession",
+          "lineNumber": 295
+        },
+        {
+          "caller": "csrfToken",
+          "callee": "empty",
+          "lineNumber": 297
+        },
+        {
+          "caller": "csrfToken",
+          "callee": "bin2hex",
+          "lineNumber": 300
+        },
+        {
+          "caller": "csrfToken",
+          "callee": "random_bytes",
+          "lineNumber": 300
+        },
+        {
+          "caller": "csrfField",
+          "callee": "htmlspecialchars",
+          "lineNumber": 310
+        },
+        {
+          "caller": "csrfField",
+          "callee": "csrfToken",
+          "lineNumber": 310
+        },
+        {
+          "caller": "verifyCsrf",
+          "callee": "hash_equals",
+          "lineNumber": 318
+        },
+        {
+          "caller": "verifyCsrf",
+          "callee": "csrfToken",
+          "lineNumber": 318
+        },
+        {
+          "caller": "verifyCsrf",
+          "callee": "http_response_code",
+          "lineNumber": 320
+        },
+        {
+          "caller": "verifyCsrf",
+          "callee": "die",
+          "lineNumber": 322
+        },
+        {
+          "caller": "clean",
+          "callee": "htmlspecialchars",
+          "lineNumber": 332
+        },
+        {
+          "caller": "clean",
+          "callee": "trim",
+          "lineNumber": 333
+        },
+        {
+          "caller": "cleanInt",
+          "callee": "filter_var",
+          "lineNumber": 341
+        },
+        {
+          "caller": "cleanFloat",
+          "callee": "filter_var",
+          "lineNumber": 349
+        },
+        {
+          "caller": "setFlash",
+          "callee": "startSession",
+          "lineNumber": 362
+        },
+        {
+          "caller": "getFlash",
+          "callee": "startSession",
+          "lineNumber": 372
+        },
+        {
+          "caller": "getFlash",
+          "callee": "isset",
+          "lineNumber": 374
+        },
+        {
+          "caller": "showFlash",
+          "callee": "getFlash",
+          "lineNumber": 388
+        },
+        {
+          "caller": "showFlash",
+          "callee": "clean",
+          "lineNumber": 407
+        },
+        {
+          "caller": "timeAgo",
+          "callee": "time",
+          "lineNumber": 417
+        },
+        {
+          "caller": "timeAgo",
+          "callee": "strtotime",
+          "lineNumber": 417
+        },
+        {
+          "caller": "timeAgo",
+          "callee": "floor",
+          "lineNumber": 424
+        },
+        {
+          "caller": "timeAgo",
+          "callee": "floor",
+          "lineNumber": 428
+        },
+        {
+          "caller": "timeAgo",
+          "callee": "floor",
+          "lineNumber": 432
+        },
+        {
+          "caller": "timeAgo",
+          "callee": "date",
+          "lineNumber": 435
+        },
+        {
+          "caller": "timeAgo",
+          "callee": "strtotime",
+          "lineNumber": 435
+        },
+        {
+          "caller": "formatDate",
+          "callee": "date",
+          "lineNumber": 440
+        },
+        {
+          "caller": "formatDate",
+          "callee": "strtotime",
+          "lineNumber": 440
+        },
+        {
+          "caller": "formatDateTime",
+          "callee": "date",
+          "lineNumber": 445
+        },
+        {
+          "caller": "formatDateTime",
+          "callee": "strtotime",
+          "lineNumber": 445
+        },
+        {
+          "caller": "formatMoney",
+          "callee": "round",
+          "lineNumber": 457
+        },
+        {
+          "caller": "formatMoney",
+          "callee": "round",
+          "lineNumber": 457
+        },
+        {
+          "caller": "formatMoney",
+          "callee": "number_format",
+          "lineNumber": 458
+        },
+        {
+          "caller": "statusBadge",
+          "callee": "clean",
+          "lineNumber": 500
+        },
+        {
+          "caller": "addNotification",
+          "callee": "db",
+          "lineNumber": 519
+        },
+        {
+          "caller": "addNotification",
+          "callee": "$pdo->prepare",
+          "lineNumber": 521
+        },
+        {
+          "caller": "addNotification",
+          "callee": "$stmt->execute",
+          "lineNumber": 546
+        },
+        {
+          "caller": "addNotification",
+          "callee": "sendPushNotification",
+          "lineNumber": 556
+        },
+        {
+          "caller": "addNotification",
+          "callee": "error_log",
+          "lineNumber": 568
+        },
+        {
+          "caller": "addNotification",
+          "callee": "$e->getMessage",
+          "lineNumber": 570
+        },
+        {
+          "caller": "addNotificationByRole",
+          "callee": "db",
+          "lineNumber": 588
+        },
+        {
+          "caller": "addNotificationByRole",
+          "callee": "$pdo->prepare",
+          "lineNumber": 590
+        },
+        {
+          "caller": "addNotificationByRole",
+          "callee": "$stmt->execute",
+          "lineNumber": 596
+        },
+        {
+          "caller": "addNotificationByRole",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 598
+        },
+        {
+          "caller": "addNotificationByRole",
+          "callee": "addNotification",
+          "lineNumber": 605
+        },
+        {
+          "caller": "addNotificationByRole",
+          "callee": "error_log",
+          "lineNumber": 622
+        },
+        {
+          "caller": "addNotificationByRole",
+          "callee": "$e->getMessage",
+          "lineNumber": 624
+        },
+        {
+          "caller": "getUnreadCount",
+          "callee": "db()->prepare",
+          "lineNumber": 635
+        },
+        {
+          "caller": "getUnreadCount",
+          "callee": "db",
+          "lineNumber": 635
+        },
+        {
+          "caller": "getUnreadCount",
+          "callee": "$stmt->execute",
+          "lineNumber": 642
+        },
+        {
+          "caller": "getUnreadCount",
+          "callee": "$stmt->fetchColumn",
+          "lineNumber": 644
+        },
+        {
+          "caller": "getUnreadCount",
+          "callee": "error_log",
+          "lineNumber": 648
+        },
+        {
+          "caller": "getUnreadCount",
+          "callee": "$e->getMessage",
+          "lineNumber": 650
+        },
+        {
+          "caller": "getNotifications",
+          "callee": "max",
+          "lineNumber": 664
+        },
+        {
+          "caller": "getNotifications",
+          "callee": "min",
+          "lineNumber": 664
+        },
+        {
+          "caller": "getNotifications",
+          "callee": "db",
+          "lineNumber": 666
+        },
+        {
+          "caller": "getNotifications",
+          "callee": "$pdo->prepare",
+          "lineNumber": 668
+        },
+        {
+          "caller": "getNotifications",
+          "callee": "$stmt->execute",
+          "lineNumber": 685
+        },
+        {
+          "caller": "getNotifications",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 687
+        },
+        {
+          "caller": "getNotifications",
+          "callee": "error_log",
+          "lineNumber": 691
+        },
+        {
+          "caller": "getNotifications",
+          "callee": "$e->getMessage",
+          "lineNumber": 693
+        },
+        {
+          "caller": "getNotification",
+          "callee": "db()->prepare",
+          "lineNumber": 707
+        },
+        {
+          "caller": "getNotification",
+          "callee": "db",
+          "lineNumber": 707
+        },
+        {
+          "caller": "getNotification",
+          "callee": "$stmt->execute",
+          "lineNumber": 724
+        },
+        {
+          "caller": "getNotification",
+          "callee": "$stmt->fetch",
+          "lineNumber": 729
+        },
+        {
+          "caller": "getNotification",
+          "callee": "error_log",
+          "lineNumber": 735
+        },
+        {
+          "caller": "getNotification",
+          "callee": "$e->getMessage",
+          "lineNumber": 737
+        },
+        {
+          "caller": "markNotificationRead",
+          "callee": "db()->prepare",
+          "lineNumber": 751
+        },
+        {
+          "caller": "markNotificationRead",
+          "callee": "db",
+          "lineNumber": 751
+        },
+        {
+          "caller": "markNotificationRead",
+          "callee": "$stmt->execute",
+          "lineNumber": 758
+        },
+        {
+          "caller": "markNotificationRead",
+          "callee": "error_log",
+          "lineNumber": 765
+        },
+        {
+          "caller": "markNotificationRead",
+          "callee": "$e->getMessage",
+          "lineNumber": 767
+        },
+        {
+          "caller": "markAllNotificationsRead",
+          "callee": "db()->prepare",
+          "lineNumber": 780
+        },
+        {
+          "caller": "markAllNotificationsRead",
+          "callee": "db",
+          "lineNumber": 780
+        },
+        {
+          "caller": "markAllNotificationsRead",
+          "callee": "$stmt->execute",
+          "lineNumber": 787
+        },
+        {
+          "caller": "markAllNotificationsRead",
+          "callee": "error_log",
+          "lineNumber": 791
+        },
+        {
+          "caller": "markAllNotificationsRead",
+          "callee": "$e->getMessage",
+          "lineNumber": 793
+        },
+        {
+          "caller": "deleteNotification",
+          "callee": "db()->prepare",
+          "lineNumber": 807
+        },
+        {
+          "caller": "deleteNotification",
+          "callee": "db",
+          "lineNumber": 807
+        },
+        {
+          "caller": "deleteNotification",
+          "callee": "$stmt->execute",
+          "lineNumber": 813
+        },
+        {
+          "caller": "deleteNotification",
+          "callee": "error_log",
+          "lineNumber": 820
+        },
+        {
+          "caller": "deleteNotification",
+          "callee": "$e->getMessage",
+          "lineNumber": 822
+        },
+        {
+          "caller": "deleteReadNotifications",
+          "callee": "db()->prepare",
+          "lineNumber": 835
+        },
+        {
+          "caller": "deleteReadNotifications",
+          "callee": "db",
+          "lineNumber": 835
+        },
+        {
+          "caller": "deleteReadNotifications",
+          "callee": "$stmt->execute",
+          "lineNumber": 841
+        },
+        {
+          "caller": "deleteReadNotifications",
+          "callee": "error_log",
+          "lineNumber": 845
+        },
+        {
+          "caller": "deleteReadNotifications",
+          "callee": "$e->getMessage",
+          "lineNumber": 847
+        },
+        {
+          "caller": "notifyNewBooking",
+          "callee": "addNotificationByRole",
+          "lineNumber": 864
+        },
+        {
+          "caller": "notifyPaymentSubmitted",
+          "callee": "addNotificationByRole",
+          "lineNumber": 880
+        },
+        {
+          "caller": "notifyNewFeedback",
+          "callee": "addNotificationByRole",
+          "lineNumber": 892
+        },
+        {
+          "caller": "notifyUrgentFeedback",
+          "callee": "addNotificationByRole",
+          "lineNumber": 904
+        },
+        {
+          "caller": "notifyNewClient",
+          "callee": "addNotificationByRole",
+          "lineNumber": 920
+        },
+        {
+          "caller": "getVapidKeys",
+          "callee": "getenv",
+          "lineNumber": 939
+        },
+        {
+          "caller": "getVapidKeys",
+          "callee": "getenv",
+          "lineNumber": 943
+        },
+        {
+          "caller": "getVapidKeys",
+          "callee": "getenv",
+          "lineNumber": 947
+        },
+        {
+          "caller": "hasVapidKeys",
+          "callee": "getVapidKeys",
+          "lineNumber": 957
+        },
+        {
+          "caller": "hasVapidKeys",
+          "callee": "empty",
+          "lineNumber": 959
+        },
+        {
+          "caller": "hasVapidKeys",
+          "callee": "empty",
+          "lineNumber": 960
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "class_exists",
+          "lineNumber": 970
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "db",
+          "lineNumber": 976
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "getVapidKeys",
+          "lineNumber": 978
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "empty",
+          "lineNumber": 981
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "empty",
+          "lineNumber": 982
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "$pdo->prepare",
+          "lineNumber": 987
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "$stmt->execute",
+          "lineNumber": 996
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 998
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "empty",
+          "lineNumber": 1000
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "json_encode",
+          "lineNumber": 1014
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "$webPush->queueNotification",
+          "lineNumber": 1025
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "Subscription::create",
+          "lineNumber": 1027
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "$webPush->flush",
+          "lineNumber": 1037
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "$report->isSuccess",
+          "lineNumber": 1039
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "$pdo->prepare",
+          "lineNumber": 1043
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "$deleteStmt->execute",
+          "lineNumber": 1048
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "$report->getEndpoint",
+          "lineNumber": 1049
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "error_log",
+          "lineNumber": 1054
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "$e->getMessage",
+          "lineNumber": 1056
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "error_log",
+          "lineNumber": 1064
+        },
+        {
+          "caller": "sendPushNotification",
+          "callee": "$e->getMessage",
+          "lineNumber": 1066
+        },
+        {
+          "caller": "getUserById",
+          "callee": "db()->prepare",
+          "lineNumber": 1077
+        },
+        {
+          "caller": "getUserById",
+          "callee": "db",
+          "lineNumber": 1077
+        },
+        {
+          "caller": "getUserById",
+          "callee": "$stmt->execute",
+          "lineNumber": 1078
+        },
+        {
+          "caller": "getUserById",
+          "callee": "$stmt->fetch",
+          "lineNumber": 1079
+        },
+        {
+          "caller": "getUserByEmail",
+          "callee": "db()->prepare",
+          "lineNumber": 1086
+        },
+        {
+          "caller": "getUserByEmail",
+          "callee": "db",
+          "lineNumber": 1086
+        },
+        {
+          "caller": "getUserByEmail",
+          "callee": "$stmt->execute",
+          "lineNumber": 1087
+        },
+        {
+          "caller": "getUserByEmail",
+          "callee": "$stmt->fetch",
+          "lineNumber": 1088
+        },
+        {
+          "caller": "getUserName",
+          "callee": "getUserById",
+          "lineNumber": 1095
+        },
+        {
+          "caller": "getUserRole",
+          "callee": "getUserById",
+          "lineNumber": 1104
+        },
+        {
+          "caller": "getLoyaltyProgress",
+          "callee": "round",
+          "lineNumber": 1168
+        },
+        {
+          "caller": "getLoyaltyProgress",
+          "callee": "round",
+          "lineNumber": 1169
+        },
+        {
+          "caller": "getLoyaltyProgress",
+          "callee": "max",
+          "lineNumber": 1172
+        },
+        {
+          "caller": "getLoyaltyProgress",
+          "callee": "min",
+          "lineNumber": 1172
+        },
+        {
+          "caller": "getClientBookingCount",
+          "callee": "db()->prepare",
+          "lineNumber": 1180
+        },
+        {
+          "caller": "getClientBookingCount",
+          "callee": "db",
+          "lineNumber": 1180
+        },
+        {
+          "caller": "getClientBookingCount",
+          "callee": "$stmt->execute",
+          "lineNumber": 1191
+        },
+        {
+          "caller": "getClientBookingCount",
+          "callee": "$stmt->fetchColumn",
+          "lineNumber": 1193
+        },
+        {
+          "caller": "extractHoursFromDuration",
+          "callee": "empty",
+          "lineNumber": 1202
+        },
+        {
+          "caller": "extractHoursFromDuration",
+          "callee": "preg_match",
+          "lineNumber": 1206
+        },
+        {
+          "caller": "extractHoursFromDuration",
+          "callee": "max",
+          "lineNumber": 1208
+        },
+        {
+          "caller": "extractHoursFromDuration",
+          "callee": "ceil",
+          "lineNumber": 1208
+        },
+        {
+          "caller": "extractHoursFromDuration",
+          "callee": "preg_match",
+          "lineNumber": 1211
+        },
+        {
+          "caller": "extractHoursFromDuration",
+          "callee": "ceil",
+          "lineNumber": 1214
+        },
+        {
+          "caller": "extractHoursFromDuration",
+          "callee": "preg_match",
+          "lineNumber": 1217
+        },
+        {
+          "caller": "extractHoursFromDuration",
+          "callee": "preg_match",
+          "lineNumber": 1221
+        },
+        {
+          "caller": "extractHoursFromDuration",
+          "callee": "max",
+          "lineNumber": 1222
+        },
+        {
+          "caller": "extractHoursFromDuration",
+          "callee": "preg_match",
+          "lineNumber": 1225
+        },
+        {
+          "caller": "extractHoursFromDuration",
+          "callee": "max",
+          "lineNumber": 1226
+        },
+        {
+          "caller": "checkBookingConflict",
+          "callee": "db",
+          "lineNumber": 1239
+        },
+        {
+          "caller": "checkBookingConflict",
+          "callee": "empty",
+          "lineNumber": 1241
+        },
+        {
+          "caller": "checkBookingConflict",
+          "callee": "strtotime",
+          "lineNumber": 1245
+        },
+        {
+          "caller": "checkBookingConflict",
+          "callee": "strtotime",
+          "lineNumber": 1246
+        },
+        {
+          "caller": "checkBookingConflict",
+          "callee": "$pdo->prepare",
+          "lineNumber": 1267
+        },
+        {
+          "caller": "checkBookingConflict",
+          "callee": "$stmt->execute",
+          "lineNumber": 1268
+        },
+        {
+          "caller": "checkBookingConflict",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 1270
+        },
+        {
+          "caller": "checkBookingConflict",
+          "callee": "extractHoursFromDuration",
+          "lineNumber": 1275
+        },
+        {
+          "caller": "checkBookingConflict",
+          "callee": "strtotime",
+          "lineNumber": 1283
+        },
+        {
+          "caller": "checkBookingConflict",
+          "callee": "strtotime",
+          "lineNumber": 1284
+        },
+        {
+          "caller": "isSlotAvailable",
+          "callee": "db()->prepare",
+          "lineNumber": 1301
+        },
+        {
+          "caller": "isSlotAvailable",
+          "callee": "db",
+          "lineNumber": 1301
+        },
+        {
+          "caller": "isSlotAvailable",
+          "callee": "$stmt->execute",
+          "lineNumber": 1311
+        },
+        {
+          "caller": "isSlotAvailable",
+          "callee": "$stmt->fetchColumn",
+          "lineNumber": 1318
+        },
+        {
+          "caller": "getPackageById",
+          "callee": "db()->prepare",
+          "lineNumber": 1339
+        },
+        {
+          "caller": "getPackageById",
+          "callee": "db",
+          "lineNumber": 1339
+        },
+        {
+          "caller": "getPackageById",
+          "callee": "$stmt->execute",
+          "lineNumber": 1340
+        },
+        {
+          "caller": "getPackageById",
+          "callee": "$stmt->fetch",
+          "lineNumber": 1341
+        },
+        {
+          "caller": "getPackagePrice",
+          "callee": "getPackageById",
+          "lineNumber": 1348
+        },
+        {
+          "caller": "getPackageDuration",
+          "callee": "getPackageById",
+          "lineNumber": 1357
+        },
+        {
+          "caller": "paginate",
+          "callee": "max",
+          "lineNumber": 1374
+        },
+        {
+          "caller": "paginate",
+          "callee": "ceil",
+          "lineNumber": 1375
+        },
+        {
+          "caller": "paginate",
+          "callee": "max",
+          "lineNumber": 1376
+        },
+        {
+          "caller": "paginate",
+          "callee": "max",
+          "lineNumber": 1377
+        },
+        {
+          "caller": "paginate",
+          "callee": "min",
+          "lineNumber": 1377
+        },
+        {
+          "caller": "outputCSV",
+          "callee": "header",
+          "lineNumber": 1398
+        },
+        {
+          "caller": "outputCSV",
+          "callee": "header",
+          "lineNumber": 1400
+        },
+        {
+          "caller": "outputCSV",
+          "callee": "date",
+          "lineNumber": 1404
+        },
+        {
+          "caller": "outputCSV",
+          "callee": "fopen",
+          "lineNumber": 1408
+        },
+        {
+          "caller": "outputCSV",
+          "callee": "fputcsv",
+          "lineNumber": 1410
+        },
+        {
+          "caller": "outputCSV",
+          "callee": "fputcsv",
+          "lineNumber": 1413
+        },
+        {
+          "caller": "outputCSV",
+          "callee": "fclose",
+          "lineNumber": 1416
+        },
+        {
+          "caller": "uploadFile",
+          "callee": "isset",
+          "lineNumber": 1432
+        },
+        {
+          "caller": "uploadFile",
+          "callee": "strtolower",
+          "lineNumber": 1438
+        },
+        {
+          "caller": "uploadFile",
+          "callee": "pathinfo",
+          "lineNumber": 1438
+        },
+        {
+          "caller": "uploadFile",
+          "callee": "in_array",
+          "lineNumber": 1440
+        },
+        {
+          "caller": "uploadFile",
+          "callee": "is_dir",
+          "lineNumber": 1444
+        },
+        {
+          "caller": "uploadFile",
+          "callee": "mkdir",
+          "lineNumber": 1445
+        },
+        {
+          "caller": "uploadFile",
+          "callee": "uniqid",
+          "lineNumber": 1450
+        },
+        {
+          "caller": "uploadFile",
+          "callee": "rtrim",
+          "lineNumber": 1451
+        },
+        {
+          "caller": "uploadFile",
+          "callee": "move_uploaded_file",
+          "lineNumber": 1455
+        },
+        {
+          "caller": "getPackageInventory",
+          "callee": "db()->prepare",
+          "lineNumber": 1468
+        },
+        {
+          "caller": "getPackageInventory",
+          "callee": "db",
+          "lineNumber": 1468
+        },
+        {
+          "caller": "getPackageInventory",
+          "callee": "$stmt->execute",
+          "lineNumber": 1480
+        },
+        {
+          "caller": "getPackageInventory",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 1482
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "db",
+          "lineNumber": 1490
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "getPackageInventory",
+          "lineNumber": 1491
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "empty",
+          "lineNumber": 1498
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "$pdo->beginTransaction",
+          "lineNumber": 1511
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "$pdo->prepare",
+          "lineNumber": 1519
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "$checkStmt->execute",
+          "lineNumber": 1526
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "$checkStmt->fetch",
+          "lineNumber": 1527
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "$pdo->prepare",
+          "lineNumber": 1559
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "$deductStmt->execute",
+          "lineNumber": 1567
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "$deductStmt->rowCount",
+          "lineNumber": 1569
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "$pdo->prepare",
+          "lineNumber": 1587
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "$biStmt->execute",
+          "lineNumber": 1593
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "addNotificationByRole",
+          "lineNumber": 1603
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "addNotificationByRole",
+          "lineNumber": 1612
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "$pdo->commit",
+          "lineNumber": 1623
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "$pdo->inTransaction",
+          "lineNumber": 1627
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "$pdo->rollBack",
+          "lineNumber": 1628
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "error_log",
+          "lineNumber": 1631
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "$e->getMessage",
+          "lineNumber": 1631
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "$e->getMessage",
+          "lineNumber": 1635
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "$e->getMessage",
+          "lineNumber": 1639
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "empty",
+          "lineNumber": 1643
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "implode",
+          "lineNumber": 1646
+        },
+        {
+          "caller": "deductInventoryOnComplete",
+          "callee": "empty",
+          "lineNumber": 1656
+        },
+        {
+          "caller": "restoreInventory",
+          "callee": "db",
+          "lineNumber": 1668
+        },
+        {
+          "caller": "restoreInventory",
+          "callee": "$pdo->beginTransaction",
+          "lineNumber": 1672
+        },
+        {
+          "caller": "restoreInventory",
+          "callee": "$pdo->prepare",
+          "lineNumber": 1674
+        },
+        {
+          "caller": "restoreInventory",
+          "callee": "$stmt->execute",
+          "lineNumber": 1680
+        },
+        {
+          "caller": "restoreInventory",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 1681
+        },
+        {
+          "caller": "restoreInventory",
+          "callee": "empty",
+          "lineNumber": 1683
+        },
+        {
+          "caller": "restoreInventory",
+          "callee": "$pdo->commit",
+          "lineNumber": 1684
+        },
+        {
+          "caller": "restoreInventory",
+          "callee": "$pdo->prepare",
+          "lineNumber": 1689
+        },
+        {
+          "caller": "restoreInventory",
+          "callee": "$restoreStmt->execute",
+          "lineNumber": 1696
+        },
+        {
+          "caller": "restoreInventory",
+          "callee": "$pdo->prepare",
+          "lineNumber": 1702
+        },
+        {
+          "caller": "restoreInventory",
+          "callee": "$delStmt->execute",
+          "lineNumber": 1707
+        },
+        {
+          "caller": "restoreInventory",
+          "callee": "$pdo->commit",
+          "lineNumber": 1709
+        },
+        {
+          "caller": "restoreInventory",
+          "callee": "$pdo->inTransaction",
+          "lineNumber": 1715
+        },
+        {
+          "caller": "restoreInventory",
+          "callee": "$pdo->rollBack",
+          "lineNumber": 1716
+        },
+        {
+          "caller": "restoreInventory",
+          "callee": "error_log",
+          "lineNumber": 1719
+        },
+        {
+          "caller": "restoreInventory",
+          "callee": "$e->getMessage",
+          "lineNumber": 1719
+        },
+        {
+          "caller": "checkLowStockAndNotify",
+          "callee": "db",
+          "lineNumber": 1729
+        },
+        {
+          "caller": "checkLowStockAndNotify",
+          "callee": "$pdo->query",
+          "lineNumber": 1731
+        },
+        {
+          "caller": "checkLowStockAndNotify",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 1739
+        },
+        {
+          "caller": "checkLowStockAndNotify",
+          "callee": "empty",
+          "lineNumber": 1741
+        },
+        {
+          "caller": "checkLowStockAndNotify",
+          "callee": "implode",
+          "lineNumber": 1755
+        },
+        {
+          "caller": "checkLowStockAndNotify",
+          "callee": "addNotificationByRole",
+          "lineNumber": 1757
+        },
+        {
+          "caller": "checkLowStockAndNotify",
+          "callee": "addNotificationByRole",
+          "lineNumber": 1766
+        },
+        {
+          "caller": "checkLowStockAndNotify",
+          "callee": "error_log",
+          "lineNumber": 1777
+        },
+        {
+          "caller": "checkLowStockAndNotify",
+          "callee": "$e->getMessage",
+          "lineNumber": 1777
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 61,
+        "functionCount": 61,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "google-callback.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 135,
+      "nonEmptyLines": 106,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "google-config.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 8,
+      "nonEmptyLines": 7,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "google-login.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 23,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "header.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 15,
+      "nonEmptyLines": 15,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "includes/booking.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 256,
+      "nonEmptyLines": 215,
+      "functions": [
+        {
+          "name": "saveBooking",
+          "startLine": 11,
+          "endLine": 113,
+          "params": [
+            "$bookingData"
+          ]
+        },
+        {
+          "name": "saveBookingToFile",
+          "startLine": 118,
+          "endLine": 153,
+          "params": [
+            "$bookingData"
+          ]
+        },
+        {
+          "name": "getBookings",
+          "startLine": 158,
+          "endLine": 182,
+          "params": [
+            "$status"
+          ]
+        },
+        {
+          "name": "getBookingStats",
+          "startLine": 187,
+          "endLine": 226,
+          "params": []
+        },
+        {
+          "name": "getBookingsFromFile",
+          "startLine": 229,
+          "endLine": 235,
+          "params": []
+        },
+        {
+          "name": "getBookingStatsFromFile",
+          "startLine": 237,
+          "endLine": 255,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "saveBooking",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "saveBookingToFile",
+          "line": 118,
+          "isDefault": false
+        },
+        {
+          "name": "getBookings",
+          "line": 158,
+          "isDefault": false
+        },
+        {
+          "name": "getBookingStats",
+          "line": 187,
+          "isDefault": false
+        },
+        {
+          "name": "getBookingsFromFile",
+          "line": 229,
+          "isDefault": false
+        },
+        {
+          "name": "getBookingStatsFromFile",
+          "line": 237,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "saveBooking",
+          "callee": "getDBConnection",
+          "lineNumber": 13
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$pdo->prepare",
+          "lineNumber": 16
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$userStmt->execute",
+          "lineNumber": 17
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$userStmt->fetch",
+          "lineNumber": 18
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "bin2hex",
+          "lineNumber": 24
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "random_bytes",
+          "lineNumber": 24
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "password_hash",
+          "lineNumber": 25
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$pdo->prepare",
+          "lineNumber": 27
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$insertUser->execute",
+          "lineNumber": 29
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$pdo->lastInsertId",
+          "lineNumber": 35
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$pdo->prepare",
+          "lineNumber": 40
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$packageStmt->execute",
+          "lineNumber": 41
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$packageStmt->fetch",
+          "lineNumber": 42
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$pdo->prepare",
+          "lineNumber": 46
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$packageStmt->execute",
+          "lineNumber": 47
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$packageStmt->fetch",
+          "lineNumber": 48
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "date",
+          "lineNumber": 55
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "str_pad",
+          "lineNumber": 55
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "rand",
+          "lineNumber": 55
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "round",
+          "lineNumber": 59
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$pdo->prepare",
+          "lineNumber": 63
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$insert->execute",
+          "lineNumber": 67
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "date",
+          "lineNumber": 71
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$pdo->lastInsertId",
+          "lineNumber": 81
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "date",
+          "lineNumber": 84
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "str_pad",
+          "lineNumber": 84
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "rand",
+          "lineNumber": 84
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$pdo->prepare",
+          "lineNumber": 85
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$payStmt->execute",
+          "lineNumber": 87
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$pdo->prepare",
+          "lineNumber": 90
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$lcCheck->execute",
+          "lineNumber": 91
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$lcCheck->fetch",
+          "lineNumber": 92
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "date",
+          "lineNumber": 93
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "str_pad",
+          "lineNumber": 93
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$pdo->prepare(\"INSERT INTO loyalty_cards (user_id, card_number, total_bookings, status) VALUES (?, ?, 0, 'Active')\")->execute",
+          "lineNumber": 94
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$pdo->prepare",
+          "lineNumber": 94
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "addNotificationByRole",
+          "lineNumber": 99
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "addNotificationByRole",
+          "lineNumber": 102
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "error_log",
+          "lineNumber": 109
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "$e->getMessage",
+          "lineNumber": 109
+        },
+        {
+          "caller": "saveBooking",
+          "callee": "saveBookingToFile",
+          "lineNumber": 111
+        },
+        {
+          "caller": "saveBookingToFile",
+          "callee": "is_dir",
+          "lineNumber": 121
+        },
+        {
+          "caller": "saveBookingToFile",
+          "callee": "mkdir",
+          "lineNumber": 122
+        },
+        {
+          "caller": "saveBookingToFile",
+          "callee": "file_exists",
+          "lineNumber": 126
+        },
+        {
+          "caller": "saveBookingToFile",
+          "callee": "file_get_contents",
+          "lineNumber": 127
+        },
+        {
+          "caller": "saveBookingToFile",
+          "callee": "json_decode",
+          "lineNumber": 128
+        },
+        {
+          "caller": "saveBookingToFile",
+          "callee": "date",
+          "lineNumber": 131
+        },
+        {
+          "caller": "saveBookingToFile",
+          "callee": "strtoupper",
+          "lineNumber": 131
+        },
+        {
+          "caller": "saveBookingToFile",
+          "callee": "substr",
+          "lineNumber": 131
+        },
+        {
+          "caller": "saveBookingToFile",
+          "callee": "uniqid",
+          "lineNumber": 131
+        },
+        {
+          "caller": "saveBookingToFile",
+          "callee": "date",
+          "lineNumber": 140
+        },
+        {
+          "caller": "saveBookingToFile",
+          "callee": "date",
+          "lineNumber": 146
+        },
+        {
+          "caller": "saveBookingToFile",
+          "callee": "file_put_contents",
+          "lineNumber": 150
+        },
+        {
+          "caller": "saveBookingToFile",
+          "callee": "json_encode",
+          "lineNumber": 150
+        },
+        {
+          "caller": "getBookings",
+          "callee": "getDBConnection",
+          "lineNumber": 160
+        },
+        {
+          "caller": "getBookings",
+          "callee": "$pdo->prepare",
+          "lineNumber": 169
+        },
+        {
+          "caller": "getBookings",
+          "callee": "$stmt->execute",
+          "lineNumber": 170
+        },
+        {
+          "caller": "getBookings",
+          "callee": "$pdo->prepare",
+          "lineNumber": 173
+        },
+        {
+          "caller": "getBookings",
+          "callee": "$stmt->execute",
+          "lineNumber": 174
+        },
+        {
+          "caller": "getBookings",
+          "callee": "$stmt->fetchAll",
+          "lineNumber": 177
+        },
+        {
+          "caller": "getBookings",
+          "callee": "error_log",
+          "lineNumber": 179
+        },
+        {
+          "caller": "getBookings",
+          "callee": "$e->getMessage",
+          "lineNumber": 179
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "getDBConnection",
+          "lineNumber": 189
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "$pdo->query",
+          "lineNumber": 192
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "$stmt->fetchColumn",
+          "lineNumber": 193
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "$pdo->query",
+          "lineNumber": 195
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "$stmt->fetchColumn",
+          "lineNumber": 196
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "$pdo->query",
+          "lineNumber": 198
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "$stmt->fetchColumn",
+          "lineNumber": 199
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "$pdo->query",
+          "lineNumber": 201
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "$stmt->fetchColumn",
+          "lineNumber": 202
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "$pdo->query",
+          "lineNumber": 204
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "$stmt->fetchColumn",
+          "lineNumber": 205
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "$pdo->query",
+          "lineNumber": 207
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "$stmt->fetchColumn",
+          "lineNumber": 208
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "$pdo->query",
+          "lineNumber": 210
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "$stmt->fetchColumn",
+          "lineNumber": 211
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "error_log",
+          "lineNumber": 215
+        },
+        {
+          "caller": "getBookingStats",
+          "callee": "$e->getMessage",
+          "lineNumber": 215
+        },
+        {
+          "caller": "getBookingsFromFile",
+          "callee": "file_exists",
+          "lineNumber": 231
+        },
+        {
+          "caller": "getBookingsFromFile",
+          "callee": "json_decode",
+          "lineNumber": 234
+        },
+        {
+          "caller": "getBookingsFromFile",
+          "callee": "file_get_contents",
+          "lineNumber": 234
+        },
+        {
+          "caller": "getBookingStatsFromFile",
+          "callee": "getBookingsFromFile",
+          "lineNumber": 238
+        },
+        {
+          "caller": "getBookingStatsFromFile",
+          "callee": "count",
+          "lineNumber": 240
+        },
+        {
+          "caller": "getBookingStatsFromFile",
+          "callee": "isset",
+          "lineNumber": 251
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 6,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "includes/chatbot.php",
+      "language": "php",
+      "fileCategory": "code",
+      "totalLines": 626,
+      "nonEmptyLines": 540,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

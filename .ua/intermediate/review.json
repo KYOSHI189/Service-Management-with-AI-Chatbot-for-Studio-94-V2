@@ -1,0 +1,34 @@
+{
+  "issues": [],
+  "warnings": [
+    "Node 'file:assets/uploads/.gitkeep' has no edges (orphan)",
+    "Node 'file:pages/api/get-day-bookings.php' has no edges (orphan)",
+    "Node 'file:sql/hash.php' has no edges (orphan)",
+    "Node 'file:uploads/.gitkeep' has no edges (orphan)"
+  ],
+  "stats": {
+    "totalNodes": 265,
+    "totalEdges": 435,
+    "totalLayers": 10,
+    "tourSteps": 13,
+    "nodeTypes": {
+      "config": 3,
+      "document": 2,
+      "file": 72,
+      "function": 174,
+      "class": 2,
+      "table": 12
+    },
+    "edgeTypes": {
+      "configures": 4,
+      "depends_on": 68,
+      "documents": 12,
+      "related": 4,
+      "contains": 176,
+      "exports": 73,
+      "imports": 45,
+      "calls": 41,
+      "defines_schema": 12
+    }
+  }
+}

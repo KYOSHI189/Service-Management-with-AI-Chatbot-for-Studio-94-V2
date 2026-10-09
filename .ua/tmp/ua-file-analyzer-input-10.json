@@ -1,0 +1,121 @@
+{
+    "projectRoot":  "C:\\Users\\Jian\\Documents\\Studio92 v2\\snaptrack",
+    "batchFiles":  [
+                       {
+                           "path":  "pages/client/notifications.php",
+                           "language":  "php",
+                           "sizeLines":  640,
+                           "fileCategory":  "code"
+                       },
+                       {
+                           "path":  "pages/client/payments.php",
+                           "language":  "php",
+                           "sizeLines":  1527,
+                           "fileCategory":  "code"
+                       },
+                       {
+                           "path":  "pages/client/photos.php",
+                           "language":  "php",
+                           "sizeLines":  96,
+                           "fileCategory":  "code"
+                       },
+                       {
+                           "path":  "pages/client/profile.php",
+                           "language":  "php",
+                           "sizeLines":  641,
+                           "fileCategory":  "code"
+                       },
+                       {
+                           "path":  "pages/staff/bookings.php",
+                           "language":  "php",
+                           "sizeLines":  1532,
+                           "fileCategory":  "code"
+                       },
+                       {
+                           "path":  "pages/staff/clients.php",
+                           "language":  "php",
+                           "sizeLines":  158,
+                           "fileCategory":  "code"
+                       },
+                       {
+                           "path":  "pages/staff/dashboard.php",
+                           "language":  "php",
+                           "sizeLines":  809,
+                           "fileCategory":  "code"
+                       },
+                       {
+                           "path":  "pages/staff/feedback.php",
+                           "language":  "php",
+                           "sizeLines":  537,
+                           "fileCategory":  "code"
+                       }
+                   ],
+    "batchImportData":  {
+                            "pages/client/notifications.php":  [
+
+                                                               ],
+                            "pages/client/payments.php":  [
+
+                                                          ],
+                            "pages/client/photos.php":  [
+
+                                                        ],
+                            "pages/client/profile.php":  [
+
+                                                         ],
+                            "pages/staff/bookings.php":  [
+
+                                                         ],
+                            "pages/staff/clients.php":  [
+
+                                                        ],
+                            "pages/staff/dashboard.php":  [
+
+                                                          ],
+                            "pages/staff/feedback.php":  [
+
+                                                         ],
+                            "pages/staff/inventory.php":  [
+
+                                                          ],
+                            "pages/staff/notifications.php":  [
+
+                                                              ],
+                            "pages/staff/payments.php":  [
+
+                                                         ],
+                            "pages/staff/profile.php":  [
+
+                                                        ],
+                            "pages/staff/schedule.php":  [
+
+                                                         ],
+                            "pages/staff/upload.php":  [
+
+                                                       ],
+                            "pages/staff/walkin.php":  [
+
+                                                       ],
+                            "public/service-workers.js":  [
+
+                                                          ],
+                            "send-verification.php":  [
+
+                                                      ],
+                            "sidebar.php":  [
+
+                                            ],
+                            "sql/hash.php":  [
+
+                                             ],
+                            "sql/install.php":  [
+
+                                                ],
+                            "sql/install.sql":  [
+
+                                                ],
+                            "uploads/.gitkeep":  [
+
+                                                 ]
+                        }
+}

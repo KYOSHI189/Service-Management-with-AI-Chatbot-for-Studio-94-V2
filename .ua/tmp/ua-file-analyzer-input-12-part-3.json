@@ -1,0 +1,35 @@
+{
+  "projectRoot": "C:/Users/Jian/Documents/Studio92 v2/snaptrack",
+  "batchFiles": [
+    { "path": "send-verification.php", "language": "php", "sizeLines": 222, "fileCategory": "code" },
+    { "path": "sidebar.php", "language": "php", "sizeLines": 618, "fileCategory": "code" },
+    { "path": "sql/hash.php", "language": "php", "sizeLines": 9, "fileCategory": "code" },
+    { "path": "sql/install.php", "language": "php", "sizeLines": 144, "fileCategory": "code" },
+    { "path": "sql/install.sql", "language": "sql", "sizeLines": 396, "fileCategory": "data" },
+    { "path": "uploads/.gitkeep", "language": "unknown", "sizeLines": 0, "fileCategory": "code" }
+  ],
+  "batchImportData": {
+    "pages/client/notifications.php": [],
+    "pages/client/payments.php": [],
+    "pages/client/photos.php": [],
+    "pages/client/profile.php": [],
+    "pages/staff/bookings.php": [],
+    "pages/staff/clients.php": [],
+    "pages/staff/dashboard.php": [],
+    "pages/staff/feedback.php": [],
+    "pages/staff/inventory.php": [],
+    "pages/staff/notifications.php": [],
+    "pages/staff/payments.php": [],
+    "pages/staff/profile.php": [],
+    "pages/staff/schedule.php": [],
+    "pages/staff/upload.php": [],
+    "pages/staff/walkin.php": [],
+    "public/service-workers.js": [],
+    "send-verification.php": [],
+    "sidebar.php": [],
+    "sql/hash.php": [],
+    "sql/install.php": [],
+    "sql/install.sql": [],
+    "uploads/.gitkeep": []
+  }
+}

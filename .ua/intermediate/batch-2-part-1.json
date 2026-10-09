@@ -1,0 +1,1406 @@
+{
+    "nodes":  [
+                  {
+                      "id":  "file:ai_helper.php",
+                      "type":  "file",
+                      "name":  "ai_helper.php",
+                      "filePath":  "ai_helper.php",
+                      "summary":  "Google Gemini integration for customer-feedback analysis; requires config.php and posts to the generativelanguage API over raw cURL with a five-model fallback chain.",
+                      "tags":  [
+                                   "service",
+                                   "api-client",
+                                   "feedback",
+                                   "utility",
+                                   "external-api"
+                               ],
+                      "complexity":  "moderate",
+                      "languageNotes":  "Procedural cURL call rather than an SDK; disables CURLOPT_SSL_VERIFYPEER, and the model list here diverges from the GEMINI_MODEL constant in config.php."
+                  },
+                  {
+                      "id":  "file:app.js",
+                      "type":  "file",
+                      "name":  "app.js",
+                      "filePath":  "app.js",
+                      "summary":  "DEAD self-contained front-end clickable prototype (~1900 lines, 96 functions) backed entirely by localStorage under s94_* keys. It duplicates the real booking, payment, inventory, loyalty and chatbot UI in the PHP pages but is not referenced by any PHP template -- only assets/js/app.js is actually loaded (by footer.php).",
+                      "tags":  [
+                                   "prototype",
+                                   "dead-code",
+                                   "frontend",
+                                   "localstorage",
+                                   "demo-data"
+                               ],
+                      "complexity":  "complex",
+                      "languageNotes":  "A complete localStorage SPA mock; because it never calls the PHP API it has drifted from the real server-backed implementation and should not be read as authoritative business logic."
+                  },
+                  {
+                      "id":  "file:assets/css/styles.css",
+                      "type":  "file",
+                      "name":  "styles.css",
+                      "filePath":  "assets/css/styles.css",
+                      "summary":  "The one live stylesheet for the whole app, defining a soft light-gray design system via 52 :root custom properties plus responsive breakpoints. Loaded by header.php, login.php and mfa-setup.php.",
+                      "tags":  [
+                                   "stylesheet",
+                                   "design-system",
+                                   "responsive",
+                                   "theme",
+                                   "frontend"
+                               ],
+                      "complexity":  "complex",
+                      "languageNotes":  "Theming is driven entirely by CSS custom properties, so re-skinning happens in :root without touching component rules; heavily tuned with per-widget mobile overrides."
+                  },
+                  {
+                      "id":  "file:assets/images/css/styles.css",
+                      "type":  "file",
+                      "name":  "styles.css",
+                      "filePath":  "assets/images/css/styles.css",
+                      "summary":  "DEAD stray stylesheet copy -- byte-identical (MD5 B8897A23..., 35841 bytes) to the unreferenced root styles.css, not to the live assets/css/styles.css. Zero references anywhere in the PHP or HTML.",
+                      "tags":  [
+                                   "dead-code",
+                                   "duplicate",
+                                   "stylesheet",
+                                   "legacy"
+                               ],
+                      "complexity":  "moderate",
+                      "languageNotes":  "An earlier revision of the theme with only 4 @media breakpoints versus 10 in the live sheet, kept alive accidentally by living under an images/ directory."
+                  },
+                  {
+                      "id":  "function:app.js:initSampleData",
+                      "type":  "function",
+                      "name":  "initSampleData",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        6,
+                                        141
+                                    ],
+                      "summary":  "Seeds localStorage with the entire demo dataset (users, bookings, inventory, loyalty, feedback, sales, photos, notifications, settings, packages) on first load, making the prototype fully self-contained.",
+                      "tags":  [
+                                   "prototype",
+                                   "seed-data",
+                                   "localstorage",
+                                   "demo-data"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "function:app.js:createWalkinBooking",
+                      "type":  "function",
+                      "name":  "createWalkinBooking",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        181,
+                                        194
+                                    ],
+                      "summary":  "Creates a walk-in booking for today with walk-in status, bypassing the multi-step booking wizard entirely.",
+                      "tags":  [
+                                   "booking",
+                                   "prototype",
+                                   "crud",
+                                   "localstorage"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:formatTimeAgo",
+                      "type":  "function",
+                      "name":  "formatTimeAgo",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        196,
+                                        206
+                                    ],
+                      "summary":  "Converts an ISO timestamp into a short relative string such as \"5m ago\" for notification and activity feeds.",
+                      "tags":  [
+                                   "utility",
+                                   "date",
+                                   "formatting"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:exportTableCSV",
+                      "type":  "function",
+                      "name":  "exportTableCSV",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        214,
+                                        224
+                                    ],
+                      "summary":  "Serializes table headers and rows into CSV text and triggers a client-side download through a temporary Blob URL.",
+                      "tags":  [
+                                   "utility",
+                                   "export",
+                                   "csv",
+                                   "serialization"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:showPage",
+                      "type":  "function",
+                      "name":  "showPage",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        227,
+                                        292
+                                    ],
+                      "summary":  "Client-side router that toggles the visible SPA page panel and invokes the matching page-specific render function, backing the multi-role demo navigation.",
+                      "tags":  [
+                                   "router",
+                                   "navigation",
+                                   "event-handler",
+                                   "prototype"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "function:app.js:handleLogin",
+                      "type":  "function",
+                      "name":  "handleLogin",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        309,
+                                        337
+                                    ],
+                      "summary":  "Prototype login handler that checks credentials against the localStorage user list and falls back to accepting anything when no match is found.",
+                      "tags":  [
+                                   "event-handler",
+                                   "authentication",
+                                   "prototype",
+                                   "validation"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:handleRegister",
+                      "type":  "function",
+                      "name":  "handleRegister",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        339,
+                                        355
+                                    ],
+                      "summary":  "Prototype registration handler that appends a new user record to the localStorage user list and switches back to the login view.",
+                      "tags":  [
+                                   "event-handler",
+                                   "authentication",
+                                   "prototype"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:openPackageModal",
+                      "type":  "function",
+                      "name":  "openPackageModal",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        367,
+                                        390
+                                    ],
+                      "summary":  "Opens the package-detail modal for a chosen tier and renders its price, duration, features and inclusions.",
+                      "tags":  [
+                                   "component",
+                                   "modal",
+                                   "ui-rendering",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:showBookingStep",
+                      "type":  "function",
+                      "name":  "showBookingStep",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        397,
+                                        428
+                                    ],
+                      "summary":  "Advances the multi-step booking wizard, populating loyalty options and booking details as each step becomes active.",
+                      "tags":  [
+                                   "wizard",
+                                   "ui-state",
+                                   "event-handler",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:renderCalendar",
+                      "type":  "function",
+                      "name":  "renderCalendar",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        447,
+                                        495
+                                    ],
+                      "summary":  "Builds the month-view booking calendar grid, marking each day by availability status so clients can choose an open slot.",
+                      "tags":  [
+                                   "calendar",
+                                   "rendering",
+                                   "ui",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:handleBookingSubmit",
+                      "type":  "function",
+                      "name":  "handleBookingSubmit",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        509,
+                                        571
+                                    ],
+                      "summary":  "Validates the completed booking wizard, checks earned loyalty rewards, creates the booking plus payment records and pushes notifications to the relevant roles.",
+                      "tags":  [
+                                   "event-handler",
+                                   "booking",
+                                   "validation",
+                                   "crud",
+                                   "prototype"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "function:app.js:renderClientBookings",
+                      "type":  "function",
+                      "name":  "renderClientBookings",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        574,
+                                        588
+                                    ],
+                      "summary":  "Renders the client booking table with status badges and detail/reopen actions for each of their bookings.",
+                      "tags":  [
+                                   "rendering",
+                                   "table",
+                                   "client",
+                                   "prototype"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:renderStaffBookings",
+                      "type":  "function",
+                      "name":  "renderStaffBookings",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        598,
+                                        631
+                                    ],
+                      "summary":  "Renders the staff booking queue with derived statistics and approve, reject and complete actions.",
+                      "tags":  [
+                                   "rendering",
+                                   "table",
+                                   "staff",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:approveBooking",
+                      "type":  "function",
+                      "name":  "approveBooking",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        633,
+                                        648
+                                    ],
+                      "summary":  "Marks a pending booking approved, updates its inventory reservation and notifies both the client and admin.",
+                      "tags":  [
+                                   "event-handler",
+                                   "booking",
+                                   "state-transition",
+                                   "prototype"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:rejectBooking",
+                      "type":  "function",
+                      "name":  "rejectBooking",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        650,
+                                        667
+                                    ],
+                      "summary":  "Marks a pending booking rejected, releases the reserved inventory and notifies the client.",
+                      "tags":  [
+                                   "event-handler",
+                                   "booking",
+                                   "state-transition",
+                                   "prototype"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:completeBooking",
+                      "type":  "function",
+                      "name":  "completeBooking",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        669,
+                                        694
+                                    ],
+                      "summary":  "Marks a booking complete, deducts inventory, advances loyalty counters and records the sale in the sales dataset.",
+                      "tags":  [
+                                   "event-handler",
+                                   "booking",
+                                   "inventory",
+                                   "loyalty",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:renderClientPayments",
+                      "type":  "function",
+                      "name":  "renderClientPayments",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        699,
+                                        745
+                                    ],
+                      "summary":  "Renders the client payment history, computing per-method totals and exposing the deposit and balance columns.",
+                      "tags":  [
+                                   "rendering",
+                                   "payments",
+                                   "table",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:openPaymentModal",
+                      "type":  "function",
+                      "name":  "openPaymentModal",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        747,
+                                        762
+                                    ],
+                      "summary":  "Opens the payment-detail modal and resets the chosen method to Maya so its account information is shown by default.",
+                      "tags":  [
+                                   "component",
+                                   "modal",
+                                   "payments",
+                                   "prototype"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:togglePaymentAccountInfo",
+                      "type":  "function",
+                      "name":  "togglePaymentAccountInfo",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        765,
+                                        782
+                                    ],
+                      "summary":  "Shows or hides the account-information block for the selected payment method, swapping placeholders for real details.",
+                      "tags":  [
+                                   "ui-state",
+                                   "payments",
+                                   "event-handler"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:copyToClipboard",
+                      "type":  "function",
+                      "name":  "copyToClipboard",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        784,
+                                        797
+                                    ],
+                      "summary":  "Copies text to the clipboard via the async Clipboard API with a document.execCommand fallback for older browsers.",
+                      "tags":  [
+                                   "utility",
+                                   "clipboard",
+                                   "compatibility"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:submitPaymentProof",
+                      "type":  "function",
+                      "name":  "submitPaymentProof",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        799,
+                                        833
+                                    ],
+                      "summary":  "Validates and stores an uploaded payment-proof image in a separate localStorage key, then notifies staff that a proof awaits verification.",
+                      "tags":  [
+                                   "event-handler",
+                                   "payments",
+                                   "file-upload",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:renderStaffPayments",
+                      "type":  "function",
+                      "name":  "renderStaffPayments",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        838,
+                                        898
+                                    ],
+                      "summary":  "Renders the staff payment-verification queue, computing totals and surfacing pending proofs that need review.",
+                      "tags":  [
+                                   "rendering",
+                                   "payments",
+                                   "table",
+                                   "prototype"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "function:app.js:filterStaffPayments",
+                      "type":  "function",
+                      "name":  "filterStaffPayments",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        900,
+                                        912
+                                    ],
+                      "summary":  "Filters the staff payment queue by status and restyles the active filter buttons to match the selection.",
+                      "tags":  [
+                                   "filtering",
+                                   "ui-state",
+                                   "payments"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:openVerifyModal",
+                      "type":  "function",
+                      "name":  "openVerifyModal",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        914,
+                                        948
+                                    ],
+                      "summary":  "Opens the payment verification modal, previews the submitted proof image and resets the rejection section to its default state.",
+                      "tags":  [
+                                   "component",
+                                   "modal",
+                                   "payments",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:toggleRejectSection",
+                      "type":  "function",
+                      "name":  "toggleRejectSection",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        955,
+                                        973
+                                    ],
+                      "summary":  "Expands or collapses the rejection-reason textarea and restores the confirm button state when the section closes.",
+                      "tags":  [
+                                   "ui-state",
+                                   "form",
+                                   "payments"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:verifyPaymentNow",
+                      "type":  "function",
+                      "name":  "verifyPaymentNow",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        994,
+                                        1031
+                                    ],
+                      "summary":  "Verifies a payment, moves the booking to confirmed, adds the amount to sales and notifies the client and admin.",
+                      "tags":  [
+                                   "event-handler",
+                                   "payments",
+                                   "state-transition",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:rejectPaymentWithReason",
+                      "type":  "function",
+                      "name":  "rejectPaymentWithReason",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1033,
+                                        1046
+                                    ],
+                      "summary":  "Rejects a payment with a supplied reason, records the rejection and notifies the client of the outcome.",
+                      "tags":  [
+                                   "event-handler",
+                                   "payments",
+                                   "validation",
+                                   "prototype"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:filterAdminPayments",
+                      "type":  "function",
+                      "name":  "filterAdminPayments",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1049,
+                                        1061
+                                    ],
+                      "summary":  "Filters the admin payment view by status while updating the active filter button styling.",
+                      "tags":  [
+                                   "filtering",
+                                   "ui-state",
+                                   "payments"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:renderAdminPayments",
+                      "type":  "function",
+                      "name":  "renderAdminPayments",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1063,
+                                        1102
+                                    ],
+                      "summary":  "Renders the admin-wide payment table and refreshes the aggregate statistics displayed above it.",
+                      "tags":  [
+                                   "rendering",
+                                   "payments",
+                                   "admin",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:renderInventory",
+                      "type":  "function",
+                      "name":  "renderInventory",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1105,
+                                        1127
+                                    ],
+                      "summary":  "Renders the inventory table with current stock levels and inline adjust controls for each item.",
+                      "tags":  [
+                                   "rendering",
+                                   "table",
+                                   "inventory",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:updateInventory",
+                      "type":  "function",
+                      "name":  "updateInventory",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1129,
+                                        1139
+                                    ],
+                      "summary":  "Applies a signed quantity change to an inventory item and persists the updated stock level.",
+                      "tags":  [
+                                   "event-handler",
+                                   "inventory",
+                                   "crud"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:addInventoryItem",
+                      "type":  "function",
+                      "name":  "addInventoryItem",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1141,
+                                        1165
+                                    ],
+                      "summary":  "Adds a new inventory item from the modal form, validating required fields and re-rendering the updated list.",
+                      "tags":  [
+                                   "event-handler",
+                                   "inventory",
+                                   "validation",
+                                   "crud"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:renderAdminAnalytics",
+                      "type":  "function",
+                      "name":  "renderAdminAnalytics",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1168,
+                                        1239
+                                    ],
+                      "summary":  "Builds the admin analytics dashboard, aggregating revenue and booking trends across the last six months for the charts.",
+                      "tags":  [
+                                   "rendering",
+                                   "analytics",
+                                   "dashboard",
+                                   "charts",
+                                   "prototype"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "function:app.js:renderAdminBookings",
+                      "type":  "function",
+                      "name":  "renderAdminBookings",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1241,
+                                        1263
+                                    ],
+                      "summary":  "Renders the admin booking overview table with summary statistics and management actions.",
+                      "tags":  [
+                                   "rendering",
+                                   "table",
+                                   "admin",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:submitFeedback",
+                      "type":  "function",
+                      "name":  "submitFeedback",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1266,
+                                        1319
+                                    ],
+                      "summary":  "Submits a client feedback entry, running local sentiment analysis and topic detection before appending it to the feedback dataset.",
+                      "tags":  [
+                                   "event-handler",
+                                   "feedback",
+                                   "validation",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:renderClientFeedbackHistory",
+                      "type":  "function",
+                      "name":  "renderClientFeedbackHistory",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1322,
+                                        1344
+                                    ],
+                      "summary":  "Renders the client own-feedback history with sentiment badges and star ratings.",
+                      "tags":  [
+                                   "rendering",
+                                   "feedback",
+                                   "client"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:renderFeedbackAnalytics",
+                      "type":  "function",
+                      "name":  "renderFeedbackAnalytics",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1346,
+                                        1360
+                                    ],
+                      "summary":  "Aggregates feedback into sentiment and topic counts for the admin review panel.",
+                      "tags":  [
+                                   "rendering",
+                                   "analytics",
+                                   "feedback",
+                                   "admin"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:getLoyaltyStatus",
+                      "type":  "function",
+                      "name":  "getLoyaltyStatus",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1370,
+                                        1388
+                                    ],
+                      "summary":  "Computes a client loyalty status by counting completed bookings and mapping the total onto the reward tiers.",
+                      "tags":  [
+                                   "utility",
+                                   "loyalty",
+                                   "computation",
+                                   "prototype"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:renderLoyaltyCard",
+                      "type":  "function",
+                      "name":  "renderLoyaltyCard",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1390,
+                                        1431
+                                    ],
+                      "summary":  "Renders the client loyalty stamp card, filling stamps from completed bookings and hinting at the next reward.",
+                      "tags":  [
+                                   "rendering",
+                                   "loyalty",
+                                   "dashboard",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:renderAdminLoyalty",
+                      "type":  "function",
+                      "name":  "renderAdminLoyalty",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1433,
+                                        1477
+                                    ],
+                      "summary":  "Renders the admin loyalty overview, aggregating client counts per tier and refreshing the tier statistics.",
+                      "tags":  [
+                                   "rendering",
+                                   "loyalty",
+                                   "admin",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:showToast",
+                      "type":  "function",
+                      "name":  "showToast",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1481,
+                                        1497
+                                    ],
+                      "summary":  "Displays a transient toast notification at the bottom of the screen and removes it automatically after a short delay.",
+                      "tags":  [
+                                   "utility",
+                                   "toast",
+                                   "notification",
+                                   "ui"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:previewPhotos",
+                      "type":  "function",
+                      "name":  "previewPhotos",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1510,
+                                        1527
+                                    ],
+                      "summary":  "Opens the event photo preview, wiring the thumbnail click handlers that drive the gallery lightbox.",
+                      "tags":  [
+                                   "event-handler",
+                                   "gallery",
+                                   "prototype"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:handleFileSelect",
+                      "type":  "function",
+                      "name":  "handleFileSelect",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1530,
+                                        1545
+                                    ],
+                      "summary":  "Handles photo file selection, reading the chosen files and generating object URLs for immediate preview.",
+                      "tags":  [
+                                   "event-handler",
+                                   "file-upload",
+                                   "gallery"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:renderClientPhotos",
+                      "type":  "function",
+                      "name":  "renderClientPhotos",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1580,
+                                        1606
+                                    ],
+                      "summary":  "Renders the client uploaded-photo gallery with thumbnails and preview/cancel affordances.",
+                      "tags":  [
+                                   "rendering",
+                                   "gallery",
+                                   "client",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:renderNotifications",
+                      "type":  "function",
+                      "name":  "renderNotifications",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1608,
+                                        1625
+                                    ],
+                      "summary":  "Renders the notifications panel, filtering entries by the current role and formatting timestamps as relative time.",
+                      "tags":  [
+                                   "rendering",
+                                   "notifications",
+                                   "prototype"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:renderProfile",
+                      "type":  "function",
+                      "name":  "renderProfile",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1627,
+                                        1645
+                                    ],
+                      "summary":  "Renders the user profile page by populating the editable fields from the stored user record.",
+                      "tags":  [
+                                   "rendering",
+                                   "profile",
+                                   "prototype"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:saveProfile",
+                      "type":  "function",
+                      "name":  "saveProfile",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1648,
+                                        1663
+                                    ],
+                      "summary":  "Persists edited profile fields back to the localStorage user record and confirms the change with a toast.",
+                      "tags":  [
+                                   "event-handler",
+                                   "profile",
+                                   "persistence",
+                                   "prototype"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:confirmVerifyPayment",
+                      "type":  "function",
+                      "name":  "confirmVerifyPayment",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1670,
+                                        1690
+                                    ],
+                      "summary":  "Applies the selected payment verification outcome, writing the verified or rejected result to the payment record.",
+                      "tags":  [
+                                   "event-handler",
+                                   "payments",
+                                   "state-transition",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:toggleChatbot",
+                      "type":  "function",
+                      "name":  "toggleChatbot",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1698,
+                                        1711
+                                    ],
+                      "summary":  "Opens or closes the floating chatbot widget and surfaces its introduction message.",
+                      "tags":  [
+                                   "ui-state",
+                                   "chatbot",
+                                   "event-handler"
+                               ],
+                      "complexity":  "simple"
+                  },
+                  {
+                      "id":  "function:app.js:sendChatMsg",
+                      "type":  "function",
+                      "name":  "sendChatMsg",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1713,
+                                        1750
+                                    ],
+                      "summary":  "Appends the user chat message, renders a typing indicator and schedules the bot reply.",
+                      "tags":  [
+                                   "chatbot",
+                                   "event-handler",
+                                   "ui",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:app.js:getBotResponse",
+                      "type":  "function",
+                      "name":  "getBotResponse",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1752,
+                                        1812
+                                    ],
+                      "summary":  "Keyword-matches chat input against curated topics (greetings, pricing, location, hours, booking process, payment) to return a canned reply.",
+                      "tags":  [
+                                   "chatbot",
+                                   "rule-engine",
+                                   "keyword-matching",
+                                   "prototype"
+                               ],
+                      "complexity":  "complex"
+                  },
+                  {
+                      "id":  "function:app.js:initDraggableChatbot",
+                      "type":  "function",
+                      "name":  "initDraggableChatbot",
+                      "filePath":  "app.js",
+                      "lineRange":  [
+                                        1814,
+                                        1852
+                                    ],
+                      "summary":  "Makes the floating chatbot draggable via pointer events, constraining it within the viewport and persisting its position.",
+                      "tags":  [
+                                   "chatbot",
+                                   "drag-and-drop",
+                                   "event-handler",
+                                   "prototype"
+                               ],
+                      "complexity":  "moderate"
+                  },
+                  {
+                      "id":  "function:ai_helper.php:analyzeFeedbackWithAI",
+                      "type":  "function",
+                      "name":  "analyzeFeedbackWithAI",
+                      "filePath":  "ai_helper.php",
+                      "lineRange":  [
+                                        9,
+                                        93
+                                    ],
+                      "summary":  "Sends feedback text to the Gemini generateContent API and returns a normalized array of sentiment, 1-5 score, category, summary and suggested reply, falling through a five-model list until one returns parseable JSON.",
+                      "tags":  [
+                                   "service",
+                                   "api-client",
+                                   "feedback",
+                                   "parsing",
+                                   "external-api"
+                               ],
+                      "complexity":  "complex",
+                      "languageNotes":  "Extracts the JSON object from the response with a regex before json_decode because the prompt does not fully suppress markdown code fences; returns null on every failure rather than throwing."
+                  }
+              ],
+    "edges":  [
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:initSampleData",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:createWalkinBooking",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:formatTimeAgo",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:exportTableCSV",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:showPage",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:handleLogin",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:handleRegister",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:openPackageModal",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:showBookingStep",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:renderCalendar",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:handleBookingSubmit",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:renderClientBookings",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:renderStaffBookings",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:approveBooking",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:rejectBooking",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:completeBooking",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:renderClientPayments",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:openPaymentModal",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:togglePaymentAccountInfo",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:copyToClipboard",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:submitPaymentProof",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:renderStaffPayments",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:filterStaffPayments",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:openVerifyModal",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:toggleRejectSection",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:verifyPaymentNow",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:rejectPaymentWithReason",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:filterAdminPayments",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:renderAdminPayments",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:renderInventory",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:updateInventory",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:addInventoryItem",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:renderAdminAnalytics",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:renderAdminBookings",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:submitFeedback",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:renderClientFeedbackHistory",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:renderFeedbackAnalytics",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:getLoyaltyStatus",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:renderLoyaltyCard",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:renderAdminLoyalty",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:showToast",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:previewPhotos",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:handleFileSelect",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:renderClientPhotos",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:renderNotifications",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:renderProfile",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:saveProfile",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:confirmVerifyPayment",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:toggleChatbot",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:sendChatMsg",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:getBotResponse",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:app.js",
+                      "target":  "function:app.js:initDraggableChatbot",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:ai_helper.php",
+                      "target":  "function:ai_helper.php:analyzeFeedbackWithAI",
+                      "type":  "contains",
+                      "direction":  "forward",
+                      "weight":  1
+                  },
+                  {
+                      "source":  "file:ai_helper.php",
+                      "target":  "function:ai_helper.php:analyzeFeedbackWithAI",
+                      "type":  "exports",
+                      "direction":  "forward",
+                      "weight":  0.8
+                  },
+                  {
+                      "source":  "file:ai_helper.php",
+                      "target":  "file:config.php",
+                      "type":  "imports",
+                      "direction":  "forward",
+                      "weight":  0.7
+                  },
+                  {
+                      "source":  "file:assets/images/css/styles.css",
+                      "target":  "file:assets/css/styles.css",
+                      "type":  "related",
+                      "direction":  "forward",
+                      "weight":  0.5
+                  }
+              ]
+}
