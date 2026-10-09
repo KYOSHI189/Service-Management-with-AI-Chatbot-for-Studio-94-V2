@@ -25,6 +25,38 @@ function isMailConfigured(): bool {
 }
 
 /**
+ * Asks Brevo which sender address is verified for this account, so a fresh
+ * install works without any extra configuration. Returns '' on any failure.
+ */
+function brevoDefaultSender(string $apiKey): string {
+    $ch = curl_init('https://api.brevo.com/v3/account');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'api-key: ' . $apiKey,
+        'Accept: application/json',
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlErr  = curl_error($ch);
+    curl_close($ch);
+
+    if ($httpCode >= 200 && $httpCode < 300 && $response) {
+        $data = json_decode($response, true);
+        $email = $data['email'] ?? '';
+        if (!empty($email)) {
+            error_log('[STUDIO94] Using Brevo account sender: ' . $email);
+            return (string) $email;
+        }
+    }
+
+    error_log('[STUDIO94] Could not read Brevo account sender (' . $httpCode . '): '
+        . substr((string) $response, 0, 300) . ' ' . $curlErr);
+    return '';
+}
+
+/**
  * Sends an email via Brevo REST API v3 (HTTPS port 443).
  * 300 emails/day free, no domain required, and the default sender is
  * verified automatically. Works on Railway where SMTP ports are blocked.
@@ -34,12 +66,20 @@ function sendViaBrevo(string $toEmail, string $subject, string $htmlContent, str
         return false;
     }
 
+    // Sender resolution: explicit config -> MAIL_USERNAME -> the verified
+    // sender Brevo reports for this account. Without a sender Brevo rejects
+    // the request, so fall back rather than giving up.
     $senderEmail = defined('BREVO_FROM_EMAIL') && !empty(BREVO_FROM_EMAIL)
         ? BREVO_FROM_EMAIL
         : (MAIL_USERNAME !== '' ? MAIL_USERNAME : '');
 
     if ($senderEmail === '') {
-        error_log('[STUDIO94] Brevo skipped: no sender address configured');
+        $senderEmail = brevoDefaultSender(BREVO_API_KEY);
+    }
+
+    if ($senderEmail === '') {
+        error_log('[STUDIO94] Brevo skipped: could not resolve a sender address. '
+            . 'Set BREVO_FROM_EMAIL in Railway to a verified sender.');
         return false;
     }
 
