@@ -56,6 +56,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['user_email'] = $user['email'];
                     $_SESSION['role']       = $user['role'];
 
+                    // Forced password change (set by force_password_change.php).
+                    // The old shared "password" credential must never survive.
+                    if (!empty($user['must_change_password'])) {
+                        $_SESSION['must_change_password'] = 1;
+                        header('Location: ' . APP_URL . '/change-password.php');
+                        exit;
+                    }
+
                     redirectToDashboard($user['role']);
                 }
             } else {

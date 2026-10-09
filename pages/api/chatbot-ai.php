@@ -20,12 +20,16 @@ require_once __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../functions.php';
 
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Headers: Content-Type');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
+// No wildcard CORS. This endpoint spends the Gemini API key, so any
+// origin must not be able to call it cross-site. Same-origin requests
+// (the chatbot widget) work without this header at all.
+
+// Requires a logged-in user; the key must never be reachable anonymously.
+if (!isLoggedIn()) {
+    http_response_code(401);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['success' => false, 'error' => 'Authentication required.']);
     exit;
 }
 
@@ -630,8 +634,8 @@ function callGemini(string $apiKey, string $message, array $models): array
             ],
             CURLOPT_TIMEOUT => 120,
             CURLOPT_CONNECTTIMEOUT => 30,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => 0,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
         ]);
 
         $response  = curl_exec($ch);
