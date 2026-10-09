@@ -1277,8 +1277,7 @@ $packages = $pdo->query("
                 <select id="sp-method" style="width:100%;padding:10px 14px;border:1px solid #E0E0E0;border-radius:8px;font-size:14px;box-sizing:border-box;">
                     <option value="Cash">💵 Cash</option>
                     <option value="GCash">📱 GCash</option>
-                    <option value="Maya">📱 Maya</option>
-                    <option value="Bank Transfer">🏦 Bank Transfer</option>
+                    <option value="Maribank">🏦 Maribank</option>
                 </select>
             </div>
 

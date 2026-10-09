@@ -771,7 +771,7 @@ requireRole('client');
 
     <div class="pm-content">
       <div class="qr-wrap">
-        <img id="gcashQrImg" alt="GCash QR Code" src="">
+        <img id="gcashQrImg" alt="GCash QR Code" src="<?= APP_URL ?>/assets/qr-code/gcash-qr.jpg">
         <div class="qr-label">Scan to pay</div>
       </div>
 
@@ -798,7 +798,7 @@ requireRole('client');
 
     <div class="pm-content">
       <div class="qr-wrap">
-        <img id="maribankQrImg" alt="Maribank QR Code" src="">
+        <img id="maribankQrImg" alt="Maribank QR Code" src="<?= APP_URL ?>/assets/qr-code/maribank-qr.jpg">
         <div class="qr-label">Scan to transfer</div>
       </div>
 
@@ -946,6 +946,14 @@ function copyToClipboard(text) {
 // ============================================================
 // SET QR IMAGE (FIXED — dynamic change, cache-bust, no DOM break)
 // ============================================================
+// The bundled assets/qr-code/*.jpg files are the source of truth.
+// A settings-table value is only honoured when it is non-empty, so
+// clearing the field falls back to the bundled image rather than a
+// blank box.
+const BUNDLED_QR = {
+    gcashQrImg:    '<?= APP_URL ?>/assets/qr-code/gcash-qr.jpg',
+    maribankQrImg: '<?= APP_URL ?>/assets/qr-code/maribank-qr.jpg',
+};
 function setQrImage(imgId, qrValue, fallbackEmoji) {
     const img = document.getElementById(imgId);
     if (!img) return;
@@ -959,13 +967,10 @@ function setQrImage(imgId, qrValue, fallbackEmoji) {
     const qr = (qrValue || '').trim();
 
     if (!qr) {
-        // Walang QR — fallback lang
-        img.style.display = 'none';
-        img.removeAttribute('src');
-        const fb = document.createElement('div');
-        fb.className = 'qr-fallback';
-        fb.innerHTML = fallbackEmoji;
-        parent.insertBefore(fb, img);
+        // No override configured — keep the static bundled QR already in src.
+        // Hiding it here would blank a perfectly good image.
+        img.style.display = 'block';
+        img.src = BUNDLED_QR[imgId] || img.src;
         return;
     }
 
