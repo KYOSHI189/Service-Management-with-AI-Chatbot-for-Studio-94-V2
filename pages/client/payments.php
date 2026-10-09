@@ -109,7 +109,18 @@ requireRole('client');
     padding-bottom: 12px;
     border-bottom: 1px solid #E0E0E0;
 }
-.payment-method-card .pm-header .pm-icon { font-size: 22px; }
+.payment-method-card .pm-header .pm-icon {
+    font-size: 22px;
+    line-height: 0;
+    flex-shrink: 0;
+}
+.payment-method-card .pm-header .pm-icon-img {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    border-radius: 5px;
+    display: block;
+}
 .payment-method-card .pm-header .pm-title {
     font-size: 15px;
     color: #0A0A0A;
@@ -765,7 +776,7 @@ requireRole('client');
   <!-- GCash -->
   <div class="payment-method-card">
     <div class="pm-header">
-      <span class="pm-icon">💚</span>
+      <span class="pm-icon"><img src="<?= APP_URL ?>/assets/logo/gcash-logo.png" alt="GCash" class="pm-icon-img"></span>
       <strong class="pm-title">Pay via GCash</strong>
     </div>
 
@@ -792,7 +803,7 @@ requireRole('client');
   <!-- Maribank -->
   <div class="payment-method-card">
     <div class="pm-header">
-      <span class="pm-icon">🏦</span>
+      <span class="pm-icon"><img src="<?= APP_URL ?>/assets/logo/maribank-logo.jpg" alt="Maribank" class="pm-icon-img"></span>
       <strong class="pm-title">Pay via Maribank</strong>
     </div>
 
