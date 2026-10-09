@@ -1,6 +1,7 @@
-# ============================================================
-# STUDIO 94 SNAPTRACK — Temporary password reset (ADMIN ONLY)
-# ============================================================
+<?php
+// ============================================================
+// STUDIO 94 SNAPTRACK — Temporary password reset (ADMIN ONLY)
+// ============================================================
 //
 // WHY THIS FILE EXISTS:
 // change_password.php set EVERY account to the shared password

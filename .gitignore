@@ -38,6 +38,10 @@ pages/uploads/*
 # Logs
 *.log
 
+# Understand-Anything scratch (commit the graph, not the pipeline's working files)
+.ua/intermediate/
+.ua/tmp/
+
 # OS & IDE
 .DS_Store
 Thumbs.db
