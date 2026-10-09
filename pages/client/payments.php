@@ -959,6 +959,7 @@ function setQrImage(imgId, qrValue, fallbackEmoji) {
     if (!img) return;
 
     const parent = img.parentElement;
+    const bundled = BUNDLED_QR[imgId] || '';
 
     // Alisin ang lumang fallback (kung meron) bago mag-set ng bagong state
     const oldFallback = parent.querySelector('.qr-fallback');
@@ -966,30 +967,11 @@ function setQrImage(imgId, qrValue, fallbackEmoji) {
 
     const qr = (qrValue || '').trim();
 
-    if (!qr) {
-        // No override configured — keep the static bundled QR already in src.
-        // Hiding it here would blank a perfectly good image.
-        img.style.display = 'block';
-        img.src = BUNDLED_QR[imgId] || img.src;
-        return;
-    }
-
-    // Build full URL — support relative path AND full URL
-    const baseUrl = qr.startsWith('http') ? qr : (APP_BASE + qr.replace(/^\/+/, ''));
-    const finalUrl = baseUrl + (baseUrl.includes('?') ? '&' : '?') + 'v=' + Date.now();
-
-    // Reset handlers
+    // Reset handlers before touching src, so a stale handler can't fire.
     img.onerror = null;
     img.onload = null;
 
-    img.onload = function () {
-        img.style.display = 'block';
-        const fb = parent.querySelector('.qr-fallback');
-        if (fb) fb.remove();
-    };
-
-    img.onerror = function () {
-        console.warn('QR failed to load:', finalUrl);
+    const showFallback = function () {
         img.style.display = 'none';
         if (!parent.querySelector('.qr-fallback')) {
             const fb = document.createElement('div');
@@ -999,8 +981,40 @@ function setQrImage(imgId, qrValue, fallbackEmoji) {
         }
     };
 
-    // Force browser to reload image (bypass cache)
-    img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+    const showImage = function () {
+        img.style.display = 'block';
+        const fb = parent.querySelector('.qr-fallback');
+        if (fb) fb.remove();
+    };
+
+    if (!qr) {
+        // No override configured — always use the bundled file.
+        img.style.display = 'block';
+        if (bundled) img.src = bundled;
+        return;
+    }
+
+    // Build full URL — support relative path AND full URL
+    const baseUrl = qr.startsWith('http') ? qr : (APP_BASE + qr.replace(/^\/+/, ''));
+    const finalUrl = baseUrl + (baseUrl.includes('?') ? '&' : '?') + 'v=' + Date.now();
+
+    img.onload = showImage;
+
+    img.onerror = function () {
+        // A configured override can point at a file that no longer exists.
+        // Fall back to the bundled QR rather than degrading to an emoji.
+        console.warn('QR override failed, using bundled image:', finalUrl);
+        if (bundled && img.getAttribute('src') !== bundled) {
+            img.onerror = function () {
+                console.warn('Bundled QR also failed:', bundled);
+                showFallback();
+            };
+            img.src = bundled;
+            return;
+        }
+        showFallback();
+    };
+
     img.src = finalUrl;
 }
 
