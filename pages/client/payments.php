@@ -1,740 +1,1527 @@
 <?php
-// ============================================================
-// STAFF/ADMIN — Payment Verification
-// White & Black Theme
-// List view → Click name → Modal with details
-// ============================================================
-
-requireRole(['admin', 'staff']);
-$pdo = db();
-
-const RESERVATION_FEE = 100;
-
-// ============================================================
-// HANDLE ACTIONS
-// ============================================================
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    verifyCsrf();
-    $action    = $_POST['action'] ?? '';
-    $paymentId = cleanInt($_POST['payment_id'] ?? 0);
-
-    if ($paymentId) {
-        // VERIFY
-        if ($action === 'verify') {
-            $stmt = $pdo->prepare("
-                SELECT p.*, b.package_price, b.deposit_amount, b.remaining_balance, b.user_id,
-                       lc.total_bookings
-                FROM payments p
-                JOIN bookings b ON p.booking_id = b.id
-                LEFT JOIN loyalty_cards lc ON lc.user_id = p.user_id
-                WHERE p.id = ?
-            ");
-            $stmt->execute([$paymentId]);
-            $pay = $stmt->fetch();
-
-            if ($pay) {
-                $loyaltyCount = (int)($pay['total_bookings'] ?? 0);
-                $hasDiscount  = ($loyaltyCount >= 10);
-                $originalPrice  = (float)$pay['package_price'];
-                $effectivePrice = $hasDiscount ? round($originalPrice * 0.5, 2) : $originalPrice;
-                $paymentType = strtoupper($pay['type'] ?? 'RESERVATION');
-                $remainingAmount = max(0, round($effectivePrice - RESERVATION_FEE, 2));
-
-                if ($paymentType === 'BALANCE') {
-                    $verifiedAmount  = (float)$pay['amount'];
-                    $remainingAmount = 0;
-                    $pdo->prepare("UPDATE bookings SET deposit_paid=1, fully_paid=1, remaining_balance=0, status='Confirmed' WHERE id=?")
-                        ->execute([$pay['booking_id']]);
-                    addNotification($pay['user_id'], '🎉 Fully Paid',
-                        'Your balance of ₱' . number_format($verifiedAmount, 2) . ' has been verified! Booking is now fully paid.',
-                        'payment', '🎉');
-                } elseif ($paymentType === 'FULL') {
-                    $verifiedAmount  = $effectivePrice;
-                    $remainingAmount = 0;
-                    $pdo->prepare("UPDATE bookings SET deposit_paid=1, fully_paid=1, remaining_balance=0, status='Confirmed' WHERE id=?")
-                        ->execute([$pay['booking_id']]);
-                    addNotification($pay['user_id'], '🎉 Fully Paid',
-                        'Your full payment of ₱' . number_format($verifiedAmount, 2) . ' has been verified!',
-                        'payment', '💰');
-                } else {
-                    $verifiedAmount = RESERVATION_FEE;
-                    $pdo->prepare("UPDATE bookings SET deposit_paid=1, status='Deposit Paid', remaining_balance=? WHERE id=?")
-                        ->execute([$remainingAmount, $pay['booking_id']]);
-                    addNotification($pay['user_id'], '🎫 Reservation Verified',
-                        'Your ₱' . number_format($verifiedAmount, 2) . ' reservation fee has been verified! Remaining balance: ₱' . number_format($remainingAmount, 2),
-                        'payment', '✅');
-                }
-
-                $pdo->prepare("UPDATE payments SET status='PAID', verified_by=?, verified_at=NOW(), amount=? WHERE id=?")
-                    ->execute([$_SESSION['user_id'], $verifiedAmount, $paymentId]);
-
-                setFlash('success', 'Payment verified successfully!');
-            }
-        }
-
-        // REJECT
-        if ($action === 'reject') {
-            $reason = trim($_POST['rejection_reason'] ?? 'Invalid proof');
-            $stmt   = $pdo->prepare("SELECT * FROM payments WHERE id = ?");
-            $stmt->execute([$paymentId]);
-            $pay = $stmt->fetch();
-
-            if ($pay) {
-                $pdo->prepare("UPDATE payments SET status='REJECTED', rejection_reason=?, verified_by=?, verified_at=NOW() WHERE id=?")
-                    ->execute([$reason, $_SESSION['user_id'], $paymentId]);
-                $typeLabel = strtoupper($pay['type'] ?? '') === 'BALANCE' ? 'Balance payment' : 'Payment';
-                addNotification($pay['user_id'], "❌ {$typeLabel} Rejected",
-                    "Your {$typeLabel} was rejected: {$reason} Please re-submit.", 'payment', '❌');
-            }
-            setFlash('success', 'Payment rejected.');
-        }
-
-        // REFUND
-        if ($action === 'refund') {
-            $refundRef = trim($_POST['refund_reference'] ?? '');
-            $stmt      = $pdo->prepare("SELECT * FROM payments WHERE id = ?");
-            $stmt->execute([$paymentId]);
-            $pay = $stmt->fetch();
-
-            if ($pay) {
-                $pdo->prepare("UPDATE payments SET status='REFUNDED', refund_amount=?, refund_reference=?, refund_date=NOW(), refunded_by=? WHERE id=?")
-                    ->execute([$pay['amount'], $refundRef, $_SESSION['user_id'], $paymentId]);
-                addNotification($pay['user_id'], '💸 Refund Processed',
-                    'Your payment of ₱' . number_format($pay['amount'], 2) . ' has been refunded.', 'payment', '💸');
-            }
-            setFlash('success', 'Refund processed.');
-        }
-    }
-
-    header('Location: index.php?page=payments');
-    exit;
-}
-
-// ============================================================
-// FILTERS & SEARCH
-// ============================================================
-$statusFilter = $_GET['status'] ?? 'active';
-$search       = trim($_GET['q'] ?? '');
-
-$where  = ['1=1'];
-$params = [];
-
-if ($statusFilter === 'active') {
-    $where[] = "p.status IN ('PENDING', 'UNPAID', 'REJECTED')";
-} elseif ($statusFilter !== 'all') {
-    $where[]  = 'p.status = ?';
-    $params[] = strtoupper($statusFilter);
-}
-
-if ($search !== '') {
-    $searchTerm = "%$search%";
-    $where[]  = '(u.name LIKE ? OR p.payment_ref LIKE ? OR b.booking_ref LIKE ? OR u.email LIKE ? OR u.phone LIKE ?)';
-    $params[] = $searchTerm;
-    $params[] = $searchTerm;
-    $params[] = $searchTerm;
-    $params[] = $searchTerm;
-    $params[] = $searchTerm;
-
-    if ($statusFilter === 'active') {
-        $where = ['1=1'];
-        $params = [];
-        $where[]  = '(u.name LIKE ? OR p.payment_ref LIKE ? OR b.booking_ref LIKE ? OR u.email LIKE ? OR u.phone LIKE ?)';
-        $params[] = $searchTerm;
-        $params[] = $searchTerm;
-        $params[] = $searchTerm;
-        $params[] = $searchTerm;
-        $params[] = $searchTerm;
-    }
-}
-
-// ============================================================
-// GET PAYMENTS
-// ============================================================
-$stmt = $pdo->prepare("
-    SELECT p.*,
-           b.booking_ref, b.date AS booking_date, b.status AS booking_status,
-           b.package_price, b.deposit_amount, b.remaining_balance, b.deposit_paid, b.fully_paid,
-           pkg.name AS pkg_name,
-           u.name AS client_name, u.email AS client_email, u.phone AS client_phone,
-           lc.total_bookings AS loyalty_count
-    FROM payments p
-    JOIN bookings b ON p.booking_id = b.id
-    JOIN packages pkg ON b.package_id = pkg.id
-    LEFT JOIN users u ON p.user_id = u.id
-    LEFT JOIN loyalty_cards lc ON lc.user_id = p.user_id
-    WHERE " . implode(' AND ', $where) . "
-    ORDER BY 
-        CASE p.status 
-            WHEN 'PENDING' THEN 1 
-            WHEN 'UNPAID' THEN 2 
-            WHEN 'REJECTED' THEN 3 
-            WHEN 'PAID' THEN 4 
-            WHEN 'REFUNDED' THEN 5 
-            ELSE 6 
-        END,
-        p.created_at DESC
-");
-$stmt->execute($params);
-$payments = $stmt->fetchAll();
-
-// Counts
-$countAll      = $pdo->query("SELECT COUNT(*) FROM payments")->fetchColumn();
-$countPending  = $pdo->query("SELECT COUNT(*) FROM payments WHERE status='PENDING'")->fetchColumn();
-$countPaid     = $pdo->query("SELECT COUNT(*) FROM payments WHERE status='PAID'")->fetchColumn();
-$countRejected = $pdo->query("SELECT COUNT(*) FROM payments WHERE status='REJECTED'")->fetchColumn();
-$countUnpaid   = $pdo->query("SELECT COUNT(*) FROM payments WHERE status='UNPAID'")->fetchColumn();
-$countRefunded = $pdo->query("SELECT COUNT(*) FROM payments WHERE status='REFUNDED'")->fetchColumn();
-$countActive   = (int)$countPending + (int)$countUnpaid + (int)$countRejected;
+requireRole('client');
+// ================================================================
+// My Payments — Client View (Black & White Theme)
+// ================================================================
 ?>
 
-<!-- PAGE BANNER -->
+<!-- ============================================================ -->
+<!-- FULLY RESPONSIVE STYLES                                       -->
+<!-- ============================================================ -->
+<style>
+/* ============================================================
+   BASE (MOBILE-FIRST) — 320px pataas
+   ============================================================ */
+
+.page-banner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    background: linear-gradient(135deg, #2C2C2C, #4A4A4A);
+    color: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.page-banner-text { width: 100%; min-width: 0; }
+.page-banner .eyebrow {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-bottom: 6px;
+}
+.page-banner h2 {
+    font-size: 18px;
+    margin: 0 0 6px;
+    line-height: 1.25;
+    word-break: break-word;
+}
+.page-banner p {
+    font-size: 12px;
+    opacity: 0.8;
+    margin: 0;
+    line-height: 1.4;
+}
+.page-banner-art {
+    font-size: 32px;
+    align-self: flex-end;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+}
+.stat-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    min-width: 0;
+    box-sizing: border-box;
+}
+.stat-card .stat-eyebrow {
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+}
+.stat-card .stat-value {
+    font-family: serif;
+    font-size: 20px;
+    line-height: 1.1;
+    color: var(--dark);
+    margin-bottom: 2px;
+    word-break: break-word;
+}
+.stat-card .stat-label {
+    font-size: 10px;
+    color: var(--muted);
+}
+
+.payment-methods-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.payment-method-card {
+    background: #FFFFFF;
+    border: 2px solid #0A0A0A;
+    border-radius: 14px;
+    padding: 16px;
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+.payment-method-card .pm-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #E0E0E0;
+}
+.payment-method-card .pm-header .pm-icon { font-size: 22px; }
+.payment-method-card .pm-header .pm-title {
+    font-size: 15px;
+    color: #0A0A0A;
+    font-weight: 700;
+    word-break: break-word;
+}
+
+.payment-method-card .pm-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+.payment-method-card .qr-wrap {
+    text-align: center;
+    flex-shrink: 0;
+    width: 100%;
+}
+.payment-method-card .qr-wrap img,
+.payment-method-card .qr-wrap .qr-fallback {
+    width: 140px;
+    height: 140px;
+    object-fit: contain;
+    border-radius: 12px;
+    border: 1px solid #E0E0E0;
+    background: white;
+    padding: 8px;
+    display: block;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+.payment-method-card .qr-wrap .qr-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+}
+.payment-method-card .qr-wrap .qr-label {
+    font-size: 11px;
+    color: #8B8177;
+    margin-top: 8px;
+}
+
+.payment-method-card .pm-details {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+}
+.payment-method-card .pm-field-label {
+    font-size: 10px;
+    color: #8B8177;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+.payment-method-card .pm-field-value {
+    font-weight: 700;
+    font-size: 14px;
+    color: #0A0A0A;
+    margin-bottom: 14px;
+    word-break: break-word;
+}
+.payment-method-card .pm-field-value.mono {
+    font-family: monospace;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+}
+.payment-method-card .pm-copy-btn {
+    width: 100%;
+    padding: 10px;
+    background: #0A0A0A;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    box-sizing: border-box;
+}
+.payment-method-card .pm-copy-btn:hover { opacity: 0.8; }
+
+.card {
+    padding: 14px;
+    border-radius: 12px;
+    box-sizing: border-box;
+    min-width: 0;
+}
+.card-title {
+    font-size: 14px;
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+.section-header h3 {
+    font-size: 15px;
+    margin: 0;
+    word-break: break-word;
+}
+
+#paymentsList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.payment-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    background: white;
+    box-sizing: border-box;
+    min-width: 0;
+    transition: box-shadow 0.4s ease, border-color 0.4s ease, transform 0.4s ease;
+}
+
+.payment-card:target {
+    border-color: #EAB308;
+    box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.3), 0 8px 24px rgba(234, 179, 8, 0.15);
+    transform: scale(1.01);
+    animation: highlightPulse 1.5s ease-in-out;
+}
+
+@keyframes highlightPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.3), 0 8px 24px rgba(234, 179, 8, 0.15);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(234, 179, 8, 0.5), 0 8px 30px rgba(234, 179, 8, 0.3);
+    }
+}
+
+.payment-card .pc-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.payment-card .pc-header-left { min-width: 0; }
+.payment-card .pc-pkg-name {
+    font-weight: 700;
+    font-size: 15px;
+    word-break: break-word;
+    margin-bottom: 4px;
+}
+.payment-card .pc-session {
+    font-size: 12px;
+    color: var(--muted);
+}
+.payment-card .pc-header-right {
+    text-align: left;
+}
+.payment-card .pc-price-main {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1.2;
+}
+.payment-card .pc-price-strike {
+    font-size: 11px;
+    color: var(--green-text);
+    text-decoration: line-through;
+}
+.payment-card .pc-badge-row { margin-top: 4px; }
+
+.loyalty-pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 50px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+}
+
+.payment-card .pc-amounts {
+    padding: 12px;
+    background: var(--bg-soft);
+    border-radius: 8px;
+    margin-top: 12px;
+}
+.payment-card .pc-amount-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13px;
+    flex-wrap: wrap;
+}
+.payment-card .pc-amount-row + .pc-amount-row { margin-top: 4px; }
+.payment-card .pc-amount-row .pc-label { color: var(--muted); }
+.payment-card .pc-amount-row .pc-value { font-weight: 600; word-break: break-word; }
+.payment-card .pc-amount-divider {
+    border-top: 1px solid var(--border);
+    margin: 8px 0;
+}
+.payment-card .pc-amount-total {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    flex-wrap: wrap;
+}
+.payment-card .pc-amount-note {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    margin-top: 2px;
+}
+
+.payment-card .pc-history {
+    margin-top: 12px;
+    padding: 10px;
+    background: #F8F9FA;
+    border-radius: 8px;
+}
+.payment-card .pc-history-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.payment-card .pc-history-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12px;
+    padding: 4px 0;
+    flex-wrap: wrap;
+}
+
+.payment-card .pc-form-wrap {
+    margin-top: 12px;
+    padding: 12px;
+    background: #F5F5F5;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+.payment-card .pc-form-title {
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #0A0A0A;
+    font-size: 13px;
+}
+.payment-card .pc-form-info {
+    margin-bottom: 12px;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #0A0A0A;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.payment-card .pc-form-info .pcfi-icon { font-size: 24px; flex-shrink: 0; }
+.payment-card .pc-form-info .pcfi-body { min-width: 0; flex: 1; }
+.payment-card .pc-form-info .pcfi-label {
+    font-weight: 700;
+    font-size: 13px;
+    color: #0A0A0A;
+    word-break: break-word;
+}
+.payment-card .pc-form-info .pcfi-value {
+    font-size: 18px;
+    color: #0A0A0A;
+    font-weight: 800;
+    word-break: break-word;
+}
+.payment-card .pc-form-info .pcfi-note {
+    font-size: 11px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.method-selector {
+    margin-bottom: 12px;
+}
+.method-selector .method-label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #0A0A0A;
+}
+.method-selector .method-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.method-selector .method-option {
+    flex: 1 1 120px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    cursor: pointer;
+    background: transparent;
+    transition: .2s;
+    box-sizing: border-box;
+    min-width: 0;
+}
+.method-selector .method-option.active {
+    border-color: #0A0A0A;
+    background: #F5F5F5;
+}
+.method-selector .method-option .mo-icon { font-size: 18px; flex-shrink: 0; }
+.method-selector .method-option .mo-text {
+    font-weight: 600;
+    font-size: 13px;
+    color: #666;
+    word-break: break-word;
+}
+.method-selector .method-option.active .mo-text { color: #0A0A0A; }
+
+.form-group { margin-bottom: 8px; }
+.form-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #0A0A0A;
+}
+.form-group input[type="text"],
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #E0E0E0;
+    border-radius: 8px;
+    font-size: 13px;
+    background: white;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+.form-group input[type="file"] {
+    padding: 8px;
+    font-size: 12px;
+}
+
+.pc-submit-btn {
+    background: #0A0A0A;
+    color: #fff;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+.pc-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.pc-status {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+.pc-status.pending {
+    background: #F5F5F5;
+    border: 1px solid #0A0A0A;
+    color: #0A0A0A;
+}
+.pc-status.rejected {
+    background: #FFEEEE;
+    border: 1px solid #E74C3C;
+    color: #991B1B;
+}
+.pc-status.success {
+    background: #F0FFF4;
+    border: 1px solid #2E7D32;
+    color: #1B5E20;
+}
+
+.policy-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.policy-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #F5F5F5;
+    border-radius: 12px;
+    border: 1px solid #0A0A0A;
+    box-sizing: border-box;
+    min-width: 0;
+}
+.policy-item .policy-icon {
+    width: 44px;
+    height: 44px;
+    background: #0A0A0A;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.policy-item .policy-body { min-width: 0; flex: 1; }
+.policy-item .policy-title {
+    font-weight: 600;
+    color: #0A0A0A;
+    font-size: 13px;
+    word-break: break-word;
+}
+.policy-item .policy-desc {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+@media (min-width: 380px) {
+    .page-banner h2 { font-size: 19px; }
+    .stat-card .stat-value { font-size: 22px; }
+    .payment-card .pc-pkg-name { font-size: 16px; }
+    .payment-card .pc-price-main { font-size: 22px; }
+    .payment-method-card .qr-wrap img,
+    .payment-method-card .qr-wrap .qr-fallback {
+        width: 150px;
+        height: 150px;
+    }
+}
+
+@media (min-width: 600px) {
+    .page-banner {
+        flex-direction: row;
+        align-items: center;
+        padding: 20px 24px;
+        border-radius: 14px;
+    }
+    .page-banner h2 { font-size: 22px; }
+    .page-banner-art { font-size: 40px; align-self: center; }
+
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+    .stat-card { padding: 14px 16px; border-radius: 12px; }
+    .stat-card .stat-value { font-size: 24px; }
+
+    .payment-methods-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    .payment-method-card .pm-content {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+    .payment-method-card .qr-wrap { width: auto; }
+    .payment-method-card .qr-wrap img,
+    .payment-method-card .qr-wrap .qr-fallback { margin: 0; }
+    .payment-method-card .pm-details { width: auto; }
+
+    .payment-card .pc-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    .payment-card .pc-header-right {
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .card { padding: 16px; }
+    .card-title { font-size: 15px; }
+}
+
+@media (min-width: 768px) {
+    .page-banner { padding: 24px 28px; border-radius: 16px; gap: 20px; }
+    .page-banner h2 { font-size: 24px; }
+    .page-banner p { font-size: 13px; }
+    .page-banner-art { font-size: 48px; }
+
+    .stats-grid { gap: 12px; }
+    .stat-card { padding: 16px 18px; }
+    .stat-card .stat-value { font-size: 28px; }
+    .stat-card .stat-eyebrow { font-size: 10px; }
+    .stat-card .stat-label { font-size: 11px; }
+
+    .payment-methods-grid { gap: 16px; margin-bottom: 20px; }
+    .payment-method-card { padding: 20px; border-radius: 16px; }
+    .payment-method-card .pm-header { margin-bottom: 20px; padding-bottom: 14px; }
+    .payment-method-card .pm-header .pm-title { font-size: 16px; }
+    .payment-method-card .qr-wrap img,
+    .payment-method-card .qr-wrap .qr-fallback {
+        width: 160px;
+        height: 160px;
+    }
+
+    .card { padding: 20px; border-radius: 14px; }
+    .card-title { font-size: 16px; }
+    .section-header h3 { font-size: 17px; }
+
+    #paymentsList { gap: 14px; }
+    .payment-card { padding: 16px 18px; border-radius: 14px; }
+    .payment-card .pc-pkg-name { font-size: 17px; }
+    .payment-card .pc-price-main { font-size: 24px; }
+    .payment-card .pc-amounts { padding: 14px; }
+    .payment-card .pc-amount-row { font-size: 13px; }
+    .payment-card .pc-form-wrap { padding: 14px; }
+    .payment-card .pc-form-info { padding: 14px; }
+    .payment-card .pc-form-info .pcfi-value { font-size: 20px; }
+
+    .policy-item { padding: 14px 16px; }
+    .policy-item .policy-icon { width: 48px; height: 48px; font-size: 15px; }
+    .policy-item .policy-title { font-size: 14px; }
+    .policy-item .policy-desc { font-size: 12px; }
+}
+
+@media (min-width: 1024px) {
+    .page-banner { padding: 28px 32px; }
+    .page-banner h2 { font-size: 26px; }
+    .page-banner-art { font-size: 52px; }
+
+    .stats-grid { gap: 14px; margin-bottom: 20px; }
+    .stat-card { padding: 18px 20px; }
+    .stat-card .stat-value { font-size: 30px; }
+
+    .payment-methods-grid { gap: 18px; }
+    .payment-method-card { padding: 24px; }
+    .payment-method-card .qr-wrap img,
+    .payment-method-card .qr-wrap .qr-fallback {
+        width: 170px;
+        height: 170px;
+    }
+    .payment-method-card .pm-field-value { font-size: 15px; }
+    .payment-method-card .pm-field-value.mono { font-size: 16px; }
+
+    .card { padding: 22px; }
+    .payment-card { padding: 18px 20px; }
+    .payment-card .pc-price-main { font-size: 26px; }
+    .payment-card .pc-header-right { min-width: 200px; }
+}
+
+@media (min-width: 1440px) {
+    .page-banner { padding: 32px 40px; border-radius: 18px; }
+    .page-banner h2 { font-size: 30px; }
+    .page-banner p { font-size: 14px; }
+    .page-banner-art { font-size: 64px; }
+
+    .stats-grid { gap: 16px; }
+    .stat-card { padding: 22px 24px; border-radius: 14px; }
+    .stat-card .stat-value { font-size: 34px; }
+
+    .payment-method-card { padding: 28px; }
+    .payment-method-card .qr-wrap img,
+    .payment-method-card .qr-wrap .qr-fallback {
+        width: 190px;
+        height: 190px;
+    }
+
+    .card { padding: 26px; }
+    .payment-card { padding: 20px 24px; }
+    .payment-card .pc-price-main { font-size: 28px; }
+}
+
+@media (min-width: 1920px) {
+    .page-banner { padding: 36px 48px; }
+    .page-banner h2 { font-size: 34px; }
+
+    .stat-card { padding: 26px 28px; }
+    .stat-card .stat-value { font-size: 38px; }
+
+    .payment-card { padding: 24px 28px; }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+    .page-banner { padding: 12px 16px; }
+    .page-banner h2 { font-size: 18px; }
+    .page-banner-art { font-size: 32px; }
+    .stats-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media print {
+    .page-banner-art,
+    .pc-submit-btn,
+    .pm-copy-btn,
+    .btn-primary,
+    .btn-ghost { display: none !important; }
+    .payment-card { break-inside: avoid; border: 1px solid #ccc; }
+}
+</style>
+
+<!-- ============================================================ -->
+<!-- PAGE BANNER                                                   -->
+<!-- ============================================================ -->
 <div class="page-banner">
   <div class="page-banner-text">
-    <div class="eyebrow">Payment Management</div>
-    <h2><strong>Payment Verification</strong></h2>
-    <p>Click a payment to view details and verify.</p>
+    <div class="eyebrow">Financial Overview</div>
+    <h2><strong>My Payments</strong></h2>
+    <p>Manage your reservation and payment history.</p>
   </div>
   <div class="page-banner-art">💳</div>
 </div>
 
-<!-- FILTERS + SEARCH -->
-<div class="card" style="margin-bottom:20px;background:#F5F5F5;border:1px solid #E0E0E0;">
-  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-
-    <div style="display:flex;gap:6px;flex-wrap:wrap;">
-      <?php 
-      $filters = [
-        'active'   => ['label' => '🔔 Needs Action', 'count' => $countActive],
-        'pending'  => ['label' => 'Pending',          'count' => $countPending],
-        'unpaid'   => ['label' => 'Unpaid',           'count' => $countUnpaid],
-        'rejected' => ['label' => 'Rejected',         'count' => $countRejected],
-        'paid'     => ['label' => 'Paid',             'count' => $countPaid],
-        'refunded' => ['label' => 'Refunded',         'count' => $countRefunded],
-        'all'      => ['label' => 'All',              'count' => $countAll],
-      ];
-      foreach ($filters as $key => $info): 
-        $isActive = ($statusFilter === $key);
-      ?>
-        <a href="index.php?page=payments&status=<?= $key ?><?= $search ? '&q=' . urlencode($search) : '' ?>" 
-           style="padding:6px 14px;border-radius:50px;font-size:12px;font-weight:600;text-decoration:none;transition:all 0.2s;display:inline-flex;align-items:center;gap:6px;
-                  <?= $isActive 
-                      ? 'background:#0A0A0A;color:#FFFFFF;border:1px solid #0A0A0A;' 
-                      : 'background:#FFFFFF;color:#0A0A0A;border:1px solid #E0E0E0;' ?>">
-          <?= $info['label'] ?>
-          <span style="background:<?= $isActive ? 'rgba(255,255,255,0.25)' : '#F5F5F5' ?>;padding:1px 7px;border-radius:50px;font-size:10px;font-weight:700;">
-            <?= $info['count'] ?>
-          </span>
-        </a>
-      <?php endforeach; ?>
-    </div>
-
-    <form method="GET" action="index.php" style="display:flex;gap:8px;align-items:center;">
-      <input type="hidden" name="page" value="payments">
-      <input type="hidden" name="status" value="<?= htmlspecialchars($statusFilter) ?>">
-      <div style="position:relative;">
-        <input type="text" 
-               name="q" 
-               value="<?= htmlspecialchars($search) ?>" 
-               placeholder="Search client…" 
-               style="padding:8px 36px 8px 14px;border:1px solid #E0E0E0;border-radius:50px;font-size:13px;width:200px;background:#FFFFFF;">
-        <?php if ($search): ?>
-          <a href="index.php?page=payments&status=<?= htmlspecialchars($statusFilter) ?>" 
-             style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#8B8177;text-decoration:none;font-size:14px;">
-            ✕
-          </a>
-        <?php endif; ?>
-      </div>
-      <button type="submit" 
-              style="padding:8px 18px;background:#0A0A0A;color:#FFFFFF;border:none;border-radius:50px;font-size:13px;font-weight:600;cursor:pointer;">
-        🔍
-      </button>
-    </form>
+<!-- ============================================================ -->
+<!-- STATS                                                         -->
+<!-- ============================================================ -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-eyebrow">Total Paid</div>
+    <div class="stat-value" id="statPaid">—</div>
+    <div class="stat-label">All time payments</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-eyebrow">Pending</div>
+    <div class="stat-value" id="statPending">—</div>
+    <div class="stat-label">Awaiting verification</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-eyebrow">Unpaid</div>
+    <div class="stat-value" id="statUnpaid">—</div>
+    <div class="stat-label">Reservation required</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-eyebrow">Active Bookings</div>
+    <div class="stat-value" id="statActive">—</div>
+    <div class="stat-label">Pending settlement</div>
   </div>
 </div>
 
-<!-- PAYMENTS LIST (Compact) -->
+<!-- ============================================================ -->
+<!-- PAYMENT METHODS (Black & White)                               -->
+<!-- ============================================================ -->
+<div class="payment-methods-grid">
+
+  <!-- GCash -->
+  <div class="payment-method-card">
+    <div class="pm-header">
+      <span class="pm-icon">💚</span>
+      <strong class="pm-title">Pay via GCash</strong>
+    </div>
+
+    <div class="pm-content">
+      <div class="qr-wrap">
+        <img id="gcashQrImg" alt="GCash QR Code" src="">
+        <div class="qr-label">Scan to pay</div>
+      </div>
+
+      <div class="pm-details">
+        <div class="pm-field-label">Account Name</div>
+        <div class="pm-field-value" id="gcashName">—</div>
+
+        <div class="pm-field-label">Account Number</div>
+        <div class="pm-field-value mono" id="gcashNo">—</div>
+
+        <button id="copyGcashBtn" class="pm-copy-btn" type="button">
+          📋 Copy GCash Number
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Maribank -->
+  <div class="payment-method-card">
+    <div class="pm-header">
+      <span class="pm-icon">🏦</span>
+      <strong class="pm-title">Pay via Maribank</strong>
+    </div>
+
+    <div class="pm-content">
+      <div class="qr-wrap">
+        <img id="maribankQrImg" alt="Maribank QR Code" src="">
+        <div class="qr-label">Scan to transfer</div>
+      </div>
+
+      <div class="pm-details">
+        <div class="pm-field-label">Account Name</div>
+        <div class="pm-field-value" id="maribankName">—</div>
+
+        <div class="pm-field-label">Account Number</div>
+        <div class="pm-field-value mono" id="maribankNo">—</div>
+
+        <button id="copyMaribankBtn" class="pm-copy-btn" type="button">
+          📋 Copy Maribank Number
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- PAYMENTS LIST                                                 -->
+<!-- ============================================================ -->
 <div class="card">
   <div class="section-header">
-    <h3><strong>Payment Records</strong></h3>
-    <span style="font-size:12px;color:#8B8177;">Total: <?= count($payments) ?></span>
+    <h3><strong>My Payments</strong></h3>
   </div>
-
-  <?php if (empty($payments)): ?>
-    <div style="text-align:center;padding:60px;">
-      <div style="font-size:48px;margin-bottom:12px;">📭</div>
-      <div style="font-weight:600;color:#0A0A0A;">
-        <?= $search ? 'No payments match your search' : 'No payments found' ?>
-      </div>
-    </div>
-  <?php else: ?>
-
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <?php foreach ($payments as $p): 
-        $loyaltyCount       = (int)($p['loyalty_count'] ?? 0);
-        $hasLoyaltyDiscount = ($loyaltyCount >= 10);
-
-        $paymentType   = strtoupper($p['type'] ?? 'RESERVATION');
-        $isBalance     = ($paymentType === 'BALANCE');
-        $isFull        = ($paymentType === 'FULL');
-        $isReservation = !$isBalance && !$isFull;
-
-        $originalPrice  = (float)$p['package_price'];
-        $effectivePrice = $hasLoyaltyDiscount ? round($originalPrice * 0.5, 2) : $originalPrice;
-        $reservationFee = RESERVATION_FEE;
-        $balanceAmount  = max(0, round($effectivePrice - $reservationFee, 2));
-
-        if ($isBalance) {
-            $expectedAmount = $balanceAmount;
-        } elseif ($isFull) {
-            $expectedAmount = $effectivePrice;
-        } else {
-            $expectedAmount = $reservationFee;
-        }
-
-        $amountLabel   = 'Amount Due';
-        $amountDisplay = $expectedAmount;
-
-        if ($p['status'] === 'PAID') {
-            $amountLabel   = 'Paid';
-            $amountDisplay = (float)$p['amount'];
-        } elseif ($p['status'] === 'PENDING') {
-            $amountLabel   = 'Submitted';
-            $amountDisplay = (float)$p['amount'];
-        } elseif ($p['status'] === 'REJECTED') {
-            $amountLabel   = 'Rejected';
-            $amountDisplay = (float)$p['amount'];
-        } elseif ($p['status'] === 'REFUNDED') {
-            $amountLabel   = 'Refunded';
-            $amountDisplay = (float)$p['amount'];
-        }
-
-        // Status badge color
-        $statusIcon = [
-            'PAID'     => '✅',
-            'PENDING'  => '⏳',
-            'UNPAID'   => '⚠️',
-            'REJECTED' => '❌',
-            'REFUNDED' => '💸',
-        ][$p['status']] ?? '•';
-
-        $statusBorder = [
-            'PAID'     => '#0A0A0A',
-            'PENDING'  => '#F59E0B',
-            'UNPAID'   => '#E74C3C',
-            'REJECTED' => '#E74C3C',
-            'REFUNDED' => '#6B7280',
-        ][$p['status']] ?? '#E0E0E0';
-
-        $hasProof = !empty($p['proof_image']);
-      ?>
-
-        <!-- COMPACT ROW -->
-        <div onclick="openPaymentDetail(<?= $p['id'] ?>)" 
-             style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;background:#FFFFFF;border:1px solid #E0E0E0;border-left:4px solid <?= $statusBorder ?>;border-radius:10px;cursor:pointer;transition:all 0.15s;"
-             onmouseover="this.style.background='#F9F9F9';this.style.transform='translateX(2px)'"
-             onmouseout="this.style.background='#FFFFFF';this.style.transform='translateX(0)'">
-
-          <!-- LEFT: Client name + package -->
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
-              <span style="font-weight:700;font-size:14px;color:#0A0A0A;">
-                <?= clean($p['client_name'] ?? 'Walk-in Client') ?>
-              </span>
-              <?php if ($loyaltyCount > 0): ?>
-                <span style="background:#0A0A0A;color:#FFFFFF;padding:1px 7px;border-radius:50px;font-size:10px;font-weight:700;">
-                  🎫 <?= $loyaltyCount ?>
-                </span>
-              <?php endif; ?>
-              <span style="font-size:11px;color:#8B8177;">·</span>
-              <span style="font-size:12px;color:#8B8177;">
-                <?= clean($p['pkg_name']) ?>
-              </span>
-            </div>
-            <div style="font-size:11px;color:#8B8177;">
-              📅 <?= formatDate($p['booking_date']) ?>
-              <?php if ($hasProof): ?>
-                <span style="color:#0A0A0A;">· 📎 with proof</span>
-              <?php endif; ?>
-            </div>
-          </div>
-
-          <!-- RIGHT: Amount + Status -->
-          <div style="text-align:right;display:flex;align-items:center;gap:12px;">
-            <div>
-              <div style="font-size:16px;font-weight:700;color:#0A0A0A;letter-spacing:-0.3px;">
-                <?= formatMoney($amountDisplay) ?>
-              </div>
-              <div style="font-size:10px;color:#8B8177;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">
-                <?= $amountLabel ?>
-              </div>
-            </div>
-            <div style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:50px;font-size:10px;font-weight:700;border:1px solid <?= $statusBorder ?>;color:<?= $statusBorder ?>;background:#FFFFFF;white-space:nowrap;">
-              <?= $statusIcon ?> <?= $p['status'] ?>
-            </div>
-          </div>
-        </div>
-
-      <?php endforeach; ?>
-    </div>
-  <?php endif; ?>
+  <div id="paymentsList">
+    <p style="text-align:center;color:var(--muted);padding:30px;">Loading…</p>
+  </div>
 </div>
 
 <!-- ============================================================ -->
-<!-- PAYMENT DETAIL MODAL -->
+<!-- RESERVATION & CANCELLATION POLICY                             -->
 <!-- ============================================================ -->
-<div id="paymentDetailModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this) closePaymentDetail()">
-  <div style="background:#FFFFFF;border-radius:14px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto;position:relative;">
+<div class="card" style="margin-top:20px;">
+  <div class="card-title"><strong>📋 Reservation &amp; Cancellation Policy</strong></div>
+  <div class="policy-list">
 
-    <!-- Header -->
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-bottom:1px solid #E0E0E0;position:sticky;top:0;background:#FFFFFF;border-radius:14px 14px 0 0;z-index:10;">
-      <div>
-        <div style="font-weight:700;font-size:16px;color:#0A0A0A;">Payment Details</div>
-        <div style="font-size:11px;color:#8B8177;margin-top:2px;">Click "Back" or press ESC to close</div>
+    <div class="policy-item">
+      <div class="policy-icon">₱100</div>
+      <div class="policy-body">
+        <div class="policy-title">₱100 Reservation Fee</div>
+        <div class="policy-desc">A flat ₱100 reservation fee is required to confirm your booking.</div>
       </div>
-      <button type="button" onclick="closePaymentDetail()" 
-              style="background:#F5F5F5;border:none;color:#0A0A0A;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">
-        ✕
-      </button>
     </div>
 
-    <!-- Content -->
-    <div id="paymentDetailContent" style="padding:24px;">
-      <!-- Dynamic content -->
+    <div class="policy-item">
+      <div class="policy-icon">💰</div>
+      <div class="policy-body">
+        <div class="policy-title">Remaining Balance</div>
+        <div class="policy-desc">The remaining balance is to be paid on your shoot day.</div>
+      </div>
     </div>
+
+    <div class="policy-item">
+      <div class="policy-icon">🚫</div>
+      <div class="policy-body">
+        <div class="policy-title">No Refund Policy</div>
+        <div class="policy-desc">The ₱100 reservation fee is non-refundable. Please make sure of your schedule before booking.</div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- REJECT MODAL -->
-<div id="rejectModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:99999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this) closeRejectModal()">
-  <div style="background:#FFFFFF;border-radius:14px;padding:28px;max-width:500px;width:100%;">
-    <h3 style="margin-bottom:16px;color:#0A0A0A;"><strong>❌ Reject Payment</strong></h3>
-    <form method="POST" id="rejectForm">
-      <?= csrfField() ?>
-      <input type="hidden" name="payment_id" id="rejectPaymentId">
-      <input type="hidden" name="action" value="reject">
-      <div class="form-group" style="margin-bottom:16px;">
-        <label style="font-weight:600;color:#0A0A0A;display:block;margin-bottom:8px;font-size:13px;">Reason for Rejection</label>
-        <textarea name="rejection_reason" placeholder="e.g., Invalid reference number, blurry proof, etc." required 
-                  style="width:100%;padding:12px;border:1px solid #E0E0E0;border-radius:10px;min-height:90px;font-family:inherit;font-size:13px;background:#F5F5F5;resize:vertical;"></textarea>
-      </div>
-      <div style="display:flex;gap:10px;">
-        <button type="button" style="flex:1;padding:10px;background:#F5F5F5;color:#0A0A0A;border:1px solid #E0E0E0;border-radius:8px;font-weight:600;cursor:pointer;" onclick="closeRejectModal()">Cancel</button>
-        <button type="submit" style="flex:1;padding:10px;background:#0A0A0A;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">❌ Reject</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- REFUND MODAL -->
-<div id="refundModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:99999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this) closeRefundModal()">
-  <div style="background:#FFFFFF;border-radius:14px;padding:28px;max-width:500px;width:100%;">
-    <h3 style="margin-bottom:16px;color:#0A0A0A;"><strong>💸 Process Refund</strong></h3>
-    <div style="padding:14px 16px;background:#F5F5F5;border:1px solid #E0E0E0;border-radius:10px;margin-bottom:18px;">
-      <div style="font-size:11px;color:#8B8177;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Refund Amount</div>
-      <div style="font-size:26px;font-weight:700;color:#0A0A0A;margin-top:4px;" id="refundAmount">₱0</div>
-    </div>
-    <form method="POST" id="refundForm">
-      <?= csrfField() ?>
-      <input type="hidden" name="payment_id" id="refundPaymentId">
-      <input type="hidden" name="action" value="refund">
-      <div class="form-group" style="margin-bottom:18px;">
-        <label style="font-weight:600;color:#0A0A0A;display:block;margin-bottom:8px;font-size:13px;">Refund Reference</label>
-        <input type="text" name="refund_reference" placeholder="e.g., GCash ref number" required 
-               style="width:100%;padding:12px;border:1px solid #E0E0E0;border-radius:10px;font-family:inherit;font-size:13px;background:#F5F5F5;">
-      </div>
-      <div style="display:flex;gap:10px;">
-        <button type="button" style="flex:1;padding:10px;background:#F5F5F5;color:#0A0A0A;border:1px solid #E0E0E0;border-radius:8px;font-weight:600;cursor:pointer;" onclick="closeRefundModal()">Cancel</button>
-        <button type="submit" style="flex:1;padding:10px;background:#0A0A0A;color:#FFFFFF;border:none;border-radius:8px;font-weight:600;cursor:pointer;">💸 Process</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- PROOF MODAL -->
-<div id="proofModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:999999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this) closeProofModal()">
-  <div style="background:#FFFFFF;border-radius:14px;max-width:800px;width:100%;max-height:90vh;overflow-y:auto;">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-bottom:1px solid #E0E0E0;">
-      <div>
-        <div style="font-weight:700;font-size:16px;color:#0A0A0A;">📎 Payment Proof</div>
-        <div style="font-size:11px;color:#8B8177;margin-top:2px;">
-          <span id="proof-ref">---</span> · <span id="proof-client">---</span>
-        </div>
-      </div>
-      <button type="button" onclick="closeProofModal()" style="background:#F5F5F5;border:none;color:#0A0A0A;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">✕</button>
-    </div>
-    <div style="padding:24px;text-align:center;background:#F5F5F5;">
-      <div id="proof-status" style="font-size:12px;color:#E74C3C;margin-bottom:10px;"></div>
-      <img id="proof-img" src="" alt="Payment Proof"
-           style="max-width:100%;max-height:60vh;border-radius:10px;border:1px solid #E0E0E0;background:#FFFFFF;">
-    </div>
-    <div style="padding:16px 24px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #E0E0E0;gap:10px;">
-      <button type="button" onclick="closeProofModal()" style="padding:10px 20px;background:#F5F5F5;color:#0A0A0A;border:1px solid #E0E0E0;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;">
-        ← Back
-      </button>
-      <a id="proof-download-link" href="" download style="padding:10px 20px;background:#0A0A0A;color:#FFFFFF;border:none;border-radius:8px;font-weight:600;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
-        📥 Download
-      </a>
-    </div>
-  </div>
-</div>
+<meta name="csrf-token" content="<?= csrfToken() ?>">
 
 <script>
 // ============================================================
-// PAYMENT DATA (JSON) — for dynamic modal
+// CONFIG — FIXED: dynamic APP_BASE from APP_URL (Railway-compatible)
 // ============================================================
-const PAYMENTS = <?= json_encode($payments, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>;
-const RESERVATION_FEE = <?= RESERVATION_FEE ?>;
-const PROOF_BASE_URL = <?= json_encode(APP_URL . '/assets/uploads/payments/') ?>;
-const LEGACY_PROOF_BASE_URL = <?= json_encode(APP_URL . '/assets/uploads/') ?>;
+const API_BASE        = 'pages/api/client-payments.php';
+const CSRF_TOKEN      = document.querySelector('meta[name="csrf-token"]').content;
+const APP_BASE        = '<?= rtrim(APP_URL, "/") ?>/';
+const RESERVATION_FEE = 100;
+let   CLIENT_LOYALTY_COUNT = 0;
 
+// ============================================================
+// HELPERS
+// ============================================================
 function fmtMoney(n) {
     return '₱' + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 function esc(s) {
     return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-function fmtDate(d) {
-    if (!d) return '—';
-    const dt = new Date(d);
-    return dt.toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+function statusBadgeJS(status) {
+    if (!status) return '';
+    const map = {
+        PAID:      'badge badge-green',
+        PENDING:   'badge badge-amber',
+        REJECTED:  'badge badge-red',
+        UNPAID:    'badge badge-red',
+        REFUNDED:  'badge badge-blue',
+        CANCELLED: 'badge badge-gray',
+    };
+    return `<span class="${map[status] || 'badge'}">${esc(status)}</span>`;
+}
+function formatDateJS(dateStr) {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    if (isNaN(d)) return esc(dateStr);
+    return d.toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
 }
 
-function openPaymentDetail(id) {
-    const p = PAYMENTS.find(x => x.id == id);
-    if (!p) return;
-
-    const loyaltyCount = parseInt(p.loyalty_count) || 0;
-    const hasDiscount = loyaltyCount >= 10;
-
-    const paymentType = (p.type || 'RESERVATION').toUpperCase();
-    const isBalance = paymentType === 'BALANCE';
-    const isFull = paymentType === 'FULL';
-    const isReservation = !isBalance && !isFull;
-
-    const originalPrice = parseFloat(p.package_price) || 0;
-    const effectivePrice = hasDiscount ? originalPrice * 0.5 : originalPrice;
-    const balanceAmount = Math.max(0, effectivePrice - RESERVATION_FEE);
-    const expectedAmount = isBalance ? balanceAmount : (isFull ? effectivePrice : RESERVATION_FEE);
-
-    const hasProof = p.proof_image && p.proof_image.length > 0;
-    const proofUrl = hasProof ? PROOF_BASE_URL + encodeURIComponent(p.proof_image) : '';
-    const hasSubmitted = ['PENDING', 'PAID', 'REJECTED', 'REFUNDED'].includes(p.status);
-
-    let amountLabel = 'Amount Due';
-    let amountDisplay = expectedAmount;
-    if (p.status === 'PAID') { amountLabel = 'Paid Amount'; amountDisplay = parseFloat(p.amount); }
-    else if (p.status === 'PENDING') { amountLabel = 'Submitted Amount'; amountDisplay = parseFloat(p.amount); }
-    else if (p.status === 'REJECTED') { amountLabel = 'Rejected Amount'; amountDisplay = parseFloat(p.amount); }
-    else if (p.status === 'REFUNDED') { amountLabel = 'Refunded Amount'; amountDisplay = parseFloat(p.amount); }
-
-    const statusBorder = {
-        'PAID': '#0A0A0A', 'PENDING': '#F59E0B', 'UNPAID': '#E74C3C',
-        'REJECTED': '#E74C3C', 'REFUNDED': '#6B7280'
-    }[p.status] || '#E0E0E0';
-
-    const content = document.getElementById('paymentDetailContent');
-
-    content.innerHTML = `
-        <!-- TOP: Amount + Status -->
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
-            <div>
-                <div style="font-weight:700;font-size:20px;color:#0A0A0A;">
-                    ${esc(p.client_name || 'Walk-in Client')}
-                    ${loyaltyCount > 0 ? `<span style="background:#0A0A0A;color:#FFF;padding:2px 8px;border-radius:50px;font-size:10px;font-weight:700;margin-left:6px;">🎫 ${loyaltyCount}</span>` : ''}
-                </div>
-                <div style="font-size:13px;color:#8B8177;margin-top:4px;">
-                    ${esc(p.pkg_name || 'Package')}
-                </div>
-                <div style="font-size:12px;color:#8B8177;margin-top:4px;">
-                    Session: <strong style="color:#0A0A0A;">${fmtDate(p.booking_date)}</strong>
-                </div>
-            </div>
-            <div style="text-align:right;">
-                <div style="font-size:10px;color:#8B8177;text-transform:uppercase;letter-spacing:1px;font-weight:700;">${amountLabel}</div>
-                <div style="font-size:32px;font-weight:700;color:#0A0A0A;margin-top:4px;letter-spacing:-1px;">${fmtMoney(amountDisplay)}</div>
-                <div style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:50px;font-size:11px;font-weight:700;border:2px solid ${statusBorder};color:${statusBorder};margin-top:8px;">
-                    ${p.status}
-                </div>
-            </div>
-        </div>
-
-        <!-- CLIENT INFO -->
-        <div style="padding:14px;background:#F5F5F5;border-radius:10px;margin-bottom:16px;font-size:13px;border:1px solid #E0E0E0;">
-            <div style="display:flex;flex-wrap:wrap;gap:14px;color:#0A0A0A;">
-                <div><span>✉️</span> ${esc(p.client_email || '—')}</div>
-                <div><span>📱</span> ${esc(p.client_phone || '—')}</div>
-            </div>
-        </div>
-
-        <!-- PAYMENT BREAKDOWN -->
-        ${hasSubmitted ? `
-        <div style="padding:16px;background:#F5F5F5;border:1px solid #E0E0E0;border-radius:10px;margin-bottom:16px;">
-            <div style="font-weight:700;font-size:12px;color:#0A0A0A;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;">
-                💰 Payment Breakdown
-            </div>
-
-            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed #E0E0E0;">
-                <div style="color:#8B8177;font-size:13px;">Package Price</div>
-                <div style="font-weight:700;color:#0A0A0A;">
-                    ${hasDiscount ? `<span style="font-size:11px;text-decoration:line-through;color:#8B8177;margin-right:6px;">${fmtMoney(originalPrice)}</span>` : ''}
-                    ${fmtMoney(effectivePrice)}
-                </div>
-            </div>
-
-            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed #E0E0E0;">
-                <div style="color:#8B8177;font-size:13px;">Payment Type</div>
-                <div style="font-weight:600;color:#0A0A0A;">
-                    ${isBalance ? '💰 Balance Payment' : (isFull ? '💳 Full Payment' : '🎫 Reservation Fee')}
-                </div>
-            </div>
-
-            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed #E0E0E0;">
-                <div style="color:#8B8177;font-size:13px;">Expected Amount</div>
-                <div style="font-weight:700;color:#0A0A0A;">${fmtMoney(expectedAmount)}</div>
-            </div>
-
-            <div style="display:flex;justify-content:space-between;padding:10px 0;">
-                <div style="color:#8B8177;font-size:13px;">Remaining Balance</div>
-                <div style="font-weight:700;color:#0A0A0A;">${fmtMoney(p.fully_paid ? 0 : (isBalance || isFull ? 0 : balanceAmount))}</div>
-            </div>
-
-            ${hasDiscount ? `
-            <div style="margin-top:14px;padding:12px;background:#FFFFFF;border-left:3px solid #0A0A0A;border-radius:6px;font-size:12px;color:#0A0A0A;">
-                <strong>🎉 Loyalty Discount Applied</strong><br>
-                Client has ${loyaltyCount} bookings — eligible for 50% OFF.
-            </div>
-            ` : ''}
-        </div>
-        ` : `
-        <div style="padding:16px;background:#F5F5F5;border:1px dashed #E0E0E0;border-radius:10px;margin-bottom:16px;text-align:center;">
-            <div style="font-size:13px;color:#8B8177;font-style:italic;">
-                ⏳ Client has not submitted payment yet
-            </div>
-        </div>
-        `}
-
-        <!-- PROOF BUTTON — FIXED with direct onclick handler -->
-        ${hasProof ? `
-        <div style="margin-bottom:16px;">
-            <button type="button"
-                    onclick='openProofModal(${JSON.stringify(proofUrl)}, ${JSON.stringify(p.payment_ref || '—')}, ${JSON.stringify(p.client_name || 'Walk-in Client')})'
-                    style="width:100%;padding:14px;background:#0A0A0A;color:#FFFFFF;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity 0.2s;"
-                    onmouseover="this.style.opacity='0.85'"
-                    onmouseout="this.style.opacity='1'">
-                📎 View Payment Proof
-            </button>
-        </div>
-        ` : ''}
-
-        <!-- ACTIONS -->
-        <div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:16px;border-top:1px solid #E0E0E0;">
-            ${p.status === 'PENDING' ? `
-                <form method="POST" style="flex:1;min-width:140px;" onsubmit="return confirm('Verify this payment?')">
-                    <?= csrfField() ?>
-                    <input type="hidden" name="payment_id" value="${p.id}">
-                    <input type="hidden" name="action" value="verify">
-                    <button type="submit" style="width:100%;padding:14px;background:#0A0A0A;color:#FFFFFF;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">
-                        ✅ Verify Payment
-                    </button>
-                </form>
-                <button type="button" style="flex:1;min-width:140px;padding:14px;background:#FFFFFF;color:#0A0A0A;border:2px solid #0A0A0A;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;"
-                        onclick="closePaymentDetail(); setTimeout(()=>openRejectModal(${p.id}), 200);">
-                    ❌ Reject
-                </button>
-            ` : ''}
-
-            ${p.status === 'PAID' ? `
-                <button type="button" style="flex:1;padding:14px;background:#F5F5F5;color:#0A0A0A;border:2px solid #0A0A0A;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;"
-                        onclick="closePaymentDetail(); setTimeout(()=>openRefundModal(${p.id}, ${p.amount}), 200);">
-                    💸 Process Refund
-                </button>
-            ` : ''}
-
-            ${p.status === 'REJECTED' && p.rejection_reason ? `
-                <div style="width:100%;padding:12px;background:#F5F5F5;border-left:3px solid #E74C3C;border-radius:6px;font-size:12px;color:#0A0A0A;">
-                    <strong>Rejection Reason:</strong> ${esc(p.rejection_reason)}
-                </div>
-            ` : ''}
-
-            ${p.status === 'REFUNDED' && p.refund_reference ? `
-                <div style="width:100%;padding:12px;background:#F5F5F5;border-left:3px solid #6B7280;border-radius:6px;font-size:12px;color:#0A0A0A;">
-                    <strong>Refund Ref:</strong> ${esc(p.refund_reference)}
-                </div>
-            ` : ''}
-
-            <button type="button" style="flex:1;min-width:140px;padding:14px;background:#FFFFFF;color:#0A0A0A;border:1px solid #E0E0E0;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;"
-                    onclick="closePaymentDetail()">
-                ← Back
-            </button>
-        </div>
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(message, type = 'success') {
+    document.getElementById('toast')?.remove();
+    const colors = { success: '#0A0A0A', error: '#E74C3C', warning: '#F59E0B' };
+    const toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.cssText = `
+        position: fixed; bottom: 24px; left: 16px; right: 16px; z-index: 9999;
+        background: ${colors[type] || colors.success}; color: white;
+        padding: 14px 20px; border-radius: 10px; font-size: 14px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        font-family: 'Inter', sans-serif;
+        text-align: center;
+        box-sizing: border-box;
     `;
-
-    document.getElementById('paymentDetailModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
 }
 
-function closePaymentDetail() {
-    document.getElementById('paymentDetailModal').style.display = 'none';
-    document.body.style.overflow = '';
+// ============================================================
+// COPY TO CLIPBOARD
+// ============================================================
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('✅ Copied: ' + text, 'success');
+    }).catch(() => {
+        const temp = document.createElement('input');
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+        showToast('✅ Copied: ' + text, 'success');
+    });
 }
 
-let proofFallbackTried = false;
+// ============================================================
+// LOAD SETTINGS
+// ============================================================
+async function loadSettings() {
+    try {
+        const res = await fetch(`${API_BASE}?action=settings&_t=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) return;
+        const r = await res.json();
+        if (!r.success) return;
 
-function openProofModal(imgUrl, ref, client) {
-    const img = document.getElementById('proof-img');
-    img.onerror = null;
-    img.src = imgUrl;
-    document.getElementById('proof-ref').textContent = ref || '—';
-    document.getElementById('proof-client').textContent = client || '—';
-    document.getElementById('proof-download-link').href = imgUrl;
+        document.getElementById('gcashName').textContent = r.data.gcash_account_name || '—';
+        document.getElementById('gcashNo').textContent   = r.data.gcash_account_number || '—';
 
-    // If the image is missing at the current path, retry the legacy location
-    // once before showing a broken image.
-    img.onerror = function () {
-        if (proofFallbackTried) {
-            document.getElementById('proof-status').textContent =
-                '⚠️ Could not load the proof image. The file may have been moved or deleted.';
+        const gcashQr = r.data.gcash_qr || '';
+        const gcashImg = document.getElementById('gcashQrImg');
+        if (gcashQr) {
+            const url = APP_BASE + gcashQr.replace(/^\/+/, '') + '?v=' + Date.now();
+            gcashImg.src = url;
+            gcashImg.onerror = () => {
+                gcashImg.replaceWith(Object.assign(document.createElement('div'), {
+                    className: 'qr-fallback',
+                    innerHTML: '💚'
+                }));
+            };
+        } else {
+            gcashImg.replaceWith(Object.assign(document.createElement('div'), {
+                className: 'qr-fallback',
+                innerHTML: '💚'
+            }));
+        }
+
+        document.getElementById('copyGcashBtn').onclick = () => {
+            copyToClipboard(r.data.gcash_account_number || '');
+        };
+
+        document.getElementById('maribankName').textContent = r.data.maribank_account_name || '—';
+        document.getElementById('maribankNo').textContent   = r.data.maribank_account_number || '—';
+
+        const mbQr = r.data.maribank_qr || '';
+        const mbImg = document.getElementById('maribankQrImg');
+        if (mbQr) {
+            const url = APP_BASE + mbQr.replace(/^\/+/, '') + '?v=' + Date.now();
+            mbImg.src = url;
+            mbImg.onerror = () => {
+                mbImg.replaceWith(Object.assign(document.createElement('div'), {
+                    className: 'qr-fallback',
+                    innerHTML: '🏦'
+                }));
+            };
+        } else {
+            mbImg.replaceWith(Object.assign(document.createElement('div'), {
+                className: 'qr-fallback',
+                innerHTML: '🏦'
+            }));
+        }
+
+        document.getElementById('copyMaribankBtn').onclick = () => {
+            copyToClipboard(r.data.maribank_account_number || '');
+        };
+
+    } catch (err) {
+        console.error('Settings load failed:', err);
+    }
+}
+
+// ============================================================
+// LOAD PAYMENTS + STATS
+// ============================================================
+async function loadPayments() {
+    const list = document.getElementById('paymentsList');
+    try {
+        const res = await fetch(`${API_BASE}?action=list&_t=${Date.now()}`, {
+            cache: 'no-store'
+        });
+        if (!res.ok) {
+            list.innerHTML = `<p style="text-align:center;color:var(--red-text);padding:30px;">Server error (HTTP ${res.status}).</p>`;
             return;
         }
-        proofFallbackTried = true;
-        const filename = imgUrl.split('/').pop();
-        const legacy = LEGACY_PROOF_BASE_URL + filename;
-        if (legacy !== imgUrl) {
-            document.getElementById('proof-download-link').href = legacy;
-            img.src = legacy;
+
+        const r = await res.json();
+        if (!r.success) {
+            list.innerHTML = `<p style="text-align:center;color:var(--red-text);padding:30px;">${esc(r.error || 'Failed to load.')}</p>`;
+            return;
         }
-    };
 
-    document.getElementById('proof-status').textContent = '';
-    document.getElementById('proofModal').style.display = 'flex';
-}
-function closeProofModal() {
-    document.getElementById('proofModal').style.display = 'none';
-    proofFallbackTried = false;
+        if (r.data.loyalty_count !== undefined) {
+            CLIENT_LOYALTY_COUNT = parseInt(r.data.loyalty_count) || 0;
+        }
+
+        const s = r.data.stats || {};
+        document.getElementById('statPaid').textContent    = fmtMoney(s.total_paid);
+        document.getElementById('statPending').textContent = fmtMoney(s.pending_amt);
+        document.getElementById('statUnpaid').textContent  = fmtMoney(s.unpaid_amt);
+        document.getElementById('statActive').textContent  = s.active_cnt ?? 0;
+
+        const payments = r.data.payments || [];
+        if (!payments.length) {
+            list.innerHTML = `<p style="text-align:center;color:var(--muted);padding:30px;">No payments yet.</p>`;
+            return;
+        }
+
+        // GROUP payments by booking_id
+        const grouped = {};
+        payments.forEach(p => {
+            const bid = p.booking_id;
+            if (!grouped[bid]) {
+                grouped[bid] = {
+                    booking_id: bid,
+                    booking_ref: p.booking_ref,
+                    pkg_name: p.pkg_name,
+                    booking_date: p.booking_date,
+                    booking_time: p.booking_time,
+                    package_price: parseFloat(p.package_price) || 0,
+                    deposit_paid: parseInt(p.deposit_paid) || 0,
+                    fully_paid: parseInt(p.fully_paid) || 0,
+                    remaining_amount: parseFloat(p.remaining_balance) || 0,
+                    status: p.booking_status,
+                    loyalty_count: parseInt(p.loyalty_count) || 0,
+                    all_payments: [],
+                    id: p.id,
+                    payment_id: p.id,
+                };
+            }
+            grouped[bid].all_payments.push({
+                id: p.id,
+                type: p.payment_type,
+                amount: parseFloat(p.amount) || 0,
+                method: p.method,
+                status: p.status,
+                ref_number: p.ref_number,
+                rejection_reason: p.rejection_reason,
+                proof_image: p.proof_image,
+                created_at: p.payment_created,
+            });
+        });
+
+        const groupedPayments = Object.values(grouped);
+        list.innerHTML = groupedPayments.map(renderPaymentCard).join('');
+
+        scrollToTargetBooking();
+
+    } catch (err) {
+        console.error('Payments load failed:', err);
+        list.innerHTML = `<p style="text-align:center;color:var(--red-text);padding:30px;">Network error.</p>`;
+    }
 }
 
-function openRejectModal(id) {
-    document.getElementById('rejectPaymentId').value = id;
-    document.getElementById('rejectModal').style.display = 'flex';
-}
-function closeRejectModal() {
-    document.getElementById('rejectModal').style.display = 'none';
-}
-function openRefundModal(id, amount) {
-    document.getElementById('refundPaymentId').value = id;
-    document.getElementById('refundAmount').textContent = '₱' + Number(amount).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById('refundModal').style.display = 'flex';
-}
-function closeRefundModal() {
-    document.getElementById('refundModal').style.display = 'none';
+// ============================================================
+// AUTO-SCROLL SA TARGET BOOKING
+// ============================================================
+function scrollToTargetBooking() {
+    const hash = window.location.hash;
+    if (!hash || !hash.startsWith('#booking-')) return;
+
+    setTimeout(() => {
+        const targetId = hash.substring(1);
+        const target = document.getElementById(targetId);
+
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            target.style.transition = 'box-shadow 0.3s ease';
+            target.style.boxShadow = '0 0 0 4px rgba(234, 179, 8, 0.5)';
+
+            setTimeout(() => {
+                target.style.boxShadow = '';
+            }, 3000);
+
+            const refInput = target.querySelector('input[name="ref_number"]');
+            if (refInput) {
+                setTimeout(() => refInput.focus(), 500);
+            }
+        }
+    }, 500);
 }
 
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeProofModal();
-        closeRejectModal();
-        closeRefundModal();
-        closePaymentDetail();
+// ============================================================
+// RENDER PAYMENT METHOD SELECTOR
+// ============================================================
+function paymentMethodSelector(paymentType) {
+    const prefix = paymentType === 'RESERVATION' ? 'res' : 'bal';
+    return `
+      <div class="method-selector">
+        <label class="method-label">Payment Method</label>
+        <div class="method-options">
+          <label class="method-option active" id="${prefix}-label-gcash" onclick="selectMethod_${prefix}('GCash')">
+            <input type="radio" name="method_${prefix}" value="GCash" checked style="display:none;">
+            <span class="mo-icon">💚</span>
+            <span class="mo-text">GCash</span>
+          </label>
+          <label class="method-option" id="${prefix}-label-maribank" onclick="selectMethod_${prefix}('Maribank')">
+            <input type="radio" name="method_${prefix}" value="Maribank" style="display:none;">
+            <span class="mo-icon">🏦</span>
+            <span class="mo-text">Maribank</span>
+          </label>
+        </div>
+        <input type="hidden" name="method" value="GCash" id="${prefix}-method-value">
+      </div>`;
+}
+
+function updateMethodUI(prefix, method) {
+    document.querySelectorAll(`input[name="method_${prefix}"]`).forEach(r => r.checked = false);
+    const radio = document.querySelector(`input[name="method_${prefix}"][value="${method}"]`);
+    if (radio) radio.checked = true;
+    const hidden = document.getElementById(`${prefix}-method-value`);
+    if (hidden) hidden.value = method;
+
+    const gcash = document.getElementById(`${prefix}-label-gcash`);
+    const mb = document.getElementById(`${prefix}-label-maribank`);
+    if (!gcash || !mb) return;
+
+    if (method === 'GCash') {
+        gcash.classList.add('active');
+        mb.classList.remove('active');
+    } else {
+        mb.classList.add('active');
+        gcash.classList.remove('active');
+    }
+}
+
+window.selectMethod_res = function(method) { updateMethodUI('res', method); };
+window.selectMethod_bal = function(method) { updateMethodUI('bal', method); };
+
+// ============================================================
+// RENDER ONE PAYMENT CARD
+// ============================================================
+function renderPaymentCard(p) {
+    const depositPaid  = p.deposit_paid;
+    const fullyPaid    = p.fully_paid;
+    const loyaltyCount = parseInt(p.loyalty_count) || CLIENT_LOYALTY_COUNT || 0;
+    const hasLoyalty   = loyaltyCount >= 10;
+    const originalPrice  = parseFloat(p.original_price) || 0;
+    const effectivePrice = parseFloat(p.package_price) || 0;
+    const reservationFee  = RESERVATION_FEE;
+    const remainingBalance = parseFloat(p.remaining_amount) || 0;
+
+    const reservationPaid = Boolean(depositPaid)
+        || ['Deposit Paid', 'Confirmed', 'Completed'].includes(p.status);
+
+    let headerBadge = '';
+    if (fullyPaid) {
+        headerBadge = '<span class="badge badge-green">✅ Fully Paid</span>';
+    } else if (reservationPaid) {
+        headerBadge = '<span class="badge badge-amber">💰 Balance Pending</span>';
+    } else {
+        headerBadge = '<span class="badge badge-red">⚠️ Reservation Required</span>';
+    }
+
+    const loyaltyPillBg = hasLoyalty
+        ? 'linear-gradient(135deg,#EAB308,#CA8A04)'
+        : 'linear-gradient(135deg,#6C63FF,#4A42CC)';
+
+    return `
+    <div class="payment-card" id="booking-${p.booking_id}">
+      <div class="pc-header">
+        <div class="pc-header-left">
+          <div class="pc-pkg-name">${esc(p.pkg_name)}</div>
+          <div class="pc-session">Session: ${formatDateJS(p.booking_date)}</div>
+          ${loyaltyCount > 0 ? `
+            <div style="margin-top:6px;">
+              <span class="loyalty-pill" style="background:${loyaltyPillBg};">
+                🎫 ${loyaltyCount} bookings${hasLoyalty ? ' 🎉 50% OFF' : ''}
+              </span>
+            </div>
+          ` : ''}
+        </div>
+        <div class="pc-header-right">
+          <div class="pc-price-main">${fmtMoney(effectivePrice)}</div>
+          ${hasLoyalty ? `<div class="pc-price-strike">${fmtMoney(originalPrice)}</div>` : ''}
+          <div class="pc-badge-row">${headerBadge}</div>
+        </div>
+      </div>
+
+      <div class="pc-amounts">
+        <div class="pc-amount-row">
+          <span class="pc-label">Total Package:</span>
+          <span class="pc-value">${fmtMoney(effectivePrice)}</span>
+        </div>
+
+        <div class="pc-amount-row" style="color:${reservationPaid ? 'var(--green-text)' : 'var(--amber-text)'};">
+          <span>${reservationPaid ? '✅' : '⚠️'} Reservation Fee:</span>
+          <span class="pc-value">${fmtMoney(reservationFee)}</span>
+        </div>
+
+        ${reservationPaid ? `
+          ${!fullyPaid ? `
+            <div class="pc-amount-divider"></div>
+            <div class="pc-amount-total">
+              <span>Remaining Balance:</span>
+              <span style="color:var(--amber-text);">${fmtMoney(remainingBalance)} ⏳</span>
+            </div>
+            <div class="pc-amount-note">
+              Due on shoot day (${formatDateJS(p.booking_date)})
+            </div>
+          ` : `
+            <div class="pc-amount-divider"></div>
+            <div class="pc-amount-total" style="color:var(--green-text);">
+              <span>🎉 Fully Paid:</span>
+              <span>${fmtMoney(effectivePrice)}</span>
+            </div>
+          `}
+        ` : `
+          <div class="pc-amount-divider"></div>
+          <div class="pc-amount-total">
+            <span>Remaining Balance:</span>
+            <span style="color:var(--muted);font-style:italic;">🔒 Pay reservation first</span>
+          </div>
+        `}
+      </div>
+
+      ${p.all_payments && p.all_payments.length > 0 ? `
+        <div class="pc-history">
+          <div class="pc-history-title">Payment History</div>
+          ${p.all_payments.map(ap => `
+            <div class="pc-history-row">
+              <span>${ap.type === 'RESERVATION' ? '🎫' : ap.type === 'BALANCE' ? '💰' : '💳'} ${esc(ap.type || 'Payment')} ${ap.method ? '· ' + esc(ap.method) : ''}</span>
+              <span>${fmtMoney(ap.amount)} ${statusBadgeJS(ap.status)}</span>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+
+      ${renderActions(p, reservationFee, remainingBalance, reservationPaid)}
+    </div>`;
+}
+
+// ============================================================
+// RENDER ACTION SECTION
+// ============================================================
+function renderActions(p, reservationFee, remainingBalance, reservationPaid) {
+    const fullyPaid = p.fully_paid;
+    const allPayments = p.all_payments || [];
+
+    const reservationPayment = allPayments.find(x => x.type === 'RESERVATION');
+    const balancePayment     = allPayments.find(x => x.type === 'BALANCE');
+
+    const reservationPaymentId = reservationPayment
+        ? reservationPayment.id
+        : (p.payment_id || p.id || '');
+    const balancePaymentId = balancePayment
+        ? balancePayment.id
+        : (p.payment_id || p.id || '');
+
+    const reservationAmount = reservationPayment
+        ? parseFloat(reservationPayment.amount) || 0
+        : reservationFee;
+    const balanceAmount = balancePayment
+        ? parseFloat(balancePayment.amount) || 0
+        : remainingBalance;
+
+    const reservationStatus = reservationPayment ? reservationPayment.status : null;
+    const balanceStatus     = balancePayment     ? balancePayment.status     : null;
+
+    if (fullyPaid) {
+        return `
+          <div class="pc-status success">
+            ✅ No payments due. Your booking is fully paid.
+          </div>`;
+    }
+
+    if (reservationPaid) {
+        if (balanceStatus === 'PENDING') {
+            return `
+              <div class="pc-status pending">
+                <strong>⏳ Balance payment submitted!</strong><br>
+                <small>We're verifying your proof of ${fmtMoney(balanceAmount)}. You'll be notified once confirmed.</small>
+              </div>`;
+        }
+
+        if (balanceStatus === 'REJECTED') {
+            return `
+              <div class="pc-status rejected">
+                <strong>❌ Balance payment rejected:</strong> ${esc(balancePayment.rejection_reason || 'Please re-submit.')}
+              </div>
+              <div class="pc-form-wrap">
+                <form class="payment-form" data-bid="${p.booking_id}" enctype="multipart/form-data">
+                  <div class="pc-form-title">💰 Resubmit Remaining Balance</div>
+                  <div class="pc-form-info">
+                    <span class="pcfi-icon">💰</span>
+                    <div class="pcfi-body">
+                      <div class="pcfi-label">Remaining Balance</div>
+                      <div class="pcfi-value">${fmtMoney(balanceAmount)}</div>
+                      <div class="pcfi-note">Due on shoot day (${formatDateJS(p.booking_date)})</div>
+                    </div>
+                    <input type="hidden" name="payment_id" value="${balancePaymentId}">
+                    <input type="hidden" name="payment_type" value="BALANCE">
+                    <input type="hidden" name="booking_id" value="${p.booking_id}">
+                  </div>
+                  ${paymentMethodSelector('BALANCE')}
+                  <div class="form-group">
+                    <label>Reference Number</label>
+                    <input type="text" name="ref_number" placeholder="Transaction ref…" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Upload Balance Proof (screenshot)</label>
+                    <input type="file" name="proof" accept="image/*" required>
+                  </div>
+                  <button type="submit" class="pc-submit-btn">📤 Resubmit Balance Proof</button>
+                </form>
+              </div>`;
+        }
+
+        return `
+          <div class="pc-form-wrap">
+            <form class="payment-form" data-bid="${p.booking_id}" enctype="multipart/form-data">
+              <div class="pc-form-title">💰 Pay Remaining Balance</div>
+              <div class="pc-form-info">
+                <span class="pcfi-icon">💰</span>
+                <div class="pcfi-body">
+                  <div class="pcfi-label">Remaining Balance</div>
+                  <div class="pcfi-value">${fmtMoney(balanceAmount)}</div>
+                  <div class="pcfi-note">Due on shoot day (${formatDateJS(p.booking_date)})</div>
+                </div>
+                <input type="hidden" name="payment_id" value="${balancePaymentId}">
+                <input type="hidden" name="payment_type" value="BALANCE">
+                <input type="hidden" name="booking_id" value="${p.booking_id}">
+              </div>
+              ${paymentMethodSelector('BALANCE')}
+              <div class="form-group">
+                <label>Reference Number</label>
+                <input type="text" name="ref_number" placeholder="Transaction ref…" required>
+              </div>
+              <div class="form-group">
+                <label>Upload Balance Proof (screenshot)</label>
+                <input type="file" name="proof" accept="image/*" required>
+              </div>
+              <button type="submit" class="pc-submit-btn">📤 Submit Balance Proof</button>
+            </form>
+          </div>`;
+    }
+
+    if (reservationStatus === 'PENDING') {
+        return `
+          <div class="pc-status pending">
+            <strong>⏳ Reservation payment submitted!</strong><br>
+            <small>We're verifying your proof of ${fmtMoney(reservationAmount)}. You'll be notified once confirmed.</small>
+          </div>`;
+    }
+
+    if (reservationStatus === 'REJECTED') {
+        return `
+          <div class="pc-status rejected">
+            <strong>❌ Reservation rejected:</strong> ${esc(reservationPayment.rejection_reason || 'Invalid proof. Please re-submit.')}
+          </div>
+          <div class="pc-form-wrap">
+            <form class="payment-form" data-bid="${p.booking_id}" enctype="multipart/form-data">
+              <div class="pc-form-title">🎫 Resubmit Reservation Fee</div>
+              <div class="pc-form-info">
+                <span class="pcfi-icon">🎫</span>
+                <div class="pcfi-body">
+                  <div class="pcfi-label">₱100 Reservation Fee</div>
+                  <div class="pcfi-value">${fmtMoney(reservationAmount)}</div>
+                  <div class="pcfi-note">Remaining (${fmtMoney(remainingBalance)}) payable on shoot day</div>
+                </div>
+                <input type="hidden" name="payment_id" value="${reservationPaymentId}">
+                <input type="hidden" name="payment_type" value="RESERVATION">
+                <input type="hidden" name="booking_id" value="${p.booking_id}">
+              </div>
+              ${paymentMethodSelector('RESERVATION')}
+              <div class="form-group">
+                <label>Reference Number</label>
+                <input type="text" name="ref_number" placeholder="Transaction ref…" required>
+              </div>
+              <div class="form-group">
+                <label>Upload Reservation Proof (screenshot)</label>
+                <input type="file" name="proof" accept="image/*" required>
+              </div>
+              <button type="submit" class="pc-submit-btn">📤 Resubmit Reservation Proof</button>
+            </form>
+          </div>`;
+    }
+
+    return `
+      <div class="pc-form-wrap">
+        <form class="payment-form" data-bid="${p.booking_id}" enctype="multipart/form-data">
+          <div class="pc-form-title">🎫 Pay Reservation Fee</div>
+          <div class="pc-form-info">
+            <span class="pcfi-icon">🎫</span>
+            <div class="pcfi-body">
+              <div class="pcfi-label">₱100 Reservation Fee</div>
+              <div class="pcfi-value">${fmtMoney(reservationAmount)}</div>
+              <div class="pcfi-note">Remaining (${fmtMoney(remainingBalance)}) payable on shoot day</div>
+            </div>
+            <input type="hidden" name="payment_id" value="${reservationPaymentId}">
+            <input type="hidden" name="payment_type" value="RESERVATION">
+            <input type="hidden" name="booking_id" value="${p.booking_id}">
+          </div>
+          ${paymentMethodSelector('RESERVATION')}
+          <div class="form-group">
+            <label>Reference Number</label>
+            <input type="text" name="ref_number" placeholder="Transaction ref…" required>
+          </div>
+          <div class="form-group">
+            <label>Upload Reservation Proof (screenshot)</label>
+            <input type="file" name="proof" accept="image/*" required>
+          </div>
+          <button type="submit" class="pc-submit-btn">📤 Submit Reservation Proof</button>
+        </form>
+      </div>`;
+}
+
+// ============================================================
+// AJAX FORM SUBMIT
+// ============================================================
+document.addEventListener('submit', async (e) => {
+    const form = e.target.closest('.payment-form');
+    if (!form) return;
+    e.preventDefault();
+
+    const bookingId = form.dataset.bid;
+    const fd = new FormData(form);
+    fd.append('csrf_token', CSRF_TOKEN);
+
+    const methodHidden = form.querySelector('input[name="method"]');
+    if (methodHidden) {
+        fd.set('method', methodHidden.value);
+    }
+
+    const paymentId = fd.get('payment_id');
+    const refNumber = fd.get('ref_number');
+
+    if (!paymentId || paymentId === '0' || paymentId === '') {
+        showToast('❌ Payment ID is missing. Please refresh the page.', 'error');
+        return;
+    }
+    if (!refNumber || refNumber.trim() === '') {
+        showToast('❌ Please enter a reference number.', 'error');
+        return;
+    }
+
+    const btn = form.querySelector('button[type="submit"]');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '⏳ Submitting…';
+
+    try {
+        const res = await fetch(`${API_BASE}?action=submit`, {
+            method: 'POST',
+            body: fd
+        });
+
+        const rawText = await res.text();
+
+        let r;
+        try {
+            r = JSON.parse(rawText);
+        } catch (parseErr) {
+            console.error('Invalid JSON:', rawText);
+            showToast('❌ Server error: invalid response', 'error');
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+
+        if (r.success) {
+            showToast('✅ ' + (r.message || 'Submitted!'), 'success');
+
+            setTimeout(() => {
+                window.location.href = 'index.php?page=payments#booking-' + bookingId;
+                window.location.reload();
+            }, 800);
+        } else {
+            showToast('❌ ' + (r.error || 'Failed.'), 'error');
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    } catch (err) {
+        console.error('Submit error:', err);
+        showToast('❌ Network error.', 'error');
+        btn.disabled = false;
+        btn.textContent = originalText;
     }
 });
+
+// ============================================================
+// INIT
+// ============================================================
+(async function init() {
+    await loadSettings();
+    await loadPayments();
+})();
 </script>
