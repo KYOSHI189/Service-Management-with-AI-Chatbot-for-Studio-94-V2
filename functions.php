@@ -92,7 +92,8 @@ function ensureDatabaseSchema(PDO $pdo): void
             'mfa_enabled'            => "ALTER TABLE users ADD COLUMN mfa_enabled TINYINT(1) DEFAULT 0",
             'mfa_secret'             => "ALTER TABLE users ADD COLUMN mfa_secret VARCHAR(255) DEFAULT NULL",
             'mfa_backup_codes'       => "ALTER TABLE users ADD COLUMN mfa_backup_codes TEXT DEFAULT NULL",
-            'mfa_verified_at'        => "ALTER TABLE users ADD COLUMN mfa_verified_at DATETIME DEFAULT NULL"
+            'mfa_verified_at'        => "ALTER TABLE users ADD COLUMN mfa_verified_at DATETIME DEFAULT NULL",
+            'must_change_password'   => "ALTER TABLE users ADD COLUMN must_change_password TINYINT(1) NOT NULL DEFAULT 0"
         ];
 
         foreach ($needed as $col => $alterSql) {

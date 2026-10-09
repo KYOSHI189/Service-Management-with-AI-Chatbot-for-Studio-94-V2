@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS users (
     mfa_enabled           TINYINT(1)    DEFAULT 0,
     mfa_secret            VARCHAR(255)  DEFAULT NULL,
     mfa_backup_codes      TEXT          DEFAULT NULL,
-    mfa_verified_at       DATETIME      DEFAULT NULL
+    mfa_verified_at       DATETIME      DEFAULT NULL,
+    must_change_password  TINYINT(1)    NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ============================================================
