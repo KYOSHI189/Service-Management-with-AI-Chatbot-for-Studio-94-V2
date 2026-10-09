@@ -944,61 +944,97 @@ function copyToClipboard(text) {
 }
 
 // ============================================================
+// SET QR IMAGE (FIXED — dynamic change, cache-bust, no DOM break)
+// ============================================================
+function setQrImage(imgId, qrValue, fallbackEmoji) {
+    const img = document.getElementById(imgId);
+    if (!img) return;
+
+    const parent = img.parentElement;
+
+    // Alisin ang lumang fallback (kung meron) bago mag-set ng bagong state
+    const oldFallback = parent.querySelector('.qr-fallback');
+    if (oldFallback) oldFallback.remove();
+
+    const qr = (qrValue || '').trim();
+
+    if (!qr) {
+        // Walang QR — fallback lang
+        img.style.display = 'none';
+        img.removeAttribute('src');
+        const fb = document.createElement('div');
+        fb.className = 'qr-fallback';
+        fb.innerHTML = fallbackEmoji;
+        parent.insertBefore(fb, img);
+        return;
+    }
+
+    // Build full URL — support relative path AND full URL
+    const baseUrl = qr.startsWith('http') ? qr : (APP_BASE + qr.replace(/^\/+/, ''));
+    const finalUrl = baseUrl + (baseUrl.includes('?') ? '&' : '?') + 'v=' + Date.now();
+
+    // Reset handlers
+    img.onerror = null;
+    img.onload = null;
+
+    img.onload = function () {
+        img.style.display = 'block';
+        const fb = parent.querySelector('.qr-fallback');
+        if (fb) fb.remove();
+    };
+
+    img.onerror = function () {
+        console.warn('QR failed to load:', finalUrl);
+        img.style.display = 'none';
+        if (!parent.querySelector('.qr-fallback')) {
+            const fb = document.createElement('div');
+            fb.className = 'qr-fallback';
+            fb.innerHTML = fallbackEmoji;
+            parent.insertBefore(fb, img);
+        }
+    };
+
+    // Force browser to reload image (bypass cache)
+    img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+    img.src = finalUrl;
+}
+
+// ============================================================
 // LOAD SETTINGS
 // ============================================================
 async function loadSettings() {
     try {
         const res = await fetch(`${API_BASE}?action=settings&_t=${Date.now()}`, { cache: 'no-store' });
-        if (!res.ok) return;
+        if (!res.ok) {
+            console.error('Settings HTTP error:', res.status);
+            return;
+        }
         const r = await res.json();
-        if (!r.success) return;
+        if (!r.success) {
+            console.error('Settings error:', r.error);
+            return;
+        }
 
+        // GCash account details
         document.getElementById('gcashName').textContent = r.data.gcash_account_name || '—';
         document.getElementById('gcashNo').textContent   = r.data.gcash_account_number || '—';
 
-        const gcashQr = r.data.gcash_qr || '';
-        const gcashImg = document.getElementById('gcashQrImg');
-        if (gcashQr) {
-            const url = APP_BASE + gcashQr.replace(/^\/+/, '') + '?v=' + Date.now();
-            gcashImg.src = url;
-            gcashImg.onerror = () => {
-                gcashImg.replaceWith(Object.assign(document.createElement('div'), {
-                    className: 'qr-fallback',
-                    innerHTML: '💚'
-                }));
-            };
-        } else {
-            gcashImg.replaceWith(Object.assign(document.createElement('div'), {
-                className: 'qr-fallback',
-                innerHTML: '💚'
-            }));
-        }
+        // GCash QR image
+        setQrImage('gcashQrImg', r.data.gcash_qr || '', '💚');
 
+        // GCash copy button
         document.getElementById('copyGcashBtn').onclick = () => {
             copyToClipboard(r.data.gcash_account_number || '');
         };
 
+        // Maribank account details
         document.getElementById('maribankName').textContent = r.data.maribank_account_name || '—';
         document.getElementById('maribankNo').textContent   = r.data.maribank_account_number || '—';
 
-        const mbQr = r.data.maribank_qr || '';
-        const mbImg = document.getElementById('maribankQrImg');
-        if (mbQr) {
-            const url = APP_BASE + mbQr.replace(/^\/+/, '') + '?v=' + Date.now();
-            mbImg.src = url;
-            mbImg.onerror = () => {
-                mbImg.replaceWith(Object.assign(document.createElement('div'), {
-                    className: 'qr-fallback',
-                    innerHTML: '🏦'
-                }));
-            };
-        } else {
-            mbImg.replaceWith(Object.assign(document.createElement('div'), {
-                className: 'qr-fallback',
-                innerHTML: '🏦'
-            }));
-        }
+        // Maribank QR image
+        setQrImage('maribankQrImg', r.data.maribank_qr || '', '🏦');
 
+        // Maribank copy button
         document.getElementById('copyMaribankBtn').onclick = () => {
             copyToClipboard(r.data.maribank_account_number || '');
         };
