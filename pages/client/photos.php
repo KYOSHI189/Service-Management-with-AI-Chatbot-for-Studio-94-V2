@@ -6,16 +6,25 @@ $uid = $user['id'];
 $sessions = $pdo->prepare("
     SELECT b.id as booking_id, b.booking_ref, b.date, p.name as pkg_name,
            COUNT(ph.id) as photo_count,
-           MAX(ph.status) as photo_status,
+           -- MAX() on an ENUM compares by declared order ('Processing' > 'Pending' >
+           -- 'Ready' > 'Sent'), so a single 'Sent' row would mask the Ready ones and
+           -- hide the download button. Report whether ANY photo is Ready instead.
+           SUM(ph.status = 'Ready') as ready_count,
            MAX(ph.created_at) as upload_date
     FROM bookings b
     JOIN packages p ON b.package_id=p.id
     LEFT JOIN photos ph ON ph.booking_id=b.id
-    WHERE b.user_id=? AND b.status='Completed'
+    WHERE b.user_id=?
+      AND b.status IN ('Completed','Deposit Paid','Confirmed','In Progress')
     GROUP BY b.id ORDER BY b.date DESC
 ");
 $sessions->execute([$uid]);
 $all = $sessions->fetchAll();
+foreach ($all as &$s) {
+    // Any photo already sent to the client counts as delivered.
+    $s['photo_status'] = ((int)($s['ready_count'] ?? 0) > 0) ? 'Ready' : null;
+}
+unset($s);
 ?>
 
 <div class="page-banner">
@@ -73,7 +82,7 @@ if (isset($_GET['download'])) {
     $check = $pdo->prepare("SELECT id FROM bookings WHERE id=? AND user_id=?");
     $check->execute([$bid, $uid]);
     if ($check->fetch()) {
-        $photos = $pdo->prepare("SELECT * FROM photos WHERE booking_id=? AND status='Ready'");
+        $photos = $pdo->prepare("SELECT * FROM photos WHERE booking_id=? AND status IN ('Ready','Sent') ORDER BY id");
         $photos->execute([$bid]);
         $imgs = $photos->fetchAll();
         if (!empty($imgs)):

@@ -52,7 +52,7 @@ $sessions = $pdo->query("
     JOIN users u ON b.user_id=u.id
     JOIN packages p ON b.package_id=p.id
     LEFT JOIN photos ph ON ph.booking_id=b.id
-    WHERE b.status IN ('Completed','Deposit Paid')
+    WHERE b.status IN ('Completed','Deposit Paid','Confirmed','In Progress')
     GROUP BY b.id ORDER BY b.date DESC LIMIT 20
 ")->fetchAll();
 
