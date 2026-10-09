@@ -141,3 +141,26 @@ ini_set('display_errors', '0');
 ini_set('display_startup_errors', '1');
 ini_set('log_errors', '1');
 ini_set('error_log', __DIR__ . '/php-errors.log');
+
+// Writing errors to a file makes them invisible on Railway, where the
+// container filesystem is discarded and the log stream is the only
+// place output survives. Mirror fatal errors to stderr as well so a
+// blank page can actually be diagnosed from the Railway dashboard.
+register_shutdown_function(static function (): void {
+    $err = error_get_last();
+    if ($err === null || !in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR], true)) {
+        return;
+    }
+    $line = sprintf(
+        "[UA-FATAL] %s in %s:%d\n%s\n",
+        $err['message'],
+        $err['file'],
+        $err['error_line'],
+        $err['message']
+    );
+    if (defined('STDERR')) {
+        fwrite(STDERR, $line);
+    } else {
+        error_log(rtrim($line));
+    }
+});
