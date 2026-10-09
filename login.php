@@ -72,8 +72,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // ---- REGISTER ----
-    if ($action === 'register') {
+    // ---- REGISTER: STEP 1 — request a verification code (no account created yet) ----
+    if ($action === 'register_request_code') {
         $tab      = 'register';
         $fname    = trim($_POST['fname'] ?? '');
         $lname    = trim($_POST['lname'] ?? '');
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Please fill in all required fields.';
         }
         elseif (!preg_match('/@gmail\.com$/i', $email)) {
-            $error = 'Only verified Gmail accounts (@gmail.com) are allowed to register.';
+            $error = 'Only Gmail accounts (@gmail.com) are allowed to register.';
         }
         elseif (strlen($password) < 8) {
             $error = 'Password must be at least 8 characters.';
@@ -95,60 +95,111 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         else {
             try {
-                // Check if email already exists AND is verified
                 $check = db()->prepare('SELECT id, email_verified FROM users WHERE email = ? LIMIT 1');
                 $check->execute([$email]);
                 $existing = $check->fetch();
 
                 if ($existing && !empty($existing['email_verified'])) {
-                    // Verified account — can't register again
                     $error = 'An account with that email already exists. Please sign in instead.';
                 } else {
-                    // New user OR existing unverified user → create/update + resend
-                    $hash    = password_hash($password, PASSWORD_DEFAULT);
-                    $token   = bin2hex(random_bytes(32));
+                    $code    = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
                     $expires = date('Y-m-d H:i:s', strtotime('+' . VERIFICATION_EXPIRY_HOURS . ' hours'));
 
-                    if ($existing) {
-                        // Existing but NOT verified → update + resend verification
-                        $upd = db()->prepare('UPDATE users SET name = ?, password = ?, verification_token = ?, verification_expires = ? WHERE id = ?');
-                        $upd->execute([$fname . ' ' . $lname, $hash, $token, $expires, $existing['id']]);
-                        $userId = $existing['id'];
-                        error_log("[STUDIO94] Updated existing unverified user: $email");
+                    $emailResult = sendVerificationCode($email, $fname, $code);
+
+                    // Registration is blocked when the code cannot be delivered —
+                    // an account that is never verified must not exist.
+                    if ($emailResult !== 'sent') {
+                        $error = 'We could not send a verification code to ' . htmlspecialchars($email)
+                               . '. Please try again in a moment.';
+                        error_log('[STUDIO94] Verification code not delivered (' . $emailResult . ') for: ' . $email);
                     } else {
-                        // Brand new user
-                        $ins = db()->prepare('INSERT INTO users (name, email, password, role, is_active, email_verified, verification_token, verification_expires, created_at) VALUES (?, ?, ?, "client", 1, 0, ?, ?, NOW())');
-                        $ins->execute([$fname . ' ' . $lname, $email, $hash, $token, $expires]);
-                        $userId = db()->lastInsertId();
-                    }
+                        // Pending details live in the session only. No user row yet.
+                        $_SESSION['pending_registration'] = [
+                            'fname'    => $fname,
+                            'lname'    => $lname,
+                            'email'    => $email,
+                            'password' => $password,
+                            'code'     => $code,
+                            'expires'  => $expires,
+                            'attempts' => 0,
+                        ];
 
-                    // Send verification email — returns 'sent', 'skipped' (no SMTP config), or 'failed'
-                    $emailResult = sendVerificationEmail($email, $fname, $token);
-
-                    if ($emailResult === 'sent') {
-                        // Email sent successfully — user needs to verify before logging in
-                        $success = 'Account created! We sent a verification link to <strong>' . clean($email) . '</strong>. Please check your Gmail inbox (and spam folder) and click the link before signing in.';
-                        $tab = 'login';
-
-                    } elseif ($emailResult === 'skipped') {
-                        // No SMTP configured — auto-verify the account
-                        db()->prepare('UPDATE users SET email_verified = 1, verification_token = NULL, verification_expires = NULL WHERE id = ?')
-                             ->execute([$userId]);
-                        $success = 'Account created successfully! You can now sign in with your email and password.';
-                        $tab = 'login';
-
-                    } else {
-                        // Email sending failed (e.g. SMTP blocked by cloud provider) — auto-verify so user isn't stuck
-                        db()->prepare('UPDATE users SET email_verified = 1, verification_token = NULL, verification_expires = NULL WHERE id = ?')
-                             ->execute([$userId]);
-                        $success = 'Account created successfully! You can now sign in with your email and password.';
-                        $tab = 'login';
-                        error_log("[STUDIO94] Verification email delivery failed for: $email — user was auto-verified");
+                        $success = 'We sent a 6-digit verification code to <strong>'
+                                 . clean($email) . '</strong>. Check your Gmail inbox (and spam folder), then enter the code below.';
+                        $tab = 'verify_code';
                     }
                 }
             } catch (Throwable $e) {
-                error_log('[STUDIO94] Registration error: ' . $e->getMessage());
-                $error = 'Could not create account: ' . htmlspecialchars($e->getMessage());
+                error_log('[STUDIO94] Registration code request error: ' . $e->getMessage());
+                $error = 'Could not start registration. Please try again.';
+            }
+        }
+    }
+
+    // ---- REGISTER: STEP 2 — verify the code, then create the account ----
+    if ($action === 'register_verify_code') {
+        $tab   = 'verify_code';
+        $code  = trim($_POST['code'] ?? '');
+        $pend  = $_SESSION['pending_registration'] ?? null;
+
+        if (!$pend) {
+            $error = 'Your registration session expired. Please start again.';
+            $tab   = 'register';
+        }
+        elseif (date('Y-m-d H:i:s') > $pend['expires']) {
+            unset($_SESSION['pending_registration']);
+            $error = 'That code has expired. Please request a new one.';
+            $tab   = 'register';
+        }
+        elseif ($pend['attempts'] >= 5) {
+            unset($_SESSION['pending_registration']);
+            $error = 'Too many incorrect attempts. Please request a new code.';
+            $tab   = 'register';
+        }
+        elseif (!preg_match('/^\d{6}$/', $code)) {
+            $pend['attempts']++;
+            $_SESSION['pending_registration'] = $pend;
+            $error = 'Please enter the 6-digit code from your email.';
+        }
+        elseif (!hash_equals($pend['code'], $code)) {
+            $pend['attempts']++;
+            $_SESSION['pending_registration'] = $pend;
+            $error = 'That code is not correct. Please check your email and try again.';
+        }
+        else {
+            try {
+                $hash = password_hash($pend['password'], PASSWORD_DEFAULT);
+                $name = $pend['fname'] . ' ' . $pend['lname'];
+
+                $check = db()->prepare('SELECT id, email_verified FROM users WHERE email = ? LIMIT 1');
+                $check->execute([$pend['email']]);
+                $existing = $check->fetch();
+
+                if ($existing && !empty($existing['email_verified'])) {
+                    unset($_SESSION['pending_registration']);
+                    $error = 'An account with that email already exists. Please sign in instead.';
+                    $tab   = 'login';
+                } else {
+                    if ($existing) {
+                        $upd = db()->prepare('UPDATE users SET name = ?, password = ?, email_verified = 1, verification_token = NULL, verification_expires = NULL WHERE id = ?');
+                        $upd->execute([$name, $hash, $existing['id']]);
+                    } else {
+                        $ins = db()->prepare('INSERT INTO users (name, email, password, role, is_active, email_verified, created_at) VALUES (?, ?, ?, "client", 1, 1, NOW())');
+                        $ins->execute([$name, $pend['email'], $hash]);
+                    }
+
+                    unset($_SESSION['pending_registration']);
+                    addNotificationByRole('admin', 'New Client Registered',
+                        $name . ' (' . $pend['email'] . ') verified their Gmail and created an account.',
+                        'new_client', '👤', 'index.php?page=clients');
+
+                    $success = 'Email verified! Your account is ready. Please sign in.';
+                    $tab     = 'login';
+                }
+            } catch (Throwable $e) {
+                error_log('[STUDIO94] Account creation error: ' . $e->getMessage());
+                $error = 'Could not create your account. Please try again.';
             }
         }
     }
@@ -383,7 +434,7 @@ $show_reset_form = !empty($reset_token);
         <div id="register-tab" class="tab-content <?= $tab==='register'?'active':'' ?>">
           <form method="POST" action="login.php">
             <?= csrfField() ?>
-            <input type="hidden" name="action" value="register">
+            <input type="hidden" name="action" value="register_request_code">
             <div class="form-row">
               <div class="form-group">
                 <label>First Name</label>
@@ -409,7 +460,7 @@ $show_reset_form = !empty($reset_token);
               <label>Confirm Password</label>
               <input type="password" name="confirm_password" placeholder="••••••••" required minlength="8" autocomplete="new-password"/>
             </div>
-            <button type="submit" class="btn-primary full-width" style="padding:13px;justify-content:center;">Create Account</button>
+            <button type="submit" class="btn-primary full-width" style="padding:13px;justify-content:center;">Send Verification Code</button>
           </form>
 
           <div class="divider">or</div>
@@ -417,6 +468,38 @@ $show_reset_form = !empty($reset_token);
             <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
             Sign up with Google
           </a>
+        </div>
+
+        <!-- VERIFY CODE TAB (shown after a code is sent) -->
+        <div id="verify-code-tab" class="tab-content <?= $tab==='verify_code'?'active':'' ?>">
+          <form method="POST" action="login.php" id="verify-code-form">
+            <?= csrfField() ?>
+            <input type="hidden" name="action" value="register_verify_code">
+
+            <h3 style="font-size:16px;margin-bottom:8px;">Enter verification code</h3>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">
+              We emailed a 6-digit code to
+              <strong><?= clean($_SESSION['pending_registration']['email'] ?? '') ?></strong>.
+              Your account is created once you enter it.
+            </p>
+
+            <div class="form-group">
+              <label>6-digit code</label>
+              <input type="text" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+                     placeholder="000000" required autocomplete="one-time-code"
+                     style="letter-spacing:10px;font-size:22px;text-align:center;font-weight:bold;"/>
+            </div>
+
+            <button type="submit" class="btn-primary full-width" style="padding:13px;justify-content:center;">
+              Verify &amp; Create Account
+            </button>
+          </form>
+
+          <div class="divider">or</div>
+          <button type="button" class="btn-google" style="width:100%;background:none;border:none;cursor:pointer;"
+                  onclick="showTab('register', document.querySelectorAll('.tab-btn')[1])">
+            ← Back to registration
+          </button>
         </div>
 
         <!-- FORGOT PASSWORD FORM -->

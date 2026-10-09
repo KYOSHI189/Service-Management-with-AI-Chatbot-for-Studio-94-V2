@@ -179,6 +179,57 @@ function sendVerificationEmail($toEmail, $toName, $token): string {
 }
 
 /**
+ * Sends a 6-digit verification code to $toEmail.
+ *
+ * Used at registration: the account row is NOT created until the user
+ * proves they can read mail at that address. Returns the same
+ * 'sent' / 'skipped' / 'failed' contract as sendVerificationEmail().
+ */
+function sendVerificationCode(string $toEmail, string $toName, string $code): string {
+    if (!isMailConfigured()) {
+        error_log('[STUDIO94] Mail not configured — cannot send code to: ' . $toEmail);
+        return 'skipped';
+    }
+
+    $subject  = 'Your Studio 94 verification code';
+    $safeName = htmlspecialchars($toName, ENT_QUOTES, 'UTF-8');
+    $safeCode = htmlspecialchars($code, ENT_QUOTES, 'UTF-8');
+
+    $htmlBody = "
+        <div style='font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;'>
+          <h2 style='color:#111;'>Welcome to Studio 94, {$safeName}!</h2>
+          <p style='color:#444;line-height:1.6;'>
+            Use this verification code to finish creating your account:
+          </p>
+          <p style='text-align:center;margin:32px 0;'>
+            <span style='display:inline-block;font-size:34px;font-weight:bold;letter-spacing:10px;
+                         background:#111;color:#fff;padding:18px 34px;border-radius:10px;'>
+              {$safeCode}
+            </span>
+          </p>
+          <p style='color:#888;font-size:12px;'>
+            This code expires in 24 hours. If you didn't try to register, you can ignore this email.
+          </p>
+          <hr style='border:0;border-top:1px solid #eee;margin:24px 0;'>
+          <p style='color:#999;font-size:11px;'>Studio 94 — Every frame tells a story.</p>
+        </div>
+    ";
+    $altBody = "Your Studio 94 verification code is: {$code}";
+
+    if (defined('RESEND_API_KEY') && !empty(RESEND_API_KEY)) {
+        if (sendViaResend($toEmail, $subject, $htmlBody)) {
+            return 'sent';
+        }
+    }
+
+    if (sendViaPhpMailer($toEmail, $toName, $subject, $htmlBody, $altBody)) {
+        return 'sent';
+    }
+
+    return 'failed';
+}
+
+/**
  * Sends a password reset email via Resend API or Gmail SMTP.
  * Returns true on success, false on error/unconfigured.
  */
