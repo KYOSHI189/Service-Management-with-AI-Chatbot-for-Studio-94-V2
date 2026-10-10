@@ -4,14 +4,25 @@ $pdo  = db();
 $uid  = $user['id'];
 
 // ============================================================
-// LOYALTY — CORRECTED TIERS (2, 4, 7, 10)
+// ✅ FIXED: LOYALTY COUNT — DYNAMIC BASE SA COMPLETED BOOKINGS
 // ============================================================
-$lcStmt = $pdo->prepare("SELECT total_bookings, card_number FROM loyalty_cards WHERE user_id=?");
-$lcStmt->execute([$uid]);
-$lc = $lcStmt->fetch();
-$bookingCount = $lc ? (int)$lc['total_bookings'] : 0;
+// Ang loyalty count ay hindi na kinukuha sa loyalty_cards.total_bookings.
+// Sa halip, ito ay kinakalkula dynamically base sa ACTUAL COMPLETED bookings.
+// Ito ay nagsisiguro na:
+//   - Hindi madadagdagan ang count kapag nag-submit lang ng booking
+//   - Hindi madadagdagan kapag na-cancel ang booking
+//   - Madadagdagan lang kapag COMPLETED na ang session
+// ============================================================
+$bookingCount = getClientBookingCount($uid);
+
 $rewards  = getLoyaltyRewards($bookingCount);
 $progress = getLoyaltyProgress($bookingCount);
+
+// Kunin ang card_number (kung may existing loyalty card)
+$lcStmt = $pdo->prepare("SELECT card_number FROM loyalty_cards WHERE user_id = ?");
+$lcStmt->execute([$uid]);
+$lc = $lcStmt->fetch();
+$cardNumber = $lc ? $lc['card_number'] : null;
 
 // Loyalty tiers definition
 $tiers = [
@@ -46,12 +57,16 @@ $photosStmt->execute([$uid]);
 $recentPhotos = $photosStmt->fetchAll();
 
 // ============================================================
-// DYNAMIC GREETING
+// TOTAL BOOKINGS (para sa stats display)
 // ============================================================
 $totalBookings = $pdo->prepare("SELECT COUNT(*) FROM bookings WHERE user_id = ?");
 $totalBookings->execute([$uid]);
-$hasPreviousBookings = (int)$totalBookings->fetchColumn() > 0;
+$totalBookingsCount = (int)$totalBookings->fetchColumn();
+$hasPreviousBookings = $totalBookingsCount > 0;
 
+// ============================================================
+// DYNAMIC GREETING
+// ============================================================
 $greeting = $hasPreviousBookings ? 'Welcome back,' : 'Welcome,';
 ?>
 
@@ -561,7 +576,7 @@ $greeting = $hasPreviousBookings ? 'Welcome back,' : 'Welcome,';
 <div class="stats-grid">
   <div class="stat-card">
     <div class="stat-eyebrow">Total Bookings</div>
-    <div class="stat-value"><?= count($recentBookings) ?></div>
+    <div class="stat-value"><?= $totalBookingsCount ?></div>
     <div class="stat-label">All time sessions</div>
   </div>
 
@@ -571,7 +586,7 @@ $greeting = $hasPreviousBookings ? 'Welcome back,' : 'Welcome,';
     <!-- Header -->
     <div class="loyalty-header">
       <div class="loyalty-title">STUDIO 94 LOYALTY CARD</div>
-      <span class="badge"><?= $bookingCount ?> BOOKINGS</span>
+      <span class="badge"><?= $bookingCount ?> COMPLETED</span>
     </div>
 
     <!-- Progress slots -->
