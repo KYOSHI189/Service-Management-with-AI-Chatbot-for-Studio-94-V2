@@ -31,6 +31,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $statusMap = ['approve' => 'Approved (Unpaid)', 'complete' => 'Completed', 'cancel' => 'Cancelled'];
             $pdo->prepare("UPDATE bookings SET status=? WHERE id=?")->execute([$statusMap[$action], $id]);
 
+            // ============================================================
+            // ✅ NEW: SYNC LOYALTY CARD AFTER STATUS CHANGE
+            // ============================================================
+            // Ang loyalty count ay dynamic base sa COMPLETED bookings.
+            // I-sync ang loyalty_cards.total_bookings column para consistent
+            // ang database (kahit dynamic na ang display).
+            // ============================================================
+            if ($bookingData && $bookingData['user_id'] > 0) {
+                syncLoyaltyCard((int)$bookingData['user_id']);
+            }
+
             if ($action === 'complete') {
                 $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM package_inventory WHERE package_id = ?");
                 $checkStmt->execute([$bookingData['package_id']]);
@@ -191,10 +202,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 VALUES (?, ?, ?, ?, 'RESERVATION', 'Pending', 'UNPAID', NOW())")
                 ->execute([$payRef, $bookingId, $existUser, $reservationFee]);
 
+            // ============================================================
+            // ✅ FIXED: Loyalty card creation — total_bookings = 0
+            // ============================================================
             $lcCheck = $pdo->prepare("SELECT id FROM loyalty_cards WHERE user_id=?");
             $lcCheck->execute([$existUser]);
             if (!$lcCheck->fetch()) {
-                $cardNo = 'LC-' . date('Y') . '-' . str_pad($existUser, 3,'0',STR_PAD_LEFT);
+                $cardNo = 'LC-' . date('Y') . '-' . str_pad($existUser, 3, '0', STR_PAD_LEFT);
                 $pdo->prepare("INSERT INTO loyalty_cards (user_id, card_number, total_bookings, status) VALUES (?, ?, 0, 'Active')")
                     ->execute([$existUser, $cardNo]);
             }
@@ -237,7 +251,10 @@ if ($search) {
 }
 
 // ============================================================
-// GET BOOKINGS + LOYALTY INFO
+// ✅ FIXED: GET BOOKINGS + DYNAMIC LOYALTY COUNT
+// ============================================================
+// Ang loyalty count ay hindi na kinukuha sa loyalty_cards.total_bookings.
+// Sa halip, ito ay kinakalkula dynamically base sa COMPLETED bookings.
 // ============================================================
 $stmt = $pdo->prepare("
     SELECT b.*, 
@@ -254,7 +271,6 @@ $stmt = $pdo->prepare("
            b.remaining_balance,
            b.deposit_paid,
            b.fully_paid,
-           lc.total_bookings as loyalty_count,
            lc.card_number as loyalty_card,
            lc.status as loyalty_status
     FROM bookings b 
@@ -266,6 +282,30 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute($params);
 $bookings = $stmt->fetchAll();
+
+// ============================================================
+// ✅ FIXED: GET DYNAMIC LOYALTY COUNTS FOR ALL USERS
+// ============================================================
+// Kunin ang loyalty count base sa COMPLETED bookings para sa lahat ng users
+// sa bookings list. Ito ay isang query lang para efficient.
+// ============================================================
+$userIds = array_filter(array_unique(array_column($bookings, 'user_id')));
+$loyaltyCounts = [];
+
+if (!empty($userIds)) {
+    $placeholders = implode(',', array_fill(0, count($userIds), '?'));
+    $loyaltyStmt = $pdo->prepare("
+        SELECT user_id, COUNT(*) as completed_count
+        FROM bookings
+        WHERE user_id IN ($placeholders)
+          AND status = 'Completed'
+        GROUP BY user_id
+    ");
+    $loyaltyStmt->execute($userIds);
+    foreach ($loyaltyStmt->fetchAll() as $row) {
+        $loyaltyCounts[(int)$row['user_id']] = (int)$row['completed_count'];
+    }
+}
 
 // ============================================================
 // GET PACKAGES FOR WALK-IN FORM
@@ -1072,7 +1112,8 @@ $packages = $pdo->query("
             </thead>
             <tbody>
                 <?php foreach ($bookings as $b): 
-                    $loyaltyCount = (int)($b['loyalty_count'] ?? 0);
+                    // ✅ FIXED: Kunin ang dynamic loyalty count base sa COMPLETED bookings
+                    $loyaltyCount = $loyaltyCounts[(int)$b['user_id']] ?? 0;
                     $hasLoyaltyDiscount = ($loyaltyCount >= 10);
                     $originalPrice = (float)$b['pkg_price'];
                     $effectivePrice = $hasLoyaltyDiscount ? round($originalPrice * 0.5, 2) : $originalPrice;
@@ -1098,7 +1139,7 @@ $packages = $pdo->query("
                         <?php if ($loyaltyCount > 0): ?>
                             <div class="loyalty-cell">
                                 <span class="loyalty-pill">
-                                    🎫 <?= $loyaltyCount ?> booking<?= $loyaltyCount > 1 ? 's' : '' ?>
+                                    🎫 <?= $loyaltyCount ?> completed
                                 </span>
                                 <?php if ($hasLoyaltyDiscount): ?>
                                     <span class="loyalty-sub">🎉 50% OFF</span>
@@ -1114,7 +1155,7 @@ $packages = $pdo->query("
                                 <?php endif; ?>
                             </div>
                         <?php else: ?>
-                            <span style="font-size:11px;color:#8B8177;font-style:italic;">No card</span>
+                            <span style="font-size:11px;color:#8B8177;font-style:italic;">No completed yet</span>
                         <?php endif; ?>
                     </td>
 
@@ -1217,7 +1258,7 @@ $packages = $pdo->query("
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
                     <div style="font-weight:600;font-size:13px;">🎫 Loyalty Status</div>
                     <span style="background:rgba(255,255,255,0.25);padding:3px 10px;border-radius:50px;font-size:11px;font-weight:600;white-space:nowrap;">
-                        <span id="sp-loyalty-count">0</span> BOOKINGS
+                        <span id="sp-loyalty-count">0</span> COMPLETED
                     </span>
                 </div>
                 <div id="sp-loyalty-rewards" style="font-size:11px;margin-top:6px;opacity:0.9;word-break:break-word;"></div>
@@ -1343,10 +1384,10 @@ function openPaymentModal(bookingId, bookingRef, total, reservation, clientName,
         document.getElementById('sp-loyalty-count').textContent = spLoyaltyCount;
 
         const rewards = [];
-        if (spLoyaltyCount >= 1) rewards.push('+5 MIN');
-        if (spLoyaltyCount >= 2) rewards.push('+1 PRINT');
-        if (spLoyaltyCount >= 3) rewards.push('+1 BACKDROP');
-        if (spLoyaltyCount >= 4) rewards.push('50% OFF');
+        if (spLoyaltyCount >= 2) rewards.push('+5 MIN');
+        if (spLoyaltyCount >= 4) rewards.push('+1 PRINT');
+        if (spLoyaltyCount >= 7) rewards.push('+1 BACKDROP');
+        if (spLoyaltyCount >= 10) rewards.push('50% OFF');
 
         document.getElementById('sp-loyalty-rewards').textContent = 
             rewards.length > 0 ? '✅ Entitled: ' + rewards.join(', ') : '';
@@ -1470,7 +1511,7 @@ function recordStaffPayment() {
     confirmMsg += 'Method: ' + method;
 
     if (spLoyaltyCount > 0) {
-        confirmMsg += '\n\n🎫 Loyalty: ' + spLoyaltyCount + ' bookings';
+        confirmMsg += '\n\n🎫 Loyalty: ' + spLoyaltyCount + ' completed bookings';
     }
 
     if (paymentType === 'FULL' && remaining > 0) {
