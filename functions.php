@@ -34,9 +34,7 @@ function db(): PDO
                 PDO::ATTR_EMULATE_PREPARES   => false,
             ]);
 
-            // ✅ NEW: Set MySQL session timezone to Philippines (UTC+8)
-            // This ensures NOW() in SQL queries uses Philippine time,
-            // not the server's default (usually UTC on Railway).
+            // ✅ FIX: Set MySQL session timezone to Philippines (UTC+8)
             $pdo->exec("SET time_zone = '" . DB_TIMEZONE . "'");
 
             // Auto-migrate missing columns/tables
@@ -236,15 +234,6 @@ function requireLogin(): void
     }
 }
 
-/**
- * ============================================================
- * requireRole
- * - Accepts both string and array
- * - Case-insensitive matching
- * - Trims whitespace
- * - Redirects to dashboard (not login) if unauthorized
- * ============================================================
- */
 function requireRole(string|array $roles): void
 {
     requireLogin();
@@ -273,22 +262,12 @@ function requireRole(string|array $roles): void
 function redirectToDashboard(string $role): void
 {
     $routes = [
-
-        'admin' =>
-            APP_URL . '/index.php?page=dashboard&role=admin',
-
-        'staff' =>
-            APP_URL . '/index.php?page=dashboard&role=staff',
-
-        'client' =>
-            APP_URL . '/index.php?page=dashboard&role=client',
+        'admin' => APP_URL . '/index.php?page=dashboard&role=admin',
+        'staff' => APP_URL . '/index.php?page=dashboard&role=staff',
+        'client' => APP_URL . '/index.php?page=dashboard&role=client',
     ];
 
-    header(
-        'Location: ' .
-        ($routes[$role] ?? APP_URL . '/login.php')
-    );
-
+    header('Location: ' . ($routes[$role] ?? APP_URL . '/login.php'));
     exit;
 }
 
@@ -301,9 +280,7 @@ function csrfToken(): string
     startSession();
 
     if (empty($_SESSION['csrf_token'])) {
-
-        $_SESSION['csrf_token'] =
-            bin2hex(random_bytes(32));
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
 
     return $_SESSION['csrf_token'];
@@ -322,9 +299,7 @@ function verifyCsrf(): void
     $token = $_POST['csrf_token'] ?? '';
 
     if (!hash_equals(csrfToken(), $token)) {
-
         http_response_code(403);
-
         die('Invalid CSRF token.');
     }
 }
@@ -344,10 +319,7 @@ function clean(mixed $val): string
 
 function cleanInt(mixed $val): int
 {
-    return (int)filter_var(
-        $val,
-        FILTER_SANITIZE_NUMBER_INT
-    );
+    return (int)filter_var($val, FILTER_SANITIZE_NUMBER_INT);
 }
 
 function cleanFloat(mixed $val): float
@@ -366,7 +338,6 @@ function cleanFloat(mixed $val): float
 function setFlash(string $type, string $msg): void
 {
     startSession();
-
     $_SESSION['flash'] = [
         'type' => $type,
         'msg'  => $msg
@@ -378,11 +349,8 @@ function getFlash(): ?array
     startSession();
 
     if (isset($_SESSION['flash'])) {
-
         $f = $_SESSION['flash'];
-
         unset($_SESSION['flash']);
-
         return $f;
     }
 
@@ -397,21 +365,9 @@ function showFlash(): string
         return '';
     }
 
-    $type =
-        $f['type'] === 'success'
-            ? 'success'
-            : (
-                $f['type'] === 'error'
-                    ? 'error'
-                    : 'warning'
-            );
+    $type = $f['type'] === 'success' ? 'success' : ($f['type'] === 'error' ? 'error' : 'warning');
 
-    return
-        '<div class="alert alert-' .
-        $type .
-        '">' .
-        clean($f['msg']) .
-        '</div>';
+    return '<div class="alert alert-' . $type . '">' . clean($f['msg']) . '</div>';
 }
 
 // ============================================================
@@ -422,21 +378,10 @@ function timeAgo(string $datetime): string
 {
     $diff = time() - strtotime($datetime);
 
-    if ($diff < 60) {
-        return 'Just now';
-    }
-
-    if ($diff < 3600) {
-        return floor($diff / 60) . 'm ago';
-    }
-
-    if ($diff < 86400) {
-        return floor($diff / 3600) . 'h ago';
-    }
-
-    if ($diff < 604800) {
-        return floor($diff / 86400) . 'd ago';
-    }
+    if ($diff < 60) return 'Just now';
+    if ($diff < 3600) return floor($diff / 60) . 'm ago';
+    if ($diff < 86400) return floor($diff / 3600) . 'h ago';
+    if ($diff < 604800) return floor($diff / 86400) . 'd ago';
 
     return date('M j', strtotime($datetime));
 }
@@ -451,13 +396,6 @@ function formatDateTime(string $datetime): string
     return date('M j, Y h:i A', strtotime($datetime));
 }
 
-/**
- * ============================================================
- * FIXED: formatMoney
- * - 2 decimals kung may fractional part (₱199.50)
- * - 0 decimals kung whole number (₱399)
- * ============================================================
- */
 function formatMoney(int|float $amount): string
 {
     $decimals = (round($amount, 2) == round($amount)) ? 0 : 2;
@@ -471,27 +409,21 @@ function formatMoney(int|float $amount): string
 function statusBadge(string $status): string
 {
     $map = [
-
         'Completed'         => 'badge-green',
         'Deposit Paid'      => 'badge-green',
         'Confirmed'         => 'badge-green',
-
         'Awaiting Approval' => 'badge-amber',
         'Approved (Unpaid)' => 'badge-amber',
-
         'PENDING'           => 'badge-amber',
         'PAID'              => 'badge-green',
         'UNPAID'            => 'badge-gray',
         'REJECTED'          => 'badge-red',
-
         'Cancelled'         => 'badge-red',
-
         'Pending'           => 'badge-amber',
         'Approved'          => 'badge-green',
         'Verified'          => 'badge-green',
         'Unverified'        => 'badge-amber',
         'Failed'            => 'badge-red',
-
         'In Stock'          => 'badge-green',
         'Low Stock'         => 'badge-amber',
         'Out of Stock'      => 'badge-red',
@@ -499,12 +431,7 @@ function statusBadge(string $status): string
 
     $cls = $map[$status] ?? 'badge-gray';
 
-    return
-        '<span class="badge ' .
-        $cls .
-        '">' .
-        clean($status) .
-        '</span>';
+    return '<span class="badge ' . $cls . '">' . clean($status) . '</span>';
 }
 
 // ============================================================
@@ -521,61 +448,26 @@ function addNotification(
 ): bool {
 
     try {
-
         $pdo = db();
 
         $stmt = $pdo->prepare("
             INSERT INTO notifications
-            (
-                user_id,
-                type,
-                title,
-                message,
-                link,
-                icon,
-                is_read,
-                created_at
-            )
-            VALUES
-            (
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                0,
-                NOW()
-            )
+            (user_id, type, title, message, link, icon, is_read, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, 0, NOW())
         ");
 
         $success = $stmt->execute([
-            $userId,
-            $type,
-            $title,
-            $message,
-            $link,
-            $icon
+            $userId, $type, $title, $message, $link, $icon
         ]);
 
         if ($success) {
-            sendPushNotification(
-                $userId,
-                $title,
-                $message,
-                $link
-            );
+            sendPushNotification($userId, $title, $message, $link);
         }
 
         return $success;
 
     } catch (Throwable $e) {
-
-        error_log(
-            'addNotification error: ' .
-            $e->getMessage()
-        );
-
+        error_log('addNotification error: ' . $e->getMessage());
         return false;
     }
 }
@@ -590,33 +482,16 @@ function addNotificationByRole(
 ): int {
 
     try {
-
         $pdo = db();
 
-        $stmt = $pdo->prepare("
-            SELECT id
-            FROM users
-            WHERE role = ?
-        ");
-
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE role = ?");
         $stmt->execute([$role]);
 
         $users = $stmt->fetchAll();
-
         $count = 0;
 
         foreach ($users as $u) {
-
-            if (
-                addNotification(
-                    (int)$u['id'],
-                    $title,
-                    $message,
-                    $type,
-                    $icon,
-                    $link
-                )
-            ) {
+            if (addNotification((int)$u['id'], $title, $message, $type, $icon, $link)) {
                 $count++;
             }
         }
@@ -624,12 +499,7 @@ function addNotificationByRole(
         return $count;
 
     } catch (Throwable $e) {
-
-        error_log(
-            'addNotificationByRole error: ' .
-            $e->getMessage()
-        );
-
+        error_log('addNotificationByRole error: ' . $e->getMessage());
         return 0;
     }
 }
@@ -637,51 +507,23 @@ function addNotificationByRole(
 function getUnreadCount(int $userId): int
 {
     try {
-
-        $stmt = db()->prepare("
-            SELECT COUNT(*)
-            FROM notifications
-            WHERE user_id = ?
-              AND is_read = 0
-        ");
-
+        $stmt = db()->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
         $stmt->execute([$userId]);
-
         return (int)$stmt->fetchColumn();
-
     } catch (Throwable $e) {
-
-        error_log(
-            'getUnreadCount error: ' .
-            $e->getMessage()
-        );
-
+        error_log('getUnreadCount error: ' . $e->getMessage());
         return 0;
     }
 }
 
-function getNotifications(
-    int $userId,
-    int $limit = 20
-): array {
-
+function getNotifications(int $userId, int $limit = 20): array
+{
     try {
-
         $limit = max(1, min(100, (int)$limit));
-
         $pdo = db();
 
         $stmt = $pdo->prepare("
-            SELECT
-                id,
-                user_id,
-                type,
-                title,
-                message,
-                link,
-                icon,
-                is_read,
-                created_at
+            SELECT id, user_id, type, title, message, link, icon, is_read, created_at
             FROM notifications
             WHERE user_id = ?
             ORDER BY created_at DESC
@@ -689,170 +531,72 @@ function getNotifications(
         ");
 
         $stmt->execute([$userId]);
-
         return $stmt->fetchAll();
-
     } catch (Throwable $e) {
-
-        error_log(
-            'getNotifications error: ' .
-            $e->getMessage()
-        );
-
+        error_log('getNotifications error: ' . $e->getMessage());
         return [];
     }
 }
 
-function getNotification(
-    int $notificationId,
-    int $userId
-): ?array {
-
+function getNotification(int $notificationId, int $userId): ?array
+{
     try {
-
         $stmt = db()->prepare("
-            SELECT
-                id,
-                user_id,
-                type,
-                title,
-                message,
-                link,
-                icon,
-                is_read,
-                created_at
+            SELECT id, user_id, type, title, message, link, icon, is_read, created_at
             FROM notifications
-            WHERE id = ?
-              AND user_id = ?
+            WHERE id = ? AND user_id = ?
             LIMIT 1
         ");
 
-        $stmt->execute([
-            $notificationId,
-            $userId
-        ]);
-
+        $stmt->execute([$notificationId, $userId]);
         $notification = $stmt->fetch();
-
         return $notification ?: null;
-
     } catch (Throwable $e) {
-
-        error_log(
-            'getNotification error: ' .
-            $e->getMessage()
-        );
-
+        error_log('getNotification error: ' . $e->getMessage());
         return null;
     }
 }
 
-function markNotificationRead(
-    int $notificationId,
-    int $userId
-): bool {
-
+function markNotificationRead(int $notificationId, int $userId): bool
+{
     try {
-
-        $stmt = db()->prepare("
-            UPDATE notifications
-            SET is_read = 1
-            WHERE id = ?
-              AND user_id = ?
-        ");
-
-        return $stmt->execute([
-            $notificationId,
-            $userId
-        ]);
-
+        $stmt = db()->prepare("UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?");
+        return $stmt->execute([$notificationId, $userId]);
     } catch (Throwable $e) {
-
-        error_log(
-            'markNotificationRead error: ' .
-            $e->getMessage()
-        );
-
+        error_log('markNotificationRead error: ' . $e->getMessage());
         return false;
     }
 }
 
-function markAllNotificationsRead(
-    int $userId
-): bool {
-
+function markAllNotificationsRead(int $userId): bool
+{
     try {
-
-        $stmt = db()->prepare("
-            UPDATE notifications
-            SET is_read = 1
-            WHERE user_id = ?
-              AND is_read = 0
-        ");
-
+        $stmt = db()->prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0");
         return $stmt->execute([$userId]);
-
     } catch (Throwable $e) {
-
-        error_log(
-            'markAllNotificationsRead error: ' .
-            $e->getMessage()
-        );
-
+        error_log('markAllNotificationsRead error: ' . $e->getMessage());
         return false;
     }
 }
 
-function deleteNotification(
-    int $notificationId,
-    int $userId
-): bool {
-
+function deleteNotification(int $notificationId, int $userId): bool
+{
     try {
-
-        $stmt = db()->prepare("
-            DELETE FROM notifications
-            WHERE id = ?
-              AND user_id = ?
-        ");
-
-        return $stmt->execute([
-            $notificationId,
-            $userId
-        ]);
-
+        $stmt = db()->prepare("DELETE FROM notifications WHERE id = ? AND user_id = ?");
+        return $stmt->execute([$notificationId, $userId]);
     } catch (Throwable $e) {
-
-        error_log(
-            'deleteNotification error: ' .
-            $e->getMessage()
-        );
-
+        error_log('deleteNotification error: ' . $e->getMessage());
         return false;
     }
 }
 
-function deleteReadNotifications(
-    int $userId
-): bool {
-
+function deleteReadNotifications(int $userId): bool
+{
     try {
-
-        $stmt = db()->prepare("
-            DELETE FROM notifications
-            WHERE user_id = ?
-              AND is_read = 1
-        ");
-
+        $stmt = db()->prepare("DELETE FROM notifications WHERE user_id = ? AND is_read = 1");
         return $stmt->execute([$userId]);
-
     } catch (Throwable $e) {
-
-        error_log(
-            'deleteReadNotifications error: ' .
-            $e->getMessage()
-        );
-
+        error_log('deleteReadNotifications error: ' . $e->getMessage());
         return false;
     }
 }
@@ -867,14 +611,7 @@ function notifyNewBooking(string $clientName = ''): int
         ? $clientName . ' submitted a new booking that needs approval.'
         : 'A new booking is waiting for approval.';
 
-    return addNotificationByRole(
-        'staff',
-        'New Booking',
-        $message,
-        'booking',
-        '📅',
-        'index.php?page=bookings'
-    );
+    return addNotificationByRole('staff', 'New Booking', $message, 'booking', '📅', 'index.php?page=bookings');
 }
 
 function notifyPaymentSubmitted(string $clientName = ''): int
@@ -883,38 +620,17 @@ function notifyPaymentSubmitted(string $clientName = ''): int
         ? $clientName . ' submitted a payment for verification.'
         : 'A client submitted a payment for verification.';
 
-    return addNotificationByRole(
-        'staff',
-        'Payment Submitted',
-        $message,
-        'payment',
-        '💳',
-        'index.php?page=payments'
-    );
+    return addNotificationByRole('staff', 'Payment Submitted', $message, 'payment', '💳', 'index.php?page=payments');
 }
 
 function notifyNewFeedback(): int
 {
-    return addNotificationByRole(
-        'admin',
-        'New Customer Feedback',
-        'A client submitted new feedback.',
-        'feedback',
-        '⭐',
-        'index.php?page=feedback'
-    );
+    return addNotificationByRole('admin', 'New Customer Feedback', 'A client submitted new feedback.', 'feedback', '⭐', 'index.php?page=feedback');
 }
 
 function notifyUrgentFeedback(): int
 {
-    return addNotificationByRole(
-        'admin',
-        'Urgent Feedback',
-        'A client submitted a low-rating feedback that needs attention.',
-        'urgent_feedback',
-        '⚠️',
-        'index.php?page=feedback'
-    );
+    return addNotificationByRole('admin', 'Urgent Feedback', 'A client submitted a low-rating feedback that needs attention.', 'urgent_feedback', '⚠️', 'index.php?page=feedback');
 }
 
 function notifyNewClient(string $clientName = ''): int
@@ -923,14 +639,7 @@ function notifyNewClient(string $clientName = ''): int
         ? $clientName . ' registered as a new client.'
         : 'A new client has registered in Studio 94.';
 
-    return addNotificationByRole(
-        'admin',
-        'New Client Registered',
-        $message,
-        'new_client',
-        '👤',
-        'index.php?page=clients'
-    );
+    return addNotificationByRole('admin', 'New Client Registered', $message, 'new_client', '👤', 'index.php?page=clients');
 }
 
 // ============================================================
@@ -940,67 +649,34 @@ function notifyNewClient(string $clientName = ''): int
 function getVapidKeys(): array
 {
     return [
-
-        'publicKey' =>
-            getenv('VAPID_PUBLIC_KEY')
-            ?: ($_ENV['VAPID_PUBLIC_KEY'] ?? ''),
-
-        'privateKey' =>
-            getenv('VAPID_PRIVATE_KEY')
-            ?: ($_ENV['VAPID_PRIVATE_KEY'] ?? ''),
-
-        'subject' =>
-            getenv('VAPID_SUBJECT')
-            ?: (
-                $_ENV['VAPID_SUBJECT']
-                ?? 'mailto:your-email@example.com'
-            ),
+        'publicKey' => getenv('VAPID_PUBLIC_KEY') ?: ($_ENV['VAPID_PUBLIC_KEY'] ?? ''),
+        'privateKey' => getenv('VAPID_PRIVATE_KEY') ?: ($_ENV['VAPID_PRIVATE_KEY'] ?? ''),
+        'subject' => getenv('VAPID_SUBJECT') ?: ($_ENV['VAPID_SUBJECT'] ?? 'mailto:your-email@example.com'),
     ];
 }
 
 function hasVapidKeys(): bool
 {
     $keys = getVapidKeys();
-
-    return !empty($keys['publicKey'])
-        && !empty($keys['privateKey']);
+    return !empty($keys['publicKey']) && !empty($keys['privateKey']);
 }
 
-function sendPushNotification(
-    int $userId,
-    string $title,
-    string $message,
-    ?string $link = null
-): void {
-
+function sendPushNotification(int $userId, string $title, string $message, ?string $link = null): void
+{
     if (!class_exists('Minishlink\WebPush\WebPush')) {
         return;
     }
 
     try {
-
         $pdo = db();
-
         $vapid = getVapidKeys();
 
-        if (
-            empty($vapid['publicKey']) ||
-            empty($vapid['privateKey'])
-        ) {
+        if (empty($vapid['publicKey']) || empty($vapid['privateKey'])) {
             return;
         }
 
-        $stmt = $pdo->prepare("
-            SELECT
-                endpoint,
-                auth_key,
-                p256dh_key
-            FROM push_subscriptions
-            WHERE user_id = ?
-        ");
-
+        $stmt = $pdo->prepare("SELECT endpoint, auth_key, p256dh_key FROM push_subscriptions WHERE user_id = ?");
         $stmt->execute([$userId]);
-
         $subscriptions = $stmt->fetchAll();
 
         if (empty($subscriptions)) {
@@ -1022,55 +698,33 @@ function sendPushNotification(
             'body'  => $message,
             'icon'  => '/assets/icon.png',
             'badge' => '/assets/badge.png',
-            'url'   => $link
-                ?: '/index.php?page=notifications',
+            'url'   => $link ?: '/index.php?page=notifications',
         ]);
 
         foreach ($subscriptions as $sub) {
-
             $webPush->queueNotification(
-
                 Subscription::create([
                     'endpoint'  => $sub['endpoint'],
                     'authToken' => $sub['auth_key'],
                     'publicKey' => $sub['p256dh_key'],
                 ]),
-
                 $payload
             );
         }
 
         foreach ($webPush->flush() as $report) {
-
             if (!$report->isSuccess()) {
-
                 try {
-
-                    $deleteStmt = $pdo->prepare("
-                        DELETE FROM push_subscriptions
-                        WHERE endpoint = ?
-                    ");
-
-                    $deleteStmt->execute([
-                        $report->getEndpoint()
-                    ]);
-
+                    $deleteStmt = $pdo->prepare("DELETE FROM push_subscriptions WHERE endpoint = ?");
+                    $deleteStmt->execute([$report->getEndpoint()]);
                 } catch (Throwable $e) {
-
-                    error_log(
-                        'Push subscription cleanup error: ' .
-                        $e->getMessage()
-                    );
+                    error_log('Push subscription cleanup error: ' . $e->getMessage());
                 }
             }
         }
 
     } catch (Throwable $e) {
-
-        error_log(
-            'sendPushNotification error: ' .
-            $e->getMessage()
-        );
+        error_log('sendPushNotification error: ' . $e->getMessage());
     }
 }
 
@@ -1083,7 +737,6 @@ function getUserById(int $userId): ?array
     $stmt = db()->prepare("SELECT * FROM users WHERE id = ?");
     $stmt->execute([$userId]);
     $user = $stmt->fetch();
-
     return $user ?: null;
 }
 
@@ -1092,26 +745,19 @@ function getUserByEmail(string $email): ?array
     $stmt = db()->prepare("SELECT * FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch();
-
     return $user ?: null;
 }
 
 function getUserName(int $userId): string
 {
     $user = getUserById($userId);
-
-    return $user
-        ? $user['name']
-        : 'Unknown User';
+    return $user ? $user['name'] : 'Unknown User';
 }
 
 function getUserRole(int $userId): string
 {
     $user = getUserById($userId);
-
-    return $user
-        ? $user['role']
-        : 'guest';
+    return $user ? $user['role'] : 'guest';
 }
 
 // ============================================================
@@ -1130,12 +776,10 @@ function getLoyaltyTier(int $bookings): string
 function getLoyaltyRewards(int $bookings): array
 {
     $earned = [];
-    
     if ($bookings >= 2)  $earned[] = '+5 MINUTES';
     if ($bookings >= 4)  $earned[] = '+1 PRINT OUT';
     if ($bookings >= 7)  $earned[] = '+1 BACKDROP';
     if ($bookings >= 10) $earned[] = '50% OFF';
-    
     return $earned;
 }
 
@@ -1147,7 +791,7 @@ function getLoyaltyProgress(int $bookings): array
         7  => ['label' => '+1 BACKDROP',  'next' => '1 more booking to unlock +1 BACKDROP'],
         10 => ['label' => '50% OFF',      'next' => '1 more booking to unlock 50% OFF'],
     ];
-    
+
     if ($bookings >= 10) {
         return [
             'pct'   => 100,
@@ -1155,10 +799,10 @@ function getLoyaltyProgress(int $bookings): array
             'label' => '10 / 10 bookings',
         ];
     }
-    
+
     $nextTier = 2;
     $prevTier = 0;
-    
+
     foreach ($tiers as $count => $info) {
         if ($bookings >= $count) {
             $prevTier = $count;
@@ -1167,13 +811,13 @@ function getLoyaltyProgress(int $bookings): array
             break;
         }
     }
-    
+
     $progressInTier = $bookings - $prevTier;
     $tierSize = $nextTier - $prevTier;
-    $pct = $prevTier === 0 
+    $pct = $prevTier === 0
         ? round(($bookings / $nextTier) * 100)
         : round(($progressInTier / $tierSize) * 100);
-    
+
     return [
         'pct'   => max(0, min(100, $pct)),
         'next'  => $tiers[$nextTier]['next'],
@@ -1181,22 +825,66 @@ function getLoyaltyProgress(int $bookings): array
     ];
 }
 
+// ============================================================
+// ✅ FIXED: getClientBookingCount — ONLY 'Completed' status
+// ============================================================
+// Ito ang source of truth para sa loyalty count.
+// Ang 'Deposit Paid' at 'Confirmed' ay HINDI kasama dahil
+// hindi pa tapos ang session.
+// ============================================================
 function getClientBookingCount(int $userId): int
 {
     $stmt = db()->prepare("
         SELECT COUNT(*)
         FROM bookings
         WHERE user_id = ?
-          AND status IN (
-              'Completed',
-              'Deposit Paid',
-              'Confirmed'
-          )
+          AND status = 'Completed'
     ");
 
     $stmt->execute([$userId]);
 
     return (int)$stmt->fetchColumn();
+}
+
+// ============================================================
+// ✅ NEW: syncLoyaltyCard — Recalculate loyalty_cards.total_bookings
+// ============================================================
+// Ito ay idempotent — safe i-run kahit ilang beses.
+// Ginagamit ito pagkatapos ng status change (complete/cancel)
+// para i-sync ang loyalty_cards.total_bookings column.
+// ============================================================
+function syncLoyaltyCard(int $userId): int
+{
+    if ($userId <= 0) return 0;
+
+    $pdo = db();
+
+    // Count completed bookings
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*)
+        FROM bookings
+        WHERE user_id = ?
+          AND status = 'Completed'
+    ");
+    $stmt->execute([$userId]);
+    $correctCount = (int)$stmt->fetchColumn();
+
+    // Check if card exists
+    $lcCheck = $pdo->prepare("SELECT id FROM loyalty_cards WHERE user_id = ?");
+    $lcCheck->execute([$userId]);
+
+    if ($lcCheck->fetch()) {
+        // Update existing
+        $pdo->prepare("UPDATE loyalty_cards SET total_bookings = ? WHERE user_id = ?")
+            ->execute([$correctCount, $userId]);
+    } else if ($correctCount > 0) {
+        // Create new card
+        $cardNo = 'LC-' . date('Y') . '-' . str_pad($userId, 3, '0', STR_PAD_LEFT);
+        $pdo->prepare("INSERT INTO loyalty_cards (user_id, card_number, total_bookings, status) VALUES (?, ?, ?, 'Active')")
+            ->execute([$userId, $cardNo, $correctCount]);
+    }
+
+    return $correctCount;
 }
 
 // ============================================================
@@ -1252,10 +940,7 @@ function checkBookingConflict(
     $endTime   = strtotime("+{$durationHours} hours", $startTime);
 
     $sql = "
-        SELECT
-            b.*,
-            p.duration AS package_duration,
-            u.name AS client_name
+        SELECT b.*, p.duration AS package_duration, u.name AS client_name
         FROM bookings b
         JOIN packages p ON b.package_id = p.id
         JOIN users u ON b.user_id = u.id
@@ -1278,9 +963,7 @@ function checkBookingConflict(
 
     foreach ($existingBookings as $existing) {
 
-        $existingDuration = extractHoursFromDuration(
-            $existing['package_duration'] ?? '1 hour'
-        );
+        $existingDuration = extractHoursFromDuration($existing['package_duration'] ?? '1 hour');
 
         if ($existingDuration <= 0) {
             $existingDuration = 1;
@@ -1297,13 +980,8 @@ function checkBookingConflict(
     return $conflicts;
 }
 
-function isSlotAvailable(
-    string $date,
-    string $time,
-    int $packageId,
-    int $excludeBookingId = 0
-): bool {
-
+function isSlotAvailable(string $date, string $time, int $packageId, int $excludeBookingId = 0): bool
+{
     $stmt = db()->prepare("
         SELECT COUNT(*)
         FROM bookings
@@ -1314,12 +992,7 @@ function isSlotAvailable(
           AND id != ?
     ");
 
-    $stmt->execute([
-        $date,
-        $time,
-        $packageId,
-        $excludeBookingId
-    ]);
+    $stmt->execute([$date, $time, $packageId, $excludeBookingId]);
 
     return (int)$stmt->fetchColumn() === 0;
 }
@@ -1345,38 +1018,27 @@ function getPackageById(int $packageId): ?array
     $stmt = db()->prepare("SELECT * FROM packages WHERE id = ?");
     $stmt->execute([$packageId]);
     $package = $stmt->fetch();
-
     return $package ?: null;
 }
 
 function getPackagePrice(int $packageId): float
 {
     $package = getPackageById($packageId);
-
-    return $package
-        ? (float)$package['price']
-        : 0;
+    return $package ? (float)$package['price'] : 0;
 }
 
 function getPackageDuration(int $packageId): string
 {
     $package = getPackageById($packageId);
-
-    return $package
-        ? $package['duration']
-        : '1 hour';
+    return $package ? $package['duration'] : '1 hour';
 }
 
 // ============================================================
 // ===== PAGINATION
 // ============================================================
 
-function paginate(
-    int $total,
-    int $perPage,
-    int $current
-): array {
-
+function paginate(int $total, int $perPage, int $current): array
+{
     $perPage = max(1, $perPage);
     $pages   = (int)ceil($total / $perPage);
     $pages   = max(1, $pages);
@@ -1395,24 +1057,12 @@ function paginate(
 // ===== CSV EXPORT
 // ============================================================
 
-function outputCSV(
-    array $headers,
-    array $rows,
-    string $filename
-): void {
-
+function outputCSV(array $headers, array $rows, string $filename): void
+{
     header('Content-Type: text/csv');
-
-    header(
-        'Content-Disposition: attachment; filename="' .
-        $filename .
-        '_' .
-        date('Y-m-d') .
-        '.csv"'
-    );
+    header('Content-Disposition: attachment; filename="' . $filename . '_' . date('Y-m-d') . '.csv"');
 
     $out = fopen('php://output', 'w');
-
     fputcsv($out, $headers);
 
     foreach ($rows as $row) {
@@ -1420,7 +1070,6 @@ function outputCSV(
     }
 
     fclose($out);
-
     exit;
 }
 
@@ -1428,16 +1077,9 @@ function outputCSV(
 // ===== UPLOAD FUNCTIONS
 // ============================================================
 
-function uploadFile(
-    array $file,
-    string $targetDir,
-    array $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp']
-): array {
-
-    if (
-        !isset($file['error']) ||
-        $file['error'] !== UPLOAD_ERR_OK
-    ) {
+function uploadFile(array $file, string $targetDir, array $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp']): array
+{
+    if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
         return ['success' => false, 'error' => 'Upload failed'];
     }
 
@@ -1454,9 +1096,7 @@ function uploadFile(
     }
 
     $filename = uniqid('', true) . '.' . $ext;
-    $targetPath = rtrim($targetDir, DIRECTORY_SEPARATOR)
-        . DIRECTORY_SEPARATOR
-        . $filename;
+    $targetPath = rtrim($targetDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $filename;
 
     if (move_uploaded_file($file['tmp_name'], $targetPath)) {
         return ['success' => true, 'filename' => $filename];
@@ -1472,27 +1112,18 @@ function uploadFile(
 function getPackageInventory(int $packageId): array
 {
     $stmt = db()->prepare("
-        SELECT
-            pi.*,
-            i.name AS inventory_name,
-            i.quantity AS current_stock,
-            i.threshold,
-            i.is_reusable
+        SELECT pi.*, i.name AS inventory_name, i.quantity AS current_stock, i.threshold, i.is_reusable
         FROM package_inventory pi
         JOIN inventory i ON pi.inventory_id = i.id
         WHERE pi.package_id = ?
     ");
 
     $stmt->execute([$packageId]);
-
     return $stmt->fetchAll();
 }
 
-function deductInventoryOnComplete(
-    int $bookingId,
-    int $packageId
-): array {
-
+function deductInventoryOnComplete(int $bookingId, int $packageId): array
+{
     $pdo = db();
     $items = getPackageInventory($packageId);
 
@@ -1513,7 +1144,6 @@ function deductInventoryOnComplete(
     }
 
     try {
-
         $pdo->beginTransaction();
 
         foreach ($items as $item) {
@@ -1542,7 +1172,6 @@ function deductInventoryOnComplete(
 
             if ($isReusable === 1) {
                 $skippedReusable[] = $itemName;
-
                 $details[] = [
                     'name'            => $itemName,
                     'quantity'        => $requiredQty,
@@ -1551,7 +1180,6 @@ function deductInventoryOnComplete(
                     'deducted'        => false,
                     'remaining_stock' => $currentStock,
                 ];
-
                 continue;
             }
 
@@ -1578,7 +1206,6 @@ function deductInventoryOnComplete(
             }
 
             $remainingStock = $currentStock - $requiredQty;
-
             $deducted[] = $itemName . ' (-' . $requiredQty . ')';
 
             $details[] = [
@@ -1591,45 +1218,26 @@ function deductInventoryOnComplete(
             ];
 
             $biStmt = $pdo->prepare("
-                INSERT INTO booking_inventory
-                (booking_id, inventory_id, quantity, used_at)
+                INSERT INTO booking_inventory (booking_id, inventory_id, quantity, used_at)
                 VALUES (?, ?, ?, NOW())
             ");
-
             $biStmt->execute([$bookingId, $inventoryId, $requiredQty]);
 
             $threshold = (int)$inventory['threshold'];
 
             if ($remainingStock <= $threshold) {
-
                 $message = $itemName . ' is low on stock. '
                     . $remainingStock . ' left; threshold is '
                     . $threshold . '.';
 
-                addNotificationByRole(
-                    'admin',
-                    'Low Stock Alert',
-                    $message,
-                    'inventory',
-                    '⚠️',
-                    'index.php?page=inventory'
-                );
-
-                addNotificationByRole(
-                    'staff',
-                    'Low Stock Alert',
-                    $message,
-                    'inventory',
-                    '⚠️',
-                    'index.php?page=inventory'
-                );
+                addNotificationByRole('admin', 'Low Stock Alert', $message, 'inventory', '⚠️', 'index.php?page=inventory');
+                addNotificationByRole('staff', 'Low Stock Alert', $message, 'inventory', '⚠️', 'index.php?page=inventory');
             }
         }
 
         $pdo->commit();
 
     } catch (Throwable $e) {
-
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
         }
@@ -1674,15 +1282,9 @@ function restoreInventory(int $bookingId): bool
     $pdo = db();
 
     try {
-
         $pdo->beginTransaction();
 
-        $stmt = $pdo->prepare("
-            SELECT inventory_id, quantity
-            FROM booking_inventory
-            WHERE booking_id = ?
-        ");
-
+        $stmt = $pdo->prepare("SELECT inventory_id, quantity FROM booking_inventory WHERE booking_id = ?");
         $stmt->execute([$bookingId]);
         $items = $stmt->fetchAll();
 
@@ -1699,31 +1301,21 @@ function restoreInventory(int $bookingId): bool
                   AND is_reusable = 0
             ");
 
-            $restoreStmt->execute([
-                (int)$item['quantity'],
-                (int)$item['inventory_id']
-            ]);
+            $restoreStmt->execute([(int)$item['quantity'], (int)$item['inventory_id']]);
         }
 
-        $delStmt = $pdo->prepare("
-            DELETE FROM booking_inventory
-            WHERE booking_id = ?
-        ");
-
+        $delStmt = $pdo->prepare("DELETE FROM booking_inventory WHERE booking_id = ?");
         $delStmt->execute([$bookingId]);
 
         $pdo->commit();
-
         return true;
 
     } catch (Throwable $e) {
-
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
         }
 
         error_log('restoreInventory error: ' . $e->getMessage());
-
         return false;
     }
 }
@@ -1731,7 +1323,6 @@ function restoreInventory(int $bookingId): bool
 function checkLowStockAndNotify(): void
 {
     try {
-
         $pdo = db();
 
         $stmt = $pdo->query("
@@ -1749,37 +1340,16 @@ function checkLowStockAndNotify(): void
         }
 
         $items = [];
-
         foreach ($lowItems as $item) {
-            $items[] = $item['name']
-                . ' (' . (int)$item['quantity']
-                . ' left, threshold: '
-                . (int)$item['threshold'] . ')';
+            $items[] = $item['name'] . ' (' . (int)$item['quantity'] . ' left, threshold: ' . (int)$item['threshold'] . ')';
         }
 
-        $message = 'The following consumable inventory items are low: '
-            . implode(', ', $items);
+        $message = 'The following consumable inventory items are low: ' . implode(', ', $items);
 
-        addNotificationByRole(
-            'admin',
-            'Low Stock Alert',
-            $message,
-            'inventory',
-            '⚠️',
-            'index.php?page=inventory'
-        );
-
-        addNotificationByRole(
-            'staff',
-            'Low Stock Alert',
-            $message,
-            'inventory',
-            '⚠️',
-            'index.php?page=inventory'
-        );
+        addNotificationByRole('admin', 'Low Stock Alert', $message, 'inventory', '⚠️', 'index.php?page=inventory');
+        addNotificationByRole('staff', 'Low Stock Alert', $message, 'inventory', '⚠️', 'index.php?page=inventory');
 
     } catch (Throwable $e) {
-
         error_log('checkLowStockAndNotify error: ' . $e->getMessage());
     }
 }
