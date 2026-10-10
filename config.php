@@ -32,6 +32,15 @@ function loadEnv($path = __DIR__ . '/.env') {
 
 loadEnv();
 
+// ============================================================
+// ✅ NEW: TIMEZONE — Philippines Standard Time (PHT / UTC+8)
+// ============================================================
+// This ensures that all date() and time() functions throughout the
+// system use Philippine time, not the server's default (which is
+// usually UTC on Railway).
+// ============================================================
+date_default_timezone_set('Asia/Manila');
+
 // ===== DATABASE CONNECTION =====
 define('DB_HOST',    $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?? $_ENV['MYSQLHOST'] ?? getenv('MYSQLHOST') ?: 'localhost');
 define('DB_PORT',    $_ENV['DB_PORT'] ?? getenv('DB_PORT') ?? $_ENV['MYSQLPORT'] ?? getenv('MYSQLPORT') ?: '3306');
@@ -39,6 +48,9 @@ define('DB_NAME',    $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?? $_ENV['MYSQLDATABA
 define('DB_USER',    $_ENV['DB_USER'] ?? getenv('DB_USER') ?? $_ENV['MYSQLUSER'] ?? getenv('MYSQLUSER') ?: 'root');
 define('DB_PASS',    $_ENV['DB_PASS'] ?? getenv('DB_PASS') ?? $_ENV['MYSQLPASSWORD'] ?? getenv('MYSQLPASSWORD') ?: '');
 define('DB_CHARSET', 'utf8mb4');
+
+// ✅ NEW: MySQL timezone offset (used when creating PDO connection)
+define('DB_TIMEZONE', '+08:00');
 
 // ===== APP SETTINGS & URL CONFIGURATION =====
 define('APP_NAME', 'Studio 94 SnapTrack');
