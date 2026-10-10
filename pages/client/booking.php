@@ -167,6 +167,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($startMin < OPEN_HOUR_MINUTES) $errors[] = 'Studio opens at 10:00 AM.';
             if ($startMin >= CLOSE_HOUR_MINUTES) $errors[] = 'Studio closes at 7:00 PM.';
             if ($endMin > CLOSE_HOUR_MINUTES) $errors[] = 'Session would end past 7:00 PM. Please choose an earlier time.';
+
+            // ✅ NEW: If booking is for TODAY, prevent booking past time slots
+            $today = date('Y-m-d');
+            if ($date === $today) {
+                $nowMinutes = ((int)date('H') * 60) + (int)date('i');
+                if ($startMin <= $nowMinutes) {
+                    $errors[] = 'This time slot has already passed. Current time: ' . date('g:i A') . '. Please choose a later time.';
+                }
+            }
         }
     }
 
@@ -1272,6 +1281,22 @@ let selectedPackageBaseMinutes = 0;
 let selectedSubPackageId = 0;
 let selectedTime = '';
 
+// ✅ NEW: Get current time in minutes
+function getCurrentTimeInMinutes() {
+    const now = new Date();
+    return (now.getHours() * 60) + now.getMinutes();
+}
+
+// ✅ NEW: Check if a date string is today
+function isToday(dateStr) {
+    if (!dateStr) return false;
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    return dateStr === `${y}-${m}-${d}`;
+}
+
 function parseDurationHours(duration) {
     if (!duration) return 1;
     const d = String(duration).toLowerCase().trim();
@@ -1391,26 +1416,38 @@ function isSlotPending(date, startTime, duration) {
     return false;
 }
 
+// ✅ UPDATED: Added "past time" check for today's date
 function isSlotAvailable(date, startTime, duration) {
     const durationMinutes = getDurationInMinutes(duration);
     const startMinutes = parseTime(startTime);
     if (startMinutes === 0) return false;
     const endMinutes = startMinutes + durationMinutes;
 
+    // Operating hours check
     if (startMinutes < OPEN_HOUR_MINUTES || endMinutes > CLOSE_HOUR_MINUTES) return false;
+
+    // ✅ NEW: If today, prevent booking past time slots
+    if (isToday(date) && startMinutes <= getCurrentTimeInMinutes()) return false;
+
+    // Conflict check
     if (isSlotConfirmed(date, startTime, duration)) return false;
     return true;
 }
 
+// ✅ UPDATED: Skip past time slots when date is today
 function getAvailableSlots(date, duration) {
     const available = [];
     const durationMinutes = getDurationInMinutes(duration);
+    const nowMinutes = isToday(date) ? getCurrentTimeInMinutes() : -1;
 
     for (
         let timeMinutes = OPEN_HOUR_MINUTES;
         timeMinutes + durationMinutes <= CLOSE_HOUR_MINUTES;
         timeMinutes += SLOT_STEP_MINUTES
     ) {
+        // ✅ NEW: Skip past time slots if today
+        if (nowMinutes >= 0 && timeMinutes <= nowMinutes) continue;
+
         const timeStr = formatTime(timeMinutes);
         if (isSlotAvailable(date, timeStr, duration)) {
             available.push({
@@ -1461,6 +1498,7 @@ function updateStats(total, booked, available) {
     document.getElementById('stat-available').textContent = available;
 }
 
+// ✅ UPDATED: Skips past time slots for today
 function updateBookedSlotsDisplay(date) {
     const container = document.getElementById('booked-slots-display');
     if (!date) {
@@ -1476,6 +1514,7 @@ function updateBookedSlotsDisplay(date) {
 
     const booked = getBookedSlotsForDate(date);
     const durationMinutes = getDurationInMinutes(selectedPackageDuration || '1 hour');
+    const nowMinutes = isToday(date) ? getCurrentTimeInMinutes() : -1;
 
     const allSlots = [];
     for (
@@ -1483,6 +1522,8 @@ function updateBookedSlotsDisplay(date) {
         timeMinutes < CLOSE_HOUR_MINUTES;
         timeMinutes += SLOT_STEP_MINUTES
     ) {
+        // ✅ NEW: Skip past time slots if today
+        if (nowMinutes >= 0 && timeMinutes <= nowMinutes) continue;
         const timeStr = formatTime(timeMinutes);
         if (timeStr !== 'Invalid') allSlots.push(timeStr);
     }
@@ -1636,6 +1677,7 @@ function onViewDateChange(date) {
     showBookedTimes(date);
 }
 
+// ✅ UPDATED: Added past-time validation
 function checkTimeAvailability(timeStr) {
     const date = document.getElementById('form-date').value;
     const statusDiv = document.getElementById('time-status');
@@ -1672,6 +1714,14 @@ function checkTimeAvailability(timeStr) {
     if (timeMinutes >= CLOSE_HOUR_MINUTES) {
         statusDiv.innerHTML = '<span style="color:var(--red-text);">❌ Studio closes at 7:00 PM</span>';
         submitBtn.disabled = true; return;
+    }
+
+    // ✅ NEW: If today, prevent booking past time
+    if (isToday(date) && timeMinutes <= getCurrentTimeInMinutes()) {
+        statusDiv.innerHTML = `<span style="color:var(--red-text);">❌ This time has already passed. Current time: ${formatTime(getCurrentTimeInMinutes())}. Please choose a later time.</span>`;
+        submitBtn.disabled = true;
+        summaryDiv.style.display = 'none';
+        return;
     }
 
     const endMinutes = timeMinutes + durationMinutes;
@@ -1847,6 +1897,7 @@ function renderCalendar() {
 
         let hasAvailable = false;
         if (!isPast && selectedPackageDuration) {
+            // ✅ UPDATED: getAvailableSlots() automatically skips past time slots when date is today
             hasAvailable = getAvailableSlots(ds, selectedPackageDuration).length > 0;
         }
 
