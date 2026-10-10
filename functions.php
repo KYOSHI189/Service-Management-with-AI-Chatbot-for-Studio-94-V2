@@ -34,6 +34,11 @@ function db(): PDO
                 PDO::ATTR_EMULATE_PREPARES   => false,
             ]);
 
+            // ✅ NEW: Set MySQL session timezone to Philippines (UTC+8)
+            // This ensures NOW() in SQL queries uses Philippine time,
+            // not the server's default (usually UTC on Railway).
+            $pdo->exec("SET time_zone = '" . DB_TIMEZONE . "'");
+
             // Auto-migrate missing columns/tables
             ensureDatabaseSchema($pdo);
 
