@@ -81,21 +81,35 @@ if (!function_exists('checkBookingConflict')) {
     }
 }
 
-// ===== GET LOYALTY COUNT & BONUS =====
-$loyaltyStmt = $pdo->prepare("SELECT total_bookings FROM loyalty_cards WHERE user_id = ?");
-$loyaltyStmt->execute([$uid]);
-$loyaltyCount = (int)($loyaltyStmt->fetchColumn() ?: 0);
+// ============================================================
+// ✅ FIXED: GET LOYALTY COUNT — DYNAMIC BASE SA COMPLETED BOOKINGS
+// ============================================================
+// Ang loyalty count ay hindi na kinukuha sa loyalty_cards.total_bookings.
+// Sa halip, ito ay kinakalkula dynamically base sa ACTUAL COMPLETED bookings.
+// Ito ay nagsisiguro na:
+//   - Hindi madadagdagan ang count kapag nag-submit lang ng booking
+//   - Hindi madadagdagan kapag na-cancel ang booking
+//   - Madadagdagan lang kapag COMPLETED na ang session
+// ============================================================
+$loyaltyCount = getClientBookingCount($uid);
 
 $loyaltyBonusMinutes = 0;
 $loyaltyDiscountPct  = 0;
 $loyaltyTierLabel    = 'New Client';
 
+// Loyalty tiers (tama base sa system: 2, 4, 7, 10)
 if ($loyaltyCount >= 10) {
     $loyaltyDiscountPct = 50;
     $loyaltyTierLabel   = '🏆 VIP (50% OFF)';
-} elseif ($loyaltyCount >= 1) {
+} elseif ($loyaltyCount >= 7) {
     $loyaltyBonusMinutes = 5;
-    $loyaltyTierLabel    = '⭐ Loyalty Member';
+    $loyaltyTierLabel    = '⭐ Loyalty Member (+1 BACKDROP)';
+} elseif ($loyaltyCount >= 4) {
+    $loyaltyBonusMinutes = 5;
+    $loyaltyTierLabel    = '⭐ Loyalty Member (+1 PRINT OUT)';
+} elseif ($loyaltyCount >= 2) {
+    $loyaltyBonusMinutes = 5;
+    $loyaltyTierLabel    = '⭐ Loyalty Member (+5 MIN)';
 }
 
 // ===== GET MAIN PACKAGES ONLY =====
@@ -168,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($startMin >= CLOSE_HOUR_MINUTES) $errors[] = 'Studio closes at 7:00 PM.';
             if ($endMin > CLOSE_HOUR_MINUTES) $errors[] = 'Session would end past 7:00 PM. Please choose an earlier time.';
 
-            // ✅ NEW: If booking is for TODAY, prevent booking past time slots
+            // ✅ If booking is for TODAY, prevent booking past time slots
             $today = date('Y-m-d');
             if ($date === $today) {
                 $nowMinutes = ((int)date('H') * 60) + (int)date('i');
@@ -238,16 +252,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 VALUES (?, ?, ?, ?, 'RESERVATION', 'UNPAID', NOW())")
                 ->execute([$payRef, $bookingId, $uid, RESERVATION_FEE]);
 
+            // ============================================================
+            // ✅ FIXED: HUWAG NANG DAGDAGAN ANG LOYALTY COUNT DITO.
+            // ============================================================
+            // Ang loyalty count ay DYNAMIC na kinakalkula base sa
+            // COMPLETED bookings lang — hindi sa pag-submit ng booking.
+            // 
+            // Ang loyalty_cards row ay gagawin lang (kung wala pa) para
+            // may card_number reference. Ang total_bookings column ay
+            // hindi na ginagamit — puro dynamic count na lang.
+            // ============================================================
             $lcCheck = $pdo->prepare("SELECT id FROM loyalty_cards WHERE user_id=?");
             $lcCheck->execute([$uid]);
             if (!$lcCheck->fetch()) {
-                $cardNo = 'LC-' . date('Y') . '-' . str_pad($uid, 3,'0',STR_PAD_LEFT);
-                $pdo->prepare("INSERT INTO loyalty_cards (user_id, card_number, total_bookings, status) VALUES (?, ?, 1, 'Active')")
+                $cardNo = 'LC-' . date('Y') . '-' . str_pad($uid, 3, '0', STR_PAD_LEFT);
+                $pdo->prepare("INSERT INTO loyalty_cards (user_id, card_number, total_bookings, status) VALUES (?, ?, 0, 'Active')")
                     ->execute([$uid, $cardNo]);
-            } else {
-                $pdo->prepare("UPDATE loyalty_cards SET total_bookings=total_bookings+1 WHERE user_id=?")
-                    ->execute([$uid]);
             }
+            // ❌ WALA NANG UPDATE — hindi na dinadagdagan ang total_bookings
 
             $mainName = $mainPackage ? $mainPackage['name'] : 'Main Package';
             $notifMsg = $user['name'] . ' requested ' . $subPackage['name'] . ' (' . $mainName . ') on ' . $date . ' at ' . $time;
@@ -1000,11 +1022,11 @@ $errors = $errors ?? [];
 <?php if ($loyaltyCount > 0): ?>
 <div class="loyalty-banner">
   <div class="loyalty-icon">🎁</div>
-  <div class="loyalty-badge">🎫 <?= $loyaltyCount ?> BOOKINGS</div>
+  <div class="loyalty-badge">🎫 <?= $loyaltyCount ?> COMPLETED</div>
   <div class="loyalty-info">
     <div class="loyalty-tier"><?= clean($loyaltyTierLabel) ?></div>
     <div class="loyalty-desc">
-      <?= $loyaltyCount ?> previous booking<?= $loyaltyCount > 1 ? 's' : '' ?> · 
+      <?= $loyaltyCount ?> completed booking<?= $loyaltyCount > 1 ? 's' : '' ?> · 
       <?php if ($loyaltyBonusMinutes > 0): ?>
         <strong style="color:#FFD700;">+<?= $loyaltyBonusMinutes ?> MIN FREE</strong> added to your session!
       <?php elseif ($loyaltyDiscountPct > 0): ?>
@@ -1281,13 +1303,13 @@ let selectedPackageBaseMinutes = 0;
 let selectedSubPackageId = 0;
 let selectedTime = '';
 
-// ✅ NEW: Get current time in minutes
+// ✅ Get current time in minutes
 function getCurrentTimeInMinutes() {
     const now = new Date();
     return (now.getHours() * 60) + now.getMinutes();
 }
 
-// ✅ NEW: Check if a date string is today
+// ✅ Check if a date string is today
 function isToday(dateStr) {
     if (!dateStr) return false;
     const today = new Date();
@@ -1416,7 +1438,7 @@ function isSlotPending(date, startTime, duration) {
     return false;
 }
 
-// ✅ UPDATED: Added "past time" check for today's date
+// ✅ Added "past time" check for today's date
 function isSlotAvailable(date, startTime, duration) {
     const durationMinutes = getDurationInMinutes(duration);
     const startMinutes = parseTime(startTime);
@@ -1426,7 +1448,7 @@ function isSlotAvailable(date, startTime, duration) {
     // Operating hours check
     if (startMinutes < OPEN_HOUR_MINUTES || endMinutes > CLOSE_HOUR_MINUTES) return false;
 
-    // ✅ NEW: If today, prevent booking past time slots
+    // ✅ If today, prevent booking past time slots
     if (isToday(date) && startMinutes <= getCurrentTimeInMinutes()) return false;
 
     // Conflict check
@@ -1434,7 +1456,7 @@ function isSlotAvailable(date, startTime, duration) {
     return true;
 }
 
-// ✅ UPDATED: Skip past time slots when date is today
+// ✅ Skip past time slots when date is today
 function getAvailableSlots(date, duration) {
     const available = [];
     const durationMinutes = getDurationInMinutes(duration);
@@ -1445,7 +1467,7 @@ function getAvailableSlots(date, duration) {
         timeMinutes + durationMinutes <= CLOSE_HOUR_MINUTES;
         timeMinutes += SLOT_STEP_MINUTES
     ) {
-        // ✅ NEW: Skip past time slots if today
+        // ✅ Skip past time slots if today
         if (nowMinutes >= 0 && timeMinutes <= nowMinutes) continue;
 
         const timeStr = formatTime(timeMinutes);
@@ -1498,7 +1520,7 @@ function updateStats(total, booked, available) {
     document.getElementById('stat-available').textContent = available;
 }
 
-// ✅ UPDATED: Skips past time slots for today
+// ✅ Skips past time slots for today
 function updateBookedSlotsDisplay(date) {
     const container = document.getElementById('booked-slots-display');
     if (!date) {
@@ -1522,7 +1544,7 @@ function updateBookedSlotsDisplay(date) {
         timeMinutes < CLOSE_HOUR_MINUTES;
         timeMinutes += SLOT_STEP_MINUTES
     ) {
-        // ✅ NEW: Skip past time slots if today
+        // ✅ Skip past time slots if today
         if (nowMinutes >= 0 && timeMinutes <= nowMinutes) continue;
         const timeStr = formatTime(timeMinutes);
         if (timeStr !== 'Invalid') allSlots.push(timeStr);
@@ -1677,7 +1699,7 @@ function onViewDateChange(date) {
     showBookedTimes(date);
 }
 
-// ✅ UPDATED: Added past-time validation
+// ✅ Added past-time validation
 function checkTimeAvailability(timeStr) {
     const date = document.getElementById('form-date').value;
     const statusDiv = document.getElementById('time-status');
@@ -1716,7 +1738,7 @@ function checkTimeAvailability(timeStr) {
         submitBtn.disabled = true; return;
     }
 
-    // ✅ NEW: If today, prevent booking past time
+    // ✅ If today, prevent booking past time
     if (isToday(date) && timeMinutes <= getCurrentTimeInMinutes()) {
         statusDiv.innerHTML = `<span style="color:var(--red-text);">❌ This time has already passed. Current time: ${formatTime(getCurrentTimeInMinutes())}. Please choose a later time.</span>`;
         submitBtn.disabled = true;
@@ -1897,7 +1919,7 @@ function renderCalendar() {
 
         let hasAvailable = false;
         if (!isPast && selectedPackageDuration) {
-            // ✅ UPDATED: getAvailableSlots() automatically skips past time slots when date is today
+            // ✅ getAvailableSlots() automatically skips past time slots when date is today
             hasAvailable = getAvailableSlots(ds, selectedPackageDuration).length > 0;
         }
 
