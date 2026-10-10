@@ -846,50 +846,6 @@ function getClientBookingCount(int $userId): int
     return (int)$stmt->fetchColumn();
 }
 
-/**
- * Recompute a client's loyalty card from their COMPLETED bookings and write
- * the result back to loyalty_cards.total_bookings.
- *
- * The count is derived rather than incremented, so calling this after any
- * status change is safe to repeat: approving, completing and then cancelling
- * all land on the same correct number. The card row is created if the client
- * does not have one yet.
- *
- * @return int The synced total_bookings value.
- */
-function syncLoyaltyCard(int $userId): int
-{
-    if ($userId <= 0) {
-        return 0;
-    }
-
-    $stmt = db()->prepare("
-        SELECT COUNT(*)
-        FROM bookings
-        WHERE user_id = ?
-          AND status = 'Completed'
-    ");
-    $stmt->execute([$userId]);
-    $completedCount = (int)$stmt->fetchColumn();
-
-    $cardCheck = db()->prepare("SELECT id FROM loyalty_cards WHERE user_id = ? LIMIT 1");
-    $cardCheck->execute([$userId]);
-
-    if ($cardCheck->fetch()) {
-        $update = db()->prepare("UPDATE loyalty_cards SET total_bookings = ? WHERE user_id = ?");
-        $update->execute([$completedCount, $userId]);
-    } else {
-        $cardNo = 'LC-' . date('Y') . '-' . str_pad((string)$userId, 3, '0', STR_PAD_LEFT);
-        $insert = db()->prepare("
-            INSERT INTO loyalty_cards (user_id, card_number, total_bookings, status)
-            VALUES (?, ?, ?, 'Active')
-        ");
-        $insert->execute([$userId, $cardNo, $completedCount]);
-    }
-
-    return $completedCount;
-}
-
 // ============================================================
 // ✅ NEW: syncLoyaltyCard — Recalculate loyalty_cards.total_bookings
 // ============================================================
