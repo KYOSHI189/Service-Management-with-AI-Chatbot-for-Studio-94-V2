@@ -289,7 +289,11 @@ $bookings = $stmt->fetchAll();
 // Kunin ang loyalty count base sa COMPLETED bookings para sa lahat ng users
 // sa bookings list. Ito ay isang query lang para efficient.
 // ============================================================
-$userIds = array_filter(array_unique(array_column($bookings, 'user_id')));
+// array_values() is required: array_filter() keeps the original keys, so a
+// walk-in row (user_id 0) in the middle of the list leaves gaps like [0 => 7,
+// 2 => 9]. Passing that to execute() makes PDO bind by key instead of
+// position and it fails with "SQLSTATE[HY093] Invalid parameter number".
+$userIds = array_values(array_filter(array_unique(array_column($bookings, 'user_id'))));
 $loyaltyCounts = [];
 
 if (!empty($userIds)) {
@@ -301,7 +305,7 @@ if (!empty($userIds)) {
           AND status = 'Completed'
         GROUP BY user_id
     ");
-    $loyaltyStmt->execute($userIds);
+    $loyaltyStmt->execute(array_map('intval', $userIds));
     foreach ($loyaltyStmt->fetchAll() as $row) {
         $loyaltyCounts[(int)$row['user_id']] = (int)$row['completed_count'];
     }
