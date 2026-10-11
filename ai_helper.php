@@ -1,7 +1,14 @@
 <?php
 // ============================================================
-// AI HELPER — Google Gemini Integration (FIXED)
+// AI HELPER — Google Gemini Integration (FIXED v3)
 // Model: gemini-2.5-flash (stable, fast)
+// ============================================================
+// This file is the SINGLE SOURCE OF TRUTH for:
+//   - Sentiment analysis (fallback + AI)
+//   - Topic detection
+//   - Topic helpers
+//   - Sentiment helpers
+//   - Urgent feedback detection
 // ============================================================
 
 require_once __DIR__ . '/config.php';
@@ -9,17 +16,20 @@ require_once __DIR__ . '/config.php';
 // ============================================================
 // SHARED FALLBACK: SENTIMENT ANALYSIS (LOCAL)
 // ============================================================
+// KEY FIX: Mixed detection FIRST, then rating weight.
+// If both positive AND negative keywords exist → MIXED.
+// ============================================================
 if (!function_exists('analyzeSentimentLocal')) {
     function analyzeSentimentLocal(string $comment, int $rating = 0): string {
         $text = strtolower(trim($comment));
-        
+
         // If empty comment, use rating
         if ($text === '') {
             if ($rating >= 4) return 'positive';
             if ($rating <= 2) return 'negative';
             return 'neutral';
         }
-        
+
         // Positive keywords (English + Tagalog)
         $positiveWords = [
             'ganda', 'maganda', 'magaling', 'maayos', 'salamat', 'sulit',
@@ -28,8 +38,9 @@ if (!function_exists('analyzeSentimentLocal')) {
             'wonderful', 'best', 'professional', 'friendly',
             'helpful', 'recommend', 'thank', 'good', 'okay',
             'galing', 'bilib', 'wow', 'solid', 'panalo', 'astig',
+            'linaw', 'clear', 'sharp', 'maayos',
         ];
-        
+
         // Negative keywords (English + Tagalog)
         $negativeWords = [
             'pangit', 'panget', 'masama', 'mabagal', 'bagal', 'malabo',
@@ -38,18 +49,17 @@ if (!function_exists('analyzeSentimentLocal')) {
             'hate', 'rude', 'slow', 'late', 'dirty', 'broken',
             'waste', 'delay', 'awful', 'horrible', 'sad',
         ];
-        
+
         // Negation words
-        $negations = ['hindi', 'di', 'not', 'no', 'never', 'wala', 'walang'];
-        
+        $negations = ['hindi', 'di ', 'not', 'no ', 'never', 'wala', 'walang'];
+
         $positiveCount = 0;
         $negativeCount = 0;
-        
+
         // Detect positive words (with negation check)
         foreach ($positiveWords as $word) {
             $pos = strpos($text, $word);
             if ($pos !== false) {
-                // Check kung may negation bago ang word (10 chars before)
                 $before = substr($text, max(0, $pos - 15), 15);
                 $isNegated = false;
                 foreach ($negations as $neg) {
@@ -62,27 +72,26 @@ if (!function_exists('analyzeSentimentLocal')) {
                 else $positiveCount++;
             }
         }
-        
+
         // Detect negative words
         foreach ($negativeWords as $word) {
             if (strpos($text, $word) !== false) {
                 $negativeCount++;
             }
         }
-        
-        // Apply rating weight (2x)
+
+        // ✅ KEY FIX: Detect MIXED FIRST (before rating weight)
+        // If both positive AND negative keywords exist → MIXED
+        if ($positiveCount > 0 && $negativeCount > 0) {
+            return 'mixed';
+        }
+
+        // ✅ Only apply rating weight if sentiment is clear
         if ($rating >= 4) $positiveCount += 2;
         elseif ($rating <= 2) $negativeCount += 2;
-        
-        // MIXED detection: if both have significant count
-        if ($positiveCount > 0 && $negativeCount > 0) {
-            $diff = abs($positiveCount - $negativeCount);
-            if ($diff <= 1) return 'mixed';
-            return $positiveCount > $negativeCount ? 'positive' : 'negative';
-        }
-        
-        if ($positiveCount > 0) return 'positive';
-        if ($negativeCount > 0) return 'negative';
+
+        if ($positiveCount > $negativeCount) return 'positive';
+        if ($negativeCount > $positiveCount) return 'negative';
         return 'neutral';
     }
 }
@@ -94,22 +103,22 @@ if (!function_exists('detectTopicsLocal')) {
     function detectTopicsLocal(string $comment): array {
         $topics = [];
         $text = strtolower($comment);
-        
-        if (preg_match('/\b(kuha|shot|shots|photographer|camera|lens|pose|angle|photography|shoot)\b/', $text)) 
+
+        if (preg_match('/\b(kuha|shot|shots|photographer|camera|lens|pose|angle|photography|shoot)\b/', $text))
             $topics[] = 'photographer';
-        if (preg_match('/\b(edit|editing|retouch|ganda|maganda|pangit|panget|sira|blur|linaw|clear|sharp|quality)\b/', $text)) 
+        if (preg_match('/\b(edit|editing|retouch|ganda|maganda|pangit|panget|sira|blur|linaw|clear|sharp|quality)\b/', $text))
             $topics[] = 'quality';
-        if (preg_match('/\b(print|printed|picture|photo|larawan|litrato|canvas|frame|album)\b/', $text)) 
+        if (preg_match('/\b(print|printed|picture|photo|larawan|litrato|canvas|frame|album)\b/', $text))
             $topics[] = 'print';
-        if (preg_match('/\b(staff|crew|assistant|reception|employee|team|maayos|mabait|magalang|friendly|helpful)\b/', $text)) 
+        if (preg_match('/\b(staff|crew|assistant|reception|employee|team|maayos|mabait|magalang|friendly|helpful)\b/', $text))
             $topics[] = 'staff';
-        if (preg_match('/\b(delivery|tagal|delay|late|mabilis|agad|release|send|receive|waiting|hintay)\b/', $text)) 
+        if (preg_match('/\b(delivery|tagal|delay|late|mabilis|agad|release|send|receive|waiting|hintay)\b/', $text))
             $topics[] = 'delivery';
-        if (preg_match('/\b(price|mahal|mura|sulit|worth|budget|cost|presyo|bayad|payment)\b/', $text)) 
+        if (preg_match('/\b(price|mahal|mura|sulit|worth|budget|cost|presyo|bayad|payment)\b/', $text))
             $topics[] = 'pricing';
-        if (preg_match('/\b(studio|setup|props|backdrop|lighting|place|location|space|room|facility)\b/', $text)) 
+        if (preg_match('/\b(studio|setup|props|backdrop|lighting|place|location|space|room|facility)\b/', $text))
             $topics[] = 'studio';
-        
+
         $topics = array_unique($topics);
         if (empty($topics)) $topics[] = 'general';
         return $topics;
@@ -210,7 +219,7 @@ if (!function_exists('isUrgentFeedback')) {
 }
 
 // ============================================================
-// GEMINI AI ANALYSIS
+// GEMINI AI ANALYSIS (IMPROVED)
 // ============================================================
 if (!function_exists('analyzeFeedbackWithAI')) {
     function analyzeFeedbackWithAI(string $feedbackText): ?array {
@@ -227,15 +236,19 @@ if (!function_exists('analyzeFeedbackWithAI')) {
             $feedbackText = mb_substr($feedbackText, 0, 2000) . '...';
         }
 
-        // ✅ IMPROVED: Better prompt with Tagalog support + mixed detection
+        // ✅ IMPROVED: Emphasize mixed detection + Tagalog support
         $prompt = "You are analyzing customer feedback for a Filipino photography studio called Studio 94.
 The feedback may be written in English, Tagalog, or Taglish (mixed English-Tagalog).
 
 Instructions:
 1. Consider BOTH English and Filipino/Tagalog words
-2. If the feedback contains BOTH positive and negative opinions, use 'mixed'
-3. Be culturally aware of Filipino expressions (e.g., 'sulit' = worth it, 'pangit' = ugly/bad)
-4. Return ONLY valid JSON (no markdown, no code fences, no explanation)
+2. If the feedback contains BOTH positive AND negative opinions, ALWAYS return 'mixed'
+   - Example: 'Maganda ang shot kaso pangit ang print' → mixed
+   - Example: 'Great photos but slow delivery' → mixed
+   - Example: 'Sulit ang package pero mahal pa rin' → mixed
+3. Words like 'kaso', 'pero', 'but', 'however', 'though' usually indicate MIXED sentiment
+4. Be culturally aware of Filipino expressions (sulit = worth it, pangit = ugly/bad, ganda = beautiful)
+5. Return ONLY valid JSON (no markdown, no code fences, no explanation)
 
 Return this exact JSON format:
 {\"sentiment\": \"positive\"|\"negative\"|\"neutral\"|\"mixed\", \"score\": 1-5, \"category\": \"service\"|\"quality\"|\"staff\"|\"pricing\"|\"facility\"|\"delivery\"|\"print\"|\"general\", \"summary\": \"one short sentence in English\", \"suggested_reply\": \"professional reply in Taglish\"}
@@ -291,7 +304,7 @@ Customer feedback: \"$feedbackText\"";
                         if (!in_array($sentiment, $validSentiments)) {
                             $sentiment = 'neutral';
                         }
-                        
+
                         error_log("AI Helper: ✅ SUCCESS with $model");
                         return [
                             'sentiment' => $sentiment,
