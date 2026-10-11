@@ -6,7 +6,7 @@ requireRole('staff');
 $pdo = db();
 
 // ================================================================
-// REQUIRE AI HELPER
+// REQUIRE AI HELPER (shared functions loaded from here)
 // ================================================================
 require_once __DIR__ . '/../../ai_helper.php';
 
@@ -19,20 +19,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fid = cleanInt($_POST['feedback_id'] ?? 0);
 
     if ($fid > 0) {
-        // ===== SEND REPLY TO CLIENT =====
         if ($action === 'send_reply') {
             $message = trim($_POST['reply_message'] ?? '');
-            
+
             if ($message !== '') {
                 $fbStmt = $pdo->prepare("
-                    SELECT f.*, u.id AS client_id, u.name AS client_name 
-                    FROM feedback f 
-                    JOIN users u ON f.user_id = u.id 
+                    SELECT f.*, u.id AS client_id, u.name AS client_name
+                    FROM feedback f
+                    JOIN users u ON f.user_id = u.id
                     WHERE f.id = ?
                 ");
                 $fbStmt->execute([$fid]);
                 $feedback = $fbStmt->fetch();
-                
+
                 if ($feedback) {
                     addNotification(
                         $feedback['client_id'],
@@ -41,13 +40,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'feedback',
                         '💬'
                     );
-                    
+
                     $pdo->prepare("
-                        UPDATE feedback 
+                        UPDATE feedback
                         SET reply_sent_at = NOW(), reply_message = ?, replied_by = ?
                         WHERE id = ?
                     ")->execute([$message, $user['id'], $fid]);
-                    
+
                     setFlash('success', '✅ Reply sent to ' . $feedback['client_name'] . '.');
                 } else {
                     setFlash('error', 'Feedback not found.');
@@ -59,107 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     header('Location: index.php?page=feedback');
     exit;
-}
-
-// ================================================================
-// TOPIC HELPERS
-// ================================================================
-function getTopicIcon($topic) {
-    $topic = trim($topic);
-    $icons = [
-        'photographer' => '📸', 'delivery' => '📦', 'pricing' => '💰',
-        'studio' => '🏢', 'staff' => '👥', 'quality' => '🎨',
-        'print' => '🖼️', 'general' => '💬', 'service' => '🛎️',
-        'facility' => '🏢', 'other' => '💬'
-    ];
-    return $icons[$topic] ?? '💬';
-}
-
-function getTopicLabel($topic) {
-    $topic = trim($topic);
-    $labels = [
-        'photographer' => 'Photographer', 'delivery' => 'Delivery', 'pricing' => 'Pricing',
-        'studio' => 'Studio', 'staff' => 'Staff', 'quality' => 'Quality',
-        'print' => 'Print', 'general' => 'General', 'service' => 'Service',
-        'facility' => 'Facility', 'other' => 'Other'
-    ];
-    return $labels[$topic] ?? ucfirst($topic);
-}
-
-function getTopicColor($topic) {
-    $topic = trim($topic);
-    $colors = [
-        'photographer' => '#8B5CF6', 'delivery' => '#F59E0B', 'pricing' => '#10B981',
-        'studio' => '#3B82F6', 'staff' => '#EC4899', 'quality' => '#EF4444',
-        'print' => '#8B5CF6', 'general' => '#6B7280', 'service' => '#0EA5E9',
-        'facility' => '#6366F1', 'other' => '#6B7280'
-    ];
-    return $colors[$topic] ?? '#6B7280';
-}
-
-// ================================================================
-// FALLBACK SENTIMENT
-// ================================================================
-function analyzeSentimentLocal($comment, $rating = 0) {
-    $text = strtolower(trim((string)$comment));
-    if ($text === '') {
-        if ($rating >= 4) return 'positive';
-        if ($rating <= 2) return 'negative';
-        return 'neutral';
-    }
-    $pos = ['maganda','magaling','maayos','salamat','perfect','excellent','great','love','happy','best','beautiful','professional','friendly','helpful','recommend','thank','nice','good'];
-    $neg = ['pangit','masama','mabagal','malabo','mahal','bad','terrible','worst','poor','disappointed','hate','rude','slow','late','dirty','broken','waste'];
-    
-    $p = 0; $n = 0;
-    foreach ($pos as $w) if (strpos($text, $w) !== false) $p++;
-    foreach ($neg as $w) if (strpos($text, $w) !== false) $n++;
-    if ($rating >= 4) $p += 2;
-    elseif ($rating <= 2) $n += 2;
-    
-    if ($p > $n) return 'positive';
-    if ($n > $p) return 'negative';
-    return 'neutral';
-}
-
-function getSentimentBadge($s) {
-    return match($s) {
-        'positive' => 'badge-green',
-        'negative' => 'badge-red',
-        'mixed' => 'badge-purple',
-        default => 'badge-amber'
-    };
-}
-
-function getSentimentIcon($s) {
-    return match($s) {
-        'positive' => '😊',
-        'negative' => '😞',
-        'mixed' => '🤔',
-        default => '😐'
-    };
-}
-
-function getSentimentLabel($s) {
-    return match($s) {
-        'positive' => 'Positive',
-        'negative' => 'Negative',
-        'mixed' => 'Mixed',
-        default => 'Neutral'
-    };
-}
-
-function getSentimentInlineStyle($s) {
-    if ($s === 'mixed') return 'background:#F3E8FF;color:#7C3AED;border:1px solid #C4B5FD;';
-    return '';
-}
-
-function isUrgentFeedback($f) {
-    if (!empty($f['is_urgent'])) return true;
-    $sent = $f['sentiment'] ?? 'neutral';
-    $rating = (int)($f['rating_overall'] ?? 0);
-    if ($sent === 'negative') return true;
-    if ($sent === 'mixed' && $rating <= 3) return true;
-    return false;
 }
 
 // ================================================================
@@ -185,8 +83,8 @@ try {
 // ================================================================
 $feedbacks = $pdo->query("
     SELECT f.*, u.name AS client_name, u.email AS client_email
-    FROM feedback f 
-    JOIN users u ON f.user_id = u.id 
+    FROM feedback f
+    JOIN users u ON f.user_id = u.id
     ORDER BY f.created_at DESC
 ")->fetchAll();
 
@@ -195,6 +93,7 @@ foreach ($feedbacks as &$fb) {
     if ($hasAI && !empty($fb['ai_sentiment'])) {
         $fb['sentiment'] = $fb['ai_sentiment'];
     } else {
+        // ✅ FIXED: Use shared function with rating
         $fb['sentiment'] = analyzeSentimentLocal(
             $fb['comment'] ?? '',
             (int)($fb['rating_overall'] ?? 0)
@@ -270,7 +169,6 @@ foreach ($feedbacks as $f) {
       </div>
       <div style="font-size:13px;margin-top:4px;">"<?= clean($f['comment']) ?>"</div>
 
-      <!-- AI ANALYSIS -->
       <?php if ($hasAI && !empty($f['ai_summary'])): ?>
       <div style="margin-top:10px;padding:10px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border-radius:8px;border-left:3px solid #6366f1;">
         <div style="font-size:10px;font-weight:700;color:#3730a3;margin-bottom:4px;">🤖 AI ANALYSIS</div>
@@ -288,7 +186,6 @@ foreach ($feedbacks as $f) {
       </div>
       <?php endif; ?>
 
-      <!-- TOPICS -->
       <?php if ($hasTopics && !empty($f['topics'])):
         $topics = explode(',', $f['topics']);
       ?>
@@ -445,27 +342,27 @@ foreach ($feedbacks as $f) {
             <h2 style="color:var(--green-text);margin:0;">📤 Send Reply to Client</h2>
             <button onclick="closeReplyModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted);">✕</button>
         </div>
-        
+
         <div style="background:#f0f9ff;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;color:#0369a1;border-left:3px solid #0ea5e9;">
             <strong>📝 Replying to:</strong> <span id="reply-client-name">Client</span>
         </div>
-        
+
         <p style="font-size:13px;color:var(--muted);margin-bottom:8px;">
             🤖 AI-generated reply below. Pwede mong i-edit bago i-send.
         </p>
-        
+
         <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;">Reply Message (editable):</label>
         <textarea id="reply-message" rows="6" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;margin-bottom:16px;" required></textarea>
-        
+
         <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">
             ⚠️ Ang reply na ito ay ipapadala sa client as notification.
         </p>
-        
+
         <div style="display:flex;gap:10px;">
             <button type="button" onclick="closeReplyModal()" style="flex:1;padding:10px;background:#f1f5f9;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-weight:600;">Cancel</button>
             <button type="button" id="send-reply-btn" onclick="confirmSendReply()" style="flex:2;padding:10px;background:var(--green,#2ECC71);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;">📤 Send to Client</button>
         </div>
-        
+
         <input type="hidden" id="reply-feedback-id" value="">
     </div>
 </div>
@@ -485,43 +382,43 @@ function closeReplyModal() {
 function confirmSendReply() {
     const feedbackId = document.getElementById('reply-feedback-id').value;
     const message = document.getElementById('reply-message').value.trim();
-    
+
     if (!feedbackId) { alert('No feedback selected.'); return; }
     if (!message) { alert('Please enter a reply message.'); return; }
     if (!confirm('Send this reply to the client?\n\n' + message)) return;
-    
+
     const btn = document.getElementById('send-reply-btn');
     btn.disabled = true;
     btn.textContent = '⏳ Sending...';
-    
+
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = 'index.php?page=feedback';
-    
+
     const csrfInput = document.createElement('input');
     csrfInput.type = 'hidden';
     csrfInput.name = 'csrf_token';
     csrfInput.value = '<?= csrfToken() ?>';
     form.appendChild(csrfInput);
-    
+
     const actionInput = document.createElement('input');
     actionInput.type = 'hidden';
     actionInput.name = 'action';
     actionInput.value = 'send_reply';
     form.appendChild(actionInput);
-    
+
     const idInput = document.createElement('input');
     idInput.type = 'hidden';
     idInput.name = 'feedback_id';
     idInput.value = feedbackId;
     form.appendChild(idInput);
-    
+
     const msgInput = document.createElement('input');
     msgInput.type = 'hidden';
     msgInput.name = 'reply_message';
     msgInput.value = message;
     form.appendChild(msgInput);
-    
+
     document.body.appendChild(form);
     form.submit();
 }
