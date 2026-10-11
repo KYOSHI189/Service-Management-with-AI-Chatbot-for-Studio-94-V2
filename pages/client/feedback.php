@@ -119,7 +119,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        // ===== CALL AI =====
         $aiResult = null;
         if (function_exists('analyzeFeedbackWithAI')) {
             try {
@@ -136,7 +135,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $aiSummary  = $aiResult['summary'] ?? null;
             $aiReply    = $aiResult['suggested_reply'] ?? null;
         } else {
-            // ✅ FIXED: Pass rating to analyzeSentimentLocal for better accuracy
             $sentiment  = analyzeSentimentLocal($comment, $rating);
             $aiCategory = null;
             $aiSummary  = null;
@@ -345,34 +343,9 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     align-self: flex-end;
 }
 
-/* AI INFO BADGE */
+/* ✅ CHANGE #1: AI INFO BADGE — naka-hide na */
 .ai-info-badge {
-    background: linear-gradient(135deg, #eef2ff, #e0e7ff);
-    border: 1px solid #c7d2fe;
-    border-radius: 12px;
-    padding: 12px 14px;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    box-sizing: border-box;
-    min-width: 0;
-}
-.ai-info-badge .ai-icon { font-size: 22px; flex-shrink: 0; }
-.ai-info-badge .ai-body { min-width: 0; flex: 1; }
-.ai-info-badge .ai-title {
-    color: #3730a3;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.3;
-    word-break: break-word;
-}
-.ai-info-badge .ai-desc {
-    font-size: 11px;
-    color: #4338ca;
-    margin-top: 3px;
-    line-height: 1.4;
-    word-break: break-word;
+    display: none !important;
 }
 
 /* CARD */
@@ -705,10 +678,6 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     }
     .page-banner h2 { font-size: 22px; }
     .page-banner-art { font-size: 40px; align-self: center; }
-    .ai-info-badge { padding: 14px 18px; }
-    .ai-info-badge .ai-icon { font-size: 24px; }
-    .ai-info-badge .ai-title { font-size: 14px; }
-    .ai-info-badge .ai-desc { font-size: 12px; }
     .card { padding: 18px; }
     .star-rating-wrapper {
         flex-direction: row;
@@ -804,16 +773,7 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
   <div class="page-banner-art">⭐</div>
 </div>
 
-<!-- ============================================================ -->
-<!-- AI INFO BADGE                                                 -->
-<!-- ============================================================ -->
-<div class="ai-info-badge">
-  <span class="ai-icon">🤖</span>
-  <div class="ai-body">
-    <div class="ai-title">AI-Powered Feedback Analysis</div>
-    <p class="ai-desc">Ang iyong feedback ay automatic na analyze ng Google Gemini AI at naka-classify base sa services ng studio.</p>
-  </div>
-</div>
+<!-- ✅ CHANGE #1: AI INFO BADGE — tinanggal na ang buong block -->
 
 <!-- ============================================================ -->
 <!-- SUBMIT FEEDBACK FORM                                          -->
@@ -873,9 +833,7 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
       <textarea name="comment" id="feedback-comment" rows="4"
                 maxlength="2000"
                 placeholder="Share your experience… What did you like? What can we improve?" required></textarea>
-      <div class="form-hint">
-        💡 Tip: Be specific! Ang AI ay mag-a-analyze ng iyong feedback pagkatapos i-submit.
-      </div>
+      <!-- ✅ CHANGE #2: Tip text — tinanggal na ang block na ito -->
     </div>
 
     <div id="topic-preview" class="topic-preview">
@@ -953,7 +911,6 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
         $hasReply = $hasReplyFeature && !empty($f['reply_sent_at']);
         $service = $f['_service'] ?? classifyFeedbackByService($f['main_pkg_name'] ?? $f['pkg_name'] ?? '');
 
-        // ✅ FIXED: Use shared sentiment helpers
         $sentiment = $f['sentiment'] ?? 'neutral';
         if ($hasAICol && !empty($f['ai_sentiment'])) {
             $sentiment = $f['ai_sentiment'];
@@ -980,7 +937,6 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
               <?= str_repeat('★', (int)$f['rating_overall']) . str_repeat('☆', 5 - (int)$f['rating_overall']) ?>
             </div>
 
-            <!-- ✅ NEW: Sentiment badge -->
             <span class="sentiment-badge <?= $sentBadge ?>" style="<?= $sentStyle ?>">
               <?= $sentIcon ?> <?= $sentLabel ?>
             </span>
