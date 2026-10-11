@@ -8,10 +8,6 @@ define('OPEN_HOUR_MINUTES', 10 * 60);
 define('CLOSE_HOUR_MINUTES', 19 * 60);
 
 // ===== CURRENT TIME (SERVER IS THE SOURCE OF TRUTH) =====
-// config.php pins the timezone to Asia/Manila, so date() here is PHT.
-// These two values are handed to the browser so the client-side checks
-// agree with the validation that runs on submit — a client whose device
-// clock or timezone differs still cannot book a past slot.
 define('SERVER_TODAY',       date('Y-m-d'));
 define('SERVER_NOW_MINUTES', ((int)date('H') * 60) + (int)date('i'));
 
@@ -90,14 +86,7 @@ if (!function_exists('checkBookingConflict')) {
 }
 
 // ============================================================
-// ✅ FIXED: GET LOYALTY COUNT — DYNAMIC BASE SA COMPLETED BOOKINGS
-// ============================================================
-// Ang loyalty count ay hindi na kinukuha sa loyalty_cards.total_bookings.
-// Sa halip, ito ay kinakalkula dynamically base sa ACTUAL COMPLETED bookings.
-// Ito ay nagsisiguro na:
-//   - Hindi madadagdagan ang count kapag nag-submit lang ng booking
-//   - Hindi madadagdagan kapag na-cancel ang booking
-//   - Madadagdagan lang kapag COMPLETED na ang session
+// GET LOYALTY COUNT — DYNAMIC
 // ============================================================
 $loyaltyCount = getClientBookingCount($uid);
 
@@ -105,7 +94,6 @@ $loyaltyBonusMinutes = 0;
 $loyaltyDiscountPct  = 0;
 $loyaltyTierLabel    = 'New Client';
 
-// Loyalty tiers (tama base sa system: 2, 4, 7, 10)
 if ($loyaltyCount >= 10) {
     $loyaltyDiscountPct = 50;
     $loyaltyTierLabel   = '🏆 VIP (50% OFF)';
@@ -164,8 +152,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$date) $errors[] = 'Please select a date.';
     if (!$time) $errors[] = 'Please select a time.';
 
-    // The regex alone would accept 2026-13-45, and the string comparison below
-    // relies on a zero-padded valid date, so check the calendar as well.
     if ($date && (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)
         || !checkdate((int)substr($date, 5, 2), (int)substr($date, 8, 2), (int)substr($date, 0, 4)))) {
         $errors[] = 'Invalid date format. Please pick a date from the calendar.';
@@ -199,8 +185,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($startMin >= CLOSE_HOUR_MINUTES) $errors[] = 'Studio closes at 7:00 PM.';
             if ($endMin > CLOSE_HOUR_MINUTES) $errors[] = 'Session would end past 7:00 PM. Please choose an earlier time.';
 
-            // A slot that has already started today cannot be booked.
-            // Compared against the server clock, not the browser's.
             if ($date === SERVER_TODAY && $startMin <= SERVER_NOW_MINUTES) {
                 $errors[] = 'This time slot has already passed. Current time: ' . date('g:i A') . '. Please choose a later time.';
             }
@@ -228,7 +212,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ? round($basePrice * (100 - $loyaltyDiscountPct) / 100, 2)
                 : $basePrice;
 
-            // ✅ FLAT ₱100 RESERVATION FEE (hindi percentage-based)
             $deposit = RESERVATION_FEE;
             $remaining = max(0, round($finalPrice - $deposit, 2));
 
@@ -261,21 +244,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $payRef = 'PAY-' . date('ymd') . '-' . str_pad(rand(10000, 99999), 5, '0', STR_PAD_LEFT);
             }
 
-            // ✅ RESERVATION type + FLAT ₱100 amount
             $pdo->prepare("INSERT INTO payments (payment_ref, booking_id, user_id, amount, type, status, created_at)
                 VALUES (?, ?, ?, ?, 'RESERVATION', 'UNPAID', NOW())")
                 ->execute([$payRef, $bookingId, $uid, RESERVATION_FEE]);
 
-            // ============================================================
-            // ✅ FIXED: HUWAG NANG DAGDAGAN ANG LOYALTY COUNT DITO.
-            // ============================================================
-            // Ang loyalty count ay DYNAMIC na kinakalkula base sa
-            // COMPLETED bookings lang — hindi sa pag-submit ng booking.
-            // 
-            // Ang loyalty_cards row ay gagawin lang (kung wala pa) para
-            // may card_number reference. Ang total_bookings column ay
-            // hindi na ginagamit — puro dynamic count na lang.
-            // ============================================================
             $lcCheck = $pdo->prepare("SELECT id FROM loyalty_cards WHERE user_id=?");
             $lcCheck->execute([$uid]);
             if (!$lcCheck->fetch()) {
@@ -283,7 +255,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->prepare("INSERT INTO loyalty_cards (user_id, card_number, total_bookings, status) VALUES (?, ?, 0, 'Active')")
                     ->execute([$uid, $cardNo]);
             }
-            // ❌ WALA NANG UPDATE — hindi na dinadagdagan ang total_bookings
 
             $mainName = $mainPackage ? $mainPackage['name'] : 'Main Package';
             $notifMsg = $user['name'] . ' requested ' . $subPackage['name'] . ' (' . $mainName . ') on ' . $date . ' at ' . $time;
@@ -334,10 +305,6 @@ $errors = $errors ?? [];
 <!-- FULLY RESPONSIVE STYLES                                       -->
 <!-- ============================================================ -->
 <style>
-/* ============================================================
-   BASE (MOBILE-FIRST) — 320px pataas
-   ============================================================ */
-
 /* PAGE BANNER */
 .page-banner {
     display: flex;
@@ -843,9 +810,9 @@ $errors = $errors ?? [];
 }
 .form-actions button { flex: 1 1 auto; min-width: 120px; }
 
-/* ============================================================
-   SMALL PHONE
-   ============================================================ */
+/* ============================================================ */
+/* RESPONSIVE                                                    */
+/* ============================================================ */
 @media (min-width: 380px) {
     .page-banner h2 { font-size: 19px; }
     .backdrop-card .backdrop-color { height: 130px; font-size: 52px; }
@@ -855,9 +822,6 @@ $errors = $errors ?? [];
     .package-card .card-image { height: 200px; }
 }
 
-/* ============================================================
-   LARGE PHONE / SMALL TABLET
-   ============================================================ */
 @media (min-width: 600px) {
     .page-banner {
         flex-direction: row;
@@ -890,9 +854,6 @@ $errors = $errors ?? [];
     .booked-slots-panel { padding: 14px; }
 }
 
-/* ============================================================
-   TABLET
-   ============================================================ */
 @media (min-width: 768px) {
     .page-banner { padding: 24px 28px; border-radius: 16px; gap: 20px; }
     .page-banner h2 { font-size: 24px; }
@@ -932,9 +893,6 @@ $errors = $errors ?? [];
     #booking-stats > div .stat-label { font-size: 10px; }
 }
 
-/* ============================================================
-   LAPTOP / DESKTOP
-   ============================================================ */
 @media (min-width: 1024px) {
     .page-banner { padding: 28px 32px; }
     .page-banner h2 { font-size: 26px; }
@@ -955,9 +913,6 @@ $errors = $errors ?? [];
     .package-card .card-image { height: 200px; }
 }
 
-/* ============================================================
-   LARGE DESKTOP
-   ============================================================ */
 @media (min-width: 1440px) {
     .page-banner { padding: 32px 40px; border-radius: 18px; }
     .page-banner h2 { font-size: 30px; }
@@ -975,9 +930,6 @@ $errors = $errors ?? [];
     #booking-form-section .booking-form-grid { gap: 24px; }
 }
 
-/* ============================================================
-   ULTRAWIDE
-   ============================================================ */
 @media (min-width: 1920px) {
     .page-banner { padding: 36px 48px; }
     .page-banner h2 { font-size: 34px; }
@@ -987,9 +939,6 @@ $errors = $errors ?? [];
     .package-card .card-image { height: 240px; }
 }
 
-/* ============================================================
-   LANDSCAPE MOBILE
-   ============================================================ */
 @media (max-height: 500px) and (orientation: landscape) {
     .page-banner { padding: 12px 16px; }
     .page-banner h2 { font-size: 18px; }
@@ -997,9 +946,6 @@ $errors = $errors ?? [];
     .calendar-date { padding: 4px 0; font-size: 11px; }
 }
 
-/* ============================================================
-   PRINT
-   ============================================================ */
 @media print {
     .page-banner-art,
     .btn-book,
@@ -1186,17 +1132,15 @@ $errors = $errors ?? [];
               <?php endif; ?>
             </div>
 
+            <!-- ✅ CHANGE #1: DATE label tinanggal -->
             <div class="form-group">
-              <label><strong>📅 Date</strong></label>
               <input type="date" name="date" id="form-date" required min="<?= date('Y-m-d') ?>" style="background:white;font-weight:600;" onchange="onDateSelect(this.value)">
             </div>
 
             <div class="form-group">
               <label><strong>⏰ Select Time</strong> <span style="font-size:11px;color:var(--muted);font-weight:400;">(10:00 AM – 7:00 PM)</span></label>
-              
-              <div style="font-size:11px;color:var(--dark2);margin-bottom:8px;padding:8px 10px;background:var(--bg-soft);border-radius:6px;border-left:3px solid #6C63FF;line-height:1.4;">
-                💡 <strong>Conflict Prevention:</strong> The system automatically checks for schedule conflicts. Slots with confirmed bookings cannot be selected.
-              </div>
+
+              <!-- ✅ CHANGE #2: Conflict Prevention banner tinanggal -->
               
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <input type="text" name="time" id="form-time" required placeholder="e.g., 10:30 AM" style="background:white;font-weight:600;flex:1 1 180px;min-width:0;text-transform:uppercase;" oninput="checkTimeAvailability(this.value)">
@@ -1272,23 +1216,20 @@ $errors = $errors ?? [];
             </div>
           </div>
 
+          <!-- ✅ CHANGE #3: Slot Color Legend cleaned (walang "Past", walang mahabang sentences) -->
           <div class="slot-color-legend">
             <div class="legend-title">🎨 Slot Color Legend</div>
             <div class="legend-row">
               <div class="legend-swatch" style="background:#2E7D32;border:2px solid #1B5E20;"></div>
-              <span><strong style="color:#1B5E20;">Available</strong> — Pwedeng i-book</span>
+              <span><strong style="color:#1B5E20;">Available</strong></span>
             </div>
             <div class="legend-row">
               <div class="legend-swatch" style="background:#F9A825;border:2px solid #E65100;"></div>
-              <span><strong style="color:#E65100;">Pending</strong> — Naghihintay ng approval</span>
+              <span><strong style="color:#E65100;">Pending</strong></span>
             </div>
             <div class="legend-row">
               <div class="legend-swatch" style="background:#C62828;border:2px solid #8E0000;"></div>
-              <span><strong style="color:#8E0000;">Confirmed</strong> — Hindi na pwedeng i-book</span>
-            </div>
-            <div class="legend-row">
-              <div class="legend-swatch" style="background:#EEEEEE;border:2px solid #9E9E9E;"></div>
-              <span><strong style="color:#616161;">Past</strong> — Naka-pass na, hindi na pwedeng i-book</span>
+              <span><strong style="color:#8E0000;">Confirmed</strong></span>
             </div>
           </div>
 
@@ -1321,30 +1262,23 @@ let selectedPackageBaseMinutes = 0;
 let selectedSubPackageId = 0;
 let selectedTime = '';
 
-// ✅ NEW: Server clock (PHT) is the source of truth for "is this slot past?"
 const SERVER_TODAY       = <?= json_encode(SERVER_TODAY) ?>;
 const SERVER_NOW_MINUTES = <?= (int)SERVER_NOW_MINUTES ?>;
 const PAGE_LOADED_AT     = Date.now();
 
-// "Now" is anchored to the server clock and advanced by elapsed time here,
-// so a wrong device clock or timezone can't unlock a past slot in the UI.
 function getCurrentTimeInMinutes() {
     return SERVER_NOW_MINUTES + Math.floor((Date.now() - PAGE_LOADED_AT) / 60000);
 }
 
-// ✅ Check if a date string is today
 function isToday(dateStr) {
     if (!dateStr) return false;
     return dateStr === SERVER_TODAY;
 }
 
-// A slot is "past" once its start time has arrived on the current day.
 function isPastSlot(dateStr, startMinutes) {
     return isToday(dateStr) && startMinutes <= getCurrentTimeInMinutes();
 }
 
-// ISO date string for a JS Date, without the toISOString() UTC shift
-// (which returns yesterday for anything before 8:00 AM PHT).
 function toDateStr(d) {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
@@ -1472,9 +1406,6 @@ function isSlotPending(date, startTime, duration) {
     return false;
 }
 
-// Buckets every 15-minute slot on a date so the UI can color-code them.
-// Past slots are kept (not dropped) so they can be flagged gray instead of
-// silently disappearing from the grid.
 function getSlotMap(date, duration) {
     const durationMinutes = getDurationInMinutes(duration || '1 hour');
     const all = [], past = [], available = [], pending = [], confirmed = [];
@@ -1488,10 +1419,7 @@ function getSlotMap(date, duration) {
         if (timeStr === 'Invalid') continue;
         all.push(timeStr);
 
-        // Already started today — gray, never bookable
         if (isPastSlot(date, timeMinutes)) { past.push(timeStr); continue; }
-
-        // Session would run past closing — not offered for this package
         if (timeMinutes + durationMinutes > CLOSE_HOUR_MINUTES) continue;
 
         if (isSlotConfirmed(date, timeStr, duration || '1 hour')) {
@@ -1506,7 +1434,6 @@ function getSlotMap(date, duration) {
     return { all, past, available, pending, confirmed };
 }
 
-// ✅ UPDATED: Skips past time slots for today
 function getAvailableSlots(date, duration) {
     const durationMinutes = getDurationInMinutes(duration);
 
@@ -1521,7 +1448,6 @@ function getAvailableSlots(date, duration) {
     });
 }
 
-// Past slots for a date, as {start, startMinutes} for gray rendering.
 function getPastSlots(date, duration) {
     return getSlotMap(date, duration).past.map(timeStr => ({
         start: timeStr,
@@ -1568,7 +1494,6 @@ function updateStats(total, booked, available) {
     document.getElementById('stat-available').textContent = available;
 }
 
-// ✅ Skips past time slots for today
 function updateBookedSlotsDisplay(date) {
     const container = document.getElementById('booked-slots-display');
     if (!date) {
@@ -1700,8 +1625,6 @@ function updateBookedSlotsDisplay(date) {
     updateStats(allSlots.length, confirmedSlots.length + pendingSlots.length, availableSlots.length);
 }
 
-// Gray block listing the slots that already started today. Not clickable —
-// they can no longer be booked.
 function buildPastSlotsHtml(pastSlots) {
     if (!pastSlots || pastSlots.length === 0) return '';
 
@@ -1751,7 +1674,6 @@ function onViewDateChange(date) {
     showBookedTimes(date);
 }
 
-// ✅ Added past-time validation
 function checkTimeAvailability(timeStr) {
     const date = document.getElementById('form-date').value;
     const statusDiv = document.getElementById('time-status');
@@ -1790,7 +1712,6 @@ function checkTimeAvailability(timeStr) {
         submitBtn.disabled = true; return;
     }
 
-    // ✅ NEW: If today, prevent booking past time
     if (isPastSlot(date, timeMinutes)) {
         statusDiv.innerHTML = `
             <div style="padding:10px;background:#EEEEEE;border-radius:6px;border-left:4px solid #9E9E9E;">
@@ -1988,7 +1909,6 @@ function renderCalendar() {
         if (!isPast && selectedPackageDuration) {
             const map = getSlotMap(ds, selectedPackageDuration);
             hasAvailable = map.available.length > 0;
-            // Every slot for today has already started — gray, not "Fully Booked"
             allPast = isTodayCell && !hasAvailable && map.past.length > 0;
         }
 
@@ -2196,9 +2116,6 @@ document.addEventListener('DOMContentLoaded', function() {
     showBookedTimes(today);
 });
 
-// Keep the gray "past" flags honest while the page stays open: a slot that
-// was still bookable when the page loaded must not stay bookable after
-// its start time passes.
 setInterval(function() {
     const viewDate = document.getElementById('view-date');
     if (!viewDate || !isToday(viewDate.value) || !selectedPackageDuration) return;
