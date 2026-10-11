@@ -4,97 +4,44 @@ $pdo = db();
 $uid = $user['id'];
 
 // ================================================================
-// REQUIRE AI HELPER
+// REQUIRE AI HELPER (shared functions loaded from here)
 // ================================================================
 require_once __DIR__ . '/../../ai_helper.php';
 
 // ================================================================
-// FALLBACK SENTIMENT (local)
+// CLIENT-SPECIFIC: SERVICE CLASSIFICATION
 // ================================================================
-function analyzeSentimentLocal($comment) {
-    $positiveWords = ['ganda', 'satisfied', 'perfect', 'magaling', 'sulit', 'maayos', 'okay', 'maganda', 'galing', 'bilib', 'wow', 'nice', 'great', 'excellent', 'amazing', 'beautiful', 'love', 'happy', 'thank', 'salamat'];
-    $negativeWords = ['bagal', 'pangit', 'mahal', 'nawala', 'delay', 'problema', 'tagal', 'panget', 'sira', 'basura', 'disappoint', 'sad', 'bad', 'poor', 'terrible', 'worst', 'hindi maganda'];
-    
-    $text = strtolower($comment);
-    $score = 0;
-    foreach ($positiveWords as $w) if (strpos($text, $w) !== false) $score++;
-    foreach ($negativeWords as $w) if (strpos($text, $w) !== false) $score--;
-    
-    if ($score > 0) return 'positive';
-    if ($score < 0) return 'negative';
-    return 'neutral';
-}
+if (!function_exists('classifyFeedbackByService')) {
+    function classifyFeedbackByService($pkgName) {
+        $pkgName = strtolower(trim($pkgName ?? ''));
 
-// ================================================================
-// FALLBACK TOPIC DETECTION (local)
-// ================================================================
-function detectTopicsLocal($comment) {
-    $topics = [];
-    $text = strtolower($comment);
-    
-    if (preg_match('/\b(kuha|shot|shots|photographer|camera|lens|pose|angle|photography|shoot)\b/', $text)) $topics[] = 'photographer';
-    if (preg_match('/\b(edit|editing|retouch|ganda|maganda|pangit|panget|sira|blur|linaw|clear|sharp)\b/', $text)) $topics[] = 'quality';
-    if (preg_match('/\b(print|printed|picture|photo|larawan|litrato|canvas|frame|album)\b/', $text)) $topics[] = 'print';
-    if (preg_match('/\b(staff|crew|assistant|reception|employee|team|maayos|mabait|magalang|friendly|helpful)\b/', $text)) $topics[] = 'staff';
-    if (preg_match('/\b(delivery|tagal|delay|late|mabilis|agad|release|send|receive|waiting|hintay)\b/', $text)) $topics[] = 'delivery';
-    if (preg_match('/\b(price|mahal|mura|sulit|worth|budget|cost|presyo|bayad|payment)\b/', $text)) $topics[] = 'pricing';
-    if (preg_match('/\b(studio|setup|props|backdrop|lighting|place|location|space|room|facility)\b/', $text)) $topics[] = 'studio';
-    
-    $topics = array_unique($topics);
-    if (empty($topics)) $topics[] = 'general';
-    return $topics;
-}
+        if (strpos($pkgName, 'self') !== false || strpos($pkgName, 'package a') !== false
+            || strpos($pkgName, 'package b') !== false || strpos($pkgName, 'package c') !== false
+            || strpos($pkgName, 'package d') !== false || strpos($pkgName, 'package e') !== false
+            || strpos($pkgName, 'package f') !== false) {
+            return ['key' => 'self-shoot', 'label' => 'Self-Shoot', 'icon' => '🤳', 'color' => '#D4A0A0'];
+        }
 
-// ================================================================
-// SERVICE CLASSIFICATION
-// ================================================================
-function classifyFeedbackByService($pkgName) {
-    $pkgName = strtolower(trim($pkgName ?? ''));
-    
-    if (strpos($pkgName, 'self') !== false || strpos($pkgName, 'package a') !== false 
-        || strpos($pkgName, 'package b') !== false || strpos($pkgName, 'package c') !== false
-        || strpos($pkgName, 'package d') !== false || strpos($pkgName, 'package e') !== false
-        || strpos($pkgName, 'package f') !== false) {
-        return ['key' => 'self-shoot', 'label' => 'Self-Shoot', 'icon' => '🤳', 'color' => '#D4A0A0'];
+        if (strpos($pkgName, 'creative') !== false || strpos($pkgName, 'classic') !== false
+            || strpos($pkgName, 'premium') !== false) {
+            return ['key' => 'creative', 'label' => 'Creative Shoot', 'icon' => '🎨', 'color' => '#D4C4A0'];
+        }
+
+        if (strpos($pkgName, 'family') !== false || strpos($pkgName, 'pax') !== false) {
+            return ['key' => 'family', 'label' => 'Family', 'icon' => '👨‍👩‍👧', 'color' => '#A0C4A0'];
+        }
+
+        if (strpos($pkgName, 'studio') !== false || strpos($pkgName, 'rental') !== false
+            || strpos($pkgName, 'half') !== false || strpos($pkgName, 'basic') !== false) {
+            return ['key' => 'studio-rental', 'label' => 'Studio Rental', 'icon' => '🏢', 'color' => '#B0C4DE'];
+        }
+
+        return ['key' => 'other', 'label' => 'Other Services', 'icon' => '📷', 'color' => '#8B8177'];
     }
-    
-    if (strpos($pkgName, 'creative') !== false || strpos($pkgName, 'classic') !== false 
-        || strpos($pkgName, 'premium') !== false) {
-        return ['key' => 'creative', 'label' => 'Creative Shoot', 'icon' => '🎨', 'color' => '#D4C4A0'];
-    }
-    
-    if (strpos($pkgName, 'family') !== false || strpos($pkgName, 'pax') !== false) {
-        return ['key' => 'family', 'label' => 'Family', 'icon' => '👨‍👩‍👧', 'color' => '#A0C4A0'];
-    }
-    
-    if (strpos($pkgName, 'studio') !== false || strpos($pkgName, 'rental') !== false 
-        || strpos($pkgName, 'half') !== false || strpos($pkgName, 'basic') !== false) {
-        return ['key' => 'studio-rental', 'label' => 'Studio Rental', 'icon' => '🏢', 'color' => '#B0C4DE'];
-    }
-    
-    return ['key' => 'other', 'label' => 'Other Services', 'icon' => '📷', 'color' => '#8B8177'];
 }
 
 // ================================================================
-// TOPIC HELPERS
-// ================================================================
-function getTopicIcon($topic) {
-    $icons = ['photographer'=>'📸','delivery'=>'📦','pricing'=>'💰','studio'=>'🏢','staff'=>'👥','quality'=>'🎨','print'=>'🖼️','general'=>'💬','service'=>'🛎️','facility'=>'🏢','other'=>'💬'];
-    return $icons[trim($topic)] ?? '💬';
-}
-
-function getTopicLabel($topic) {
-    $labels = ['photographer'=>'Photographer','delivery'=>'Delivery','pricing'=>'Pricing','studio'=>'Studio','staff'=>'Staff','quality'=>'Quality','print'=>'Print','general'=>'General','service'=>'Service','facility'=>'Facility','other'=>'Other'];
-    return $labels[trim($topic)] ?? ucfirst($topic);
-}
-
-function getTopicColor($topic) {
-    $colors = ['photographer'=>'#8B5CF6','delivery'=>'#F59E0B','pricing'=>'#10B981','studio'=>'#3B82F6','staff'=>'#EC4899','quality'=>'#EF4444','print'=>'#8B5CF6','general'=>'#6B7280','service'=>'#0EA5E9','facility'=>'#6366F1','other'=>'#6B7280'];
-    return $colors[trim($topic)] ?? '#6B7280';
-}
-
-// ================================================================
-// CHECK FEEDBACK TABLE COLUMNS (once, before POST handling)
+// CHECK FEEDBACK TABLE COLUMNS
 // ================================================================
 $hasAICol = false;
 $hasTopics = false;
@@ -130,9 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $comment = trim($_POST['comment'] ?? '');
     $booking_id = cleanInt($_POST['booking_id'] ?? 0);
 
-    // ============================================================
-    // ✅ VALIDATION 1: rating at comment
-    // ============================================================
     $errors = [];
 
     if ($rating < 1 || $rating > 5) {
@@ -146,9 +90,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Comment is too long (max 2000 characters).';
     }
 
-    // ============================================================
-    // ✅ VALIDATION 2: booking_id (SECURITY FIX)
-    // ============================================================
     if ($hasBookingIdCol) {
         if ($booking_id <= 0) {
             $errors[] = 'Please select a completed session.';
@@ -163,10 +104,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$chk->fetch()) {
                 $errors[] = 'Invalid session. You can only submit feedback for your completed sessions.';
             } else {
-                // ✅ VALIDATION 3: duplicate feedback check
                 $dupCheck = $pdo->prepare("
-                    SELECT id FROM feedback 
-                    WHERE user_id = ? AND booking_id = ? 
+                    SELECT id FROM feedback
+                    WHERE user_id = ? AND booking_id = ?
                     LIMIT 1
                 ");
                 $dupCheck->execute([$uid, $booking_id]);
@@ -178,9 +118,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // ============================================================
-    // IF VALID, PROCEED WITH INSERT
-    // ============================================================
     if (empty($errors)) {
         // ===== CALL AI =====
         $aiResult = null;
@@ -192,30 +129,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $aiResult = null;
             }
         }
-        
+
         if ($aiResult) {
             $sentiment  = $aiResult['sentiment'] ?? 'neutral';
             $aiCategory = $aiResult['category'] ?? null;
             $aiSummary  = $aiResult['summary'] ?? null;
             $aiReply    = $aiResult['suggested_reply'] ?? null;
         } else {
-            $sentiment  = analyzeSentimentLocal($comment);
+            // ✅ FIXED: Pass rating to analyzeSentimentLocal for better accuracy
+            $sentiment  = analyzeSentimentLocal($comment, $rating);
             $aiCategory = null;
             $aiSummary  = null;
             $aiReply    = null;
         }
-        
+
         $urgent = ($rating <= 2 && $sentiment === 'negative') ? 1 : 0;
         $topicsArray = detectTopicsLocal($comment);
         $topicsString = implode(',', $topicsArray);
-        
+
         $ratingStaff = null;
         $ratingQuality = null;
         $ratingTimeliness = null;
-        
-        // ============================================================
-        // BUILD INSERT DYNAMICALLY BASE SA EXISTING COLUMNS
-        // ============================================================
+
         try {
             if ($hasAICol && $hasBookingIdCol && $hasTopics) {
                 $stmt = $pdo->prepare("INSERT INTO feedback (
@@ -272,18 +207,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $comment, $sentiment, $topicsString, $urgent
                 ]);
             }
-            
+
             if ($urgent) {
-                addNotificationByRole('admin', '⚠️ Urgent Feedback', 
-                    $user['name'] . ' submitted urgent feedback: "' . mb_substr($comment, 0, 50) . '..."', 
+                addNotificationByRole('admin', '⚠️ Urgent Feedback',
+                    $user['name'] . ' submitted urgent feedback: "' . mb_substr($comment, 0, 50) . '..."',
                     'feedback', '⚠️');
-                addNotificationByRole('staff', '⚠️ Urgent Feedback', 
-                    $user['name'] . ' submitted urgent feedback: "' . mb_substr($comment, 0, 50) . '..."', 
+                addNotificationByRole('staff', '⚠️ Urgent Feedback',
+                    $user['name'] . ' submitted urgent feedback: "' . mb_substr($comment, 0, 50) . '..."',
                     'feedback', '⚠️');
             }
-            
+
             setFlash('success', 'Thank you for your feedback! 🤖 AI analyzed your review.');
-            
+
         } catch (Throwable $e) {
             error_log('Feedback insert error: ' . $e->getMessage());
             setFlash('error', 'Something went wrong. Please try again.');
@@ -291,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         setFlash('error', implode(' ', $errors));
     }
-    
+
     header('Location: index.php?page=feedback');
     exit;
 }
@@ -300,11 +235,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // GET COMPLETED BOOKINGS (excluding those with existing feedback)
 // ================================================================
 $bookings = $pdo->prepare("
-    SELECT b.id, b.booking_ref, p.name as pkg_name, pk.name as main_pkg_name, b.date 
-    FROM bookings b 
+    SELECT b.id, b.booking_ref, p.name as pkg_name, pk.name as main_pkg_name, b.date
+    FROM bookings b
     JOIN packages p ON b.package_id = p.id
     LEFT JOIN packages pk ON p.parent_id = pk.id
-    WHERE b.user_id = ? AND b.status = 'Completed' 
+    WHERE b.user_id = ? AND b.status = 'Completed'
       AND b.id NOT IN (
           SELECT COALESCE(booking_id, 0) FROM feedback WHERE user_id = ?
       )
@@ -314,19 +249,19 @@ $bookings->execute([$uid, $uid]);
 $completedBookings = $bookings->fetchAll();
 
 // ================================================================
-// GET MY FEEDBACK (with limit para hindi bumagal)
+// GET MY FEEDBACK
 // ================================================================
 $myFeedback = $pdo->prepare("
-    SELECT f.*, 
+    SELECT f.*,
            r.name AS replied_by_name,
            p.name AS pkg_name,
            pk.name AS main_pkg_name
-    FROM feedback f 
+    FROM feedback f
     LEFT JOIN users r ON f.replied_by = r.id
     LEFT JOIN bookings b ON f.booking_id = b.id
     LEFT JOIN packages p ON b.package_id = p.id
     LEFT JOIN packages pk ON p.parent_id = pk.id
-    WHERE f.user_id = ? 
+    WHERE f.user_id = ?
     ORDER BY f.created_at DESC
     LIMIT 100
 ");
@@ -502,9 +437,7 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
 }
 .form-hint a { color: var(--accent, #6C63FF); }
 
-/* ============================================================
-   STAR RATING
-   ============================================================ */
+/* STAR RATING */
 .star-rating-wrapper {
     display: flex;
     flex-direction: column;
@@ -516,14 +449,12 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     border: 2px dashed #e2e8f0;
     box-sizing: border-box;
 }
-
 .star-rating-container {
     display: flex;
     flex-direction: row-reverse;
     gap: 6px;
     justify-content: center;
 }
-
 .star-label {
     cursor: pointer;
     color: #d1d5db;
@@ -533,7 +464,6 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     user-select: none;
     -webkit-tap-highlight-color: transparent;
 }
-
 .rating-label-box {
     font-size: 14px;
     font-weight: 600;
@@ -547,8 +477,6 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     box-sizing: border-box;
     word-break: break-word;
 }
-
-/* Hover effect para sa desktop lang */
 @media (hover: hover) and (pointer: fine) {
     .star-label:hover {
         color: #F59E0B;
@@ -556,9 +484,7 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     }
 }
 
-/* ============================================================
-   TOPIC PREVIEW
-   ============================================================ */
+/* TOPIC PREVIEW */
 .topic-preview {
     display: none;
     padding: 12px;
@@ -582,9 +508,7 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     margin-top: 6px;
 }
 
-/* ============================================================
-   SERVICE FILTER
-   ============================================================ */
+/* SERVICE FILTER */
 .service-filter {
     display: flex;
     flex-wrap: wrap;
@@ -615,9 +539,7 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     transform: translateY(-1px);
 }
 
-/* ============================================================
-   FEEDBACK ITEM CARD
-   ============================================================ */
+/* FEEDBACK ITEM */
 .feedback-item {
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -626,7 +548,6 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     box-sizing: border-box;
     min-width: 0;
 }
-
 .feedback-item-header {
     display: flex;
     flex-direction: column;
@@ -638,7 +559,6 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     color: var(--muted);
     text-align: left;
 }
-
 .service-badge {
     display: inline-flex;
     align-items: center;
@@ -650,28 +570,24 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     margin-bottom: 8px;
     white-space: nowrap;
 }
-
 .pkg-name-inline {
     font-size: 11px;
     color: var(--muted);
     margin-left: 6px;
     word-break: break-word;
 }
-
 .feedback-stars {
     font-size: 18px;
     color: var(--amber-text);
     line-height: 1;
     margin-bottom: 6px;
 }
-
 .feedback-comment {
     font-size: 13px;
     color: var(--dark);
     line-height: 1.5;
     word-break: break-word;
 }
-
 .feedback-topics {
     margin-top: 10px;
     display: flex;
@@ -685,9 +601,19 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     white-space: nowrap;
 }
 
-/* ============================================================
-   STUDIO REPLY
-   ============================================================ */
+/* SENTIMENT BADGE */
+.sentiment-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+/* STUDIO REPLY */
 .studio-reply {
     margin-top: 14px;
     padding: 12px;
@@ -753,7 +679,6 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     opacity: 0.5;
     cursor: not-allowed;
 }
-
 .warn-text {
     font-size: 11px;
     color: var(--red-text);
@@ -761,9 +686,7 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     line-height: 1.4;
 }
 
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
+/* RESPONSIVE */
 @media (min-width: 380px) {
     .page-banner h2 { font-size: 19px; }
     .card-title { font-size: 15px; }
@@ -782,14 +705,11 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     }
     .page-banner h2 { font-size: 22px; }
     .page-banner-art { font-size: 40px; align-self: center; }
-
     .ai-info-badge { padding: 14px 18px; }
     .ai-info-badge .ai-icon { font-size: 24px; }
     .ai-info-badge .ai-title { font-size: 14px; }
     .ai-info-badge .ai-desc { font-size: 12px; }
-
     .card { padding: 18px; }
-
     .star-rating-wrapper {
         flex-direction: row;
         justify-content: flex-start;
@@ -803,7 +723,6 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
         font-size: 16px;
         min-width: 200px;
     }
-
     .feedback-item-header {
         flex-direction: row;
         justify-content: space-between;
@@ -821,14 +740,11 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     .page-banner h2 { font-size: 24px; }
     .page-banner p { font-size: 13px; }
     .page-banner-art { font-size: 48px; }
-
     .card { padding: 20px 22px; border-radius: 14px; }
     .card-title { font-size: 16px; }
     .section-header h3 { font-size: 17px; }
-
     .star-label { font-size: 48px; }
     .rating-label-box { font-size: 18px; }
-
     .feedback-item { padding: 16px 18px; }
     .feedback-comment { font-size: 14px; }
     .feedback-stars { font-size: 22px; }
@@ -839,7 +755,6 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     .page-banner { padding: 28px 32px; }
     .page-banner h2 { font-size: 26px; }
     .page-banner-art { font-size: 52px; }
-
     .card { padding: 22px 24px; }
     .feedback-item { padding: 18px 20px; }
     .feedback-stars { font-size: 24px; }
@@ -849,7 +764,6 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     .page-banner { padding: 32px 40px; border-radius: 18px; }
     .page-banner h2 { font-size: 30px; }
     .page-banner-art { font-size: 64px; }
-
     .card { padding: 26px 28px; }
     .star-label { font-size: 52px; }
     .feedback-comment { font-size: 15px; }
@@ -908,13 +822,12 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
   <div class="card-title">📝 Submit Feedback</div>
   <form method="POST" action="index.php?page=feedback" id="feedback-form">
     <?= csrfField() ?>
-    
-    <!-- Select Booking -->
+
     <div class="form-group">
       <label>Select Session</label>
       <select name="booking_id" required <?= empty($completedBookings) ? 'disabled' : '' ?>>
         <option value="">Select a completed session…</option>
-        <?php foreach ($completedBookings as $b): 
+        <?php foreach ($completedBookings as $b):
             $service = classifyFeedbackByService($b['main_pkg_name'] ?? $b['pkg_name'] ?? '');
         ?>
           <option value="<?= $b['id'] ?>">
@@ -930,23 +843,22 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
       <?php endif; ?>
     </div>
 
-    <!-- Overall Rating -->
     <div class="form-group">
         <label style="font-size:14px;margin-bottom:8px;">⭐ Overall Rating</label>
         <div class="star-rating-wrapper">
             <div class="star-rating-container" id="starContainer">
                 <input type="radio" name="rating" id="star5" value="5" style="display:none;" checked>
                 <label for="star5" class="star-label" data-value="5" onclick="setRating(5)">★</label>
-                
+
                 <input type="radio" name="rating" id="star4" value="4" style="display:none;">
                 <label for="star4" class="star-label" data-value="4" onclick="setRating(4)">★</label>
-                
+
                 <input type="radio" name="rating" id="star3" value="3" style="display:none;">
                 <label for="star3" class="star-label" data-value="3" onclick="setRating(3)">★</label>
-                
+
                 <input type="radio" name="rating" id="star2" value="2" style="display:none;">
                 <label for="star2" class="star-label" data-value="2" onclick="setRating(2)">★</label>
-                
+
                 <input type="radio" name="rating" id="star1" value="1" style="display:none;">
                 <label for="star1" class="star-label" data-value="1" onclick="setRating(1)">★</label>
             </div>
@@ -956,10 +868,9 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
         </div>
     </div>
 
-    <!-- Comment -->
     <div class="form-group">
       <label>Your Comment <span style="color:var(--muted);font-weight:400;">(required)</span></label>
-      <textarea name="comment" id="feedback-comment" rows="4" 
+      <textarea name="comment" id="feedback-comment" rows="4"
                 maxlength="2000"
                 placeholder="Share your experience… What did you like? What can we improve?" required></textarea>
       <div class="form-hint">
@@ -967,7 +878,6 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
       </div>
     </div>
 
-    <!-- Topic Preview (live) -->
     <div id="topic-preview" class="topic-preview">
       <div class="tp-label">🔍 Detected Topics (live preview):</div>
       <div id="topic-tags" class="tp-tags"></div>
@@ -993,37 +903,35 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
     <h3><strong>📋 My Reviews</strong></h3>
     <span class="count-text"><?= count($feedbacks) ?> total reviews</span>
   </div>
-  
+
   <?php if (empty($feedbacks)): ?>
     <p class="empty-state">No reviews yet. Submit your first feedback above.</p>
   <?php else: ?>
-    
-    <!-- SERVICE FILTER -->
+
     <div class="service-filter">
-      <a href="index.php?page=feedback&service=all" 
+      <a href="index.php?page=feedback&service=all"
          class="service-filter-btn <?= $activeFilter === 'all' ? 'active' : '' ?>">
         💬 All Services (<?= $serviceCounts['all'] ?>)
       </a>
-      
+
       <?php foreach ([
         'self-shoot' => ['label' => 'Self-Shoot', 'icon' => '🤳'],
         'creative' => ['label' => 'Creative Shoot', 'icon' => '🎨'],
         'family' => ['label' => 'Family', 'icon' => '👨‍👩‍👧'],
         'studio-rental' => ['label' => 'Studio Rental', 'icon' => '🏢'],
         'other' => ['label' => 'Other', 'icon' => '📷'],
-      ] as $key => $info): 
+      ] as $key => $info):
           if ($serviceCounts[$key] === 0) continue;
           $isActive = ($activeFilter === $key);
       ?>
-        <a href="index.php?page=feedback&service=<?= $key ?>" 
+        <a href="index.php?page=feedback&service=<?= $key ?>"
            class="service-filter-btn <?= $isActive ? 'active' : '' ?>">
           <?= $info['icon'] ?> <?= $info['label'] ?> (<?= $serviceCounts[$key] ?>)
         </a>
       <?php endforeach; ?>
     </div>
-    
-    <!-- FEEDBACK LIST -->
-    <?php 
+
+    <?php
     $displayFeedback = [];
     if ($activeFilter === 'all') {
         $displayFeedback = $feedbacks;
@@ -1033,24 +941,32 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
         }
     }
     ?>
-    
+
     <?php if (empty($displayFeedback)): ?>
       <p class="empty-state">No feedback for this service yet.</p>
     <?php else: ?>
-      <?php foreach ($displayFeedback as $f): 
+      <?php foreach ($displayFeedback as $f):
         $topics = [];
         if ($hasTopics && !empty($f['topics'])) {
             $topics = explode(',', $f['topics']);
         }
         $hasReply = $hasReplyFeature && !empty($f['reply_sent_at']);
         $service = $f['_service'] ?? classifyFeedbackByService($f['main_pkg_name'] ?? $f['pkg_name'] ?? '');
+
+        // ✅ FIXED: Use shared sentiment helpers
+        $sentiment = $f['sentiment'] ?? 'neutral';
+        if ($hasAICol && !empty($f['ai_sentiment'])) {
+            $sentiment = $f['ai_sentiment'];
+        }
+        $sentBadge = getSentimentBadge($sentiment);
+        $sentIcon = getSentimentIcon($sentiment);
+        $sentLabel = getSentimentLabel($sentiment);
+        $sentStyle = getSentimentInlineStyle($sentiment);
       ?>
       <div class="feedback-item">
-        
-        <!-- Feedback Header -->
+
         <div class="feedback-item-header">
           <div class="fih-left">
-            <!-- SERVICE BADGE -->
             <div>
               <span class="service-badge" style="background:<?= $service['color'] ?>20;color:<?= $service['color'] ?>;border:1px solid <?= $service['color'] ?>40;">
                 <?= $service['icon'] ?> <?= $service['label'] ?>
@@ -1059,18 +975,23 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
                 <span class="pkg-name-inline"><?= clean($f['pkg_name']) ?></span>
               <?php endif; ?>
             </div>
-            
+
             <div class="feedback-stars">
               <?= str_repeat('★', (int)$f['rating_overall']) . str_repeat('☆', 5 - (int)$f['rating_overall']) ?>
             </div>
-            <div class="feedback-comment"><?= nl2br(clean($f['comment'])) ?></div>
+
+            <!-- ✅ NEW: Sentiment badge -->
+            <span class="sentiment-badge <?= $sentBadge ?>" style="<?= $sentStyle ?>">
+              <?= $sentIcon ?> <?= $sentLabel ?>
+            </span>
+
+            <div class="feedback-comment" style="margin-top:8px;"><?= nl2br(clean($f['comment'])) ?></div>
           </div>
           <div class="fih-date">
             <?= formatDate($f['created_at']) ?>
           </div>
         </div>
-        
-        <!-- Topics -->
+
         <?php if (!empty($topics)): ?>
         <div class="feedback-topics">
           <?php foreach ($topics as $topic): $topic = trim($topic); if (empty($topic)) continue; ?>
@@ -1080,8 +1001,7 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
           <?php endforeach; ?>
         </div>
         <?php endif; ?>
-        
-        <!-- STUDIO REPLY -->
+
         <?php if ($hasReply): ?>
         <div class="studio-reply">
           <div class="sr-header">
@@ -1096,7 +1016,7 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
           <?php endif; ?>
         </div>
         <?php endif; ?>
-        
+
       </div>
       <?php endforeach; ?>
     <?php endif; ?>
@@ -1108,7 +1028,7 @@ if (!array_key_exists($activeFilter, $serviceCounts)) {
 <!-- ============================================================ -->
 <script>
 // ================================================================
-// STAR RATING SYSTEM (mobile-safe, walang hover JS)
+// STAR RATING
 // ================================================================
 let selectedRating = 5;
 
@@ -1141,39 +1061,39 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ================================================================
-// LIVE TOPIC DETECTION
+// LIVE TOPIC + SENTIMENT PREVIEW
 // ================================================================
 document.addEventListener('DOMContentLoaded', function() {
     const input = document.getElementById('feedback-comment');
     const preview = document.getElementById('topic-preview');
     const tags = document.getElementById('topic-tags');
     const sentPrev = document.getElementById('sentiment-preview');
-    
+
     if (!input) return;
-    
+
     input.addEventListener('input', function() {
         const text = this.value.trim();
         if (text.length < 3) { preview.style.display = 'none'; return; }
-        
+
         const topics = detectTopicsLive(text);
         const sentiment = analyzeSentimentLive(text);
-        
+
         preview.style.display = 'block';
         tags.innerHTML = '';
-        
+
         const colors = { photographer:'#8B5CF6', delivery:'#F59E0B', pricing:'#10B981', studio:'#3B82F6', staff:'#EC4899', quality:'#EF4444', print:'#8B5CF6', general:'#6B7280' };
         const icons = { photographer:'📸', delivery:'📦', pricing:'💰', studio:'🏢', staff:'👥', quality:'🎨', print:'🖼️', general:'💬' };
         const labels = { photographer:'Photographer', delivery:'Delivery', pricing:'Pricing', studio:'Studio', staff:'Staff', quality:'Quality', print:'Print', general:'General' };
-        
+
         topics.forEach(topic => {
             const span = document.createElement('span');
             span.style.cssText = `padding:4px 12px;border-radius:50px;font-size:11px;background:${colors[topic]||'#6B7280'}20;color:${colors[topic]||'#6B7280'};border:1px solid ${colors[topic]||'#6B7280'}40;`;
             span.textContent = (icons[topic]||'💬') + ' ' + (labels[topic]||topic);
             tags.appendChild(span);
         });
-        
-        const emoji = sentiment === 'positive' ? '😊' : (sentiment === 'negative' ? '😞' : '😐');
-        const color = sentiment === 'positive' ? 'var(--green-text)' : (sentiment === 'negative' ? 'var(--red-text)' : 'var(--amber-text)');
+
+        const emoji = sentiment === 'positive' ? '😊' : (sentiment === 'negative' ? '😞' : (sentiment === 'mixed' ? '🤔' : '😐'));
+        const color = sentiment === 'positive' ? 'var(--green-text)' : (sentiment === 'negative' ? 'var(--red-text)' : (sentiment === 'mixed' ? '#7C3AED' : 'var(--amber-text)'));
         sentPrev.innerHTML = `Sentiment (preview): <strong style="color:${color}">${emoji} ${sentiment.charAt(0).toUpperCase() + sentiment.slice(1)}</strong>`;
     });
 });
@@ -1193,12 +1113,16 @@ function detectTopicsLive(text) {
 }
 
 function analyzeSentimentLive(text) {
-    const pos = ['ganda','satisfied','perfect','magaling','sulit','maayos','maganda','galing','nice','great','excellent','amazing','beautiful','love','thank'];
-    const neg = ['bagal','pangit','mahal','delay','problema','tagal','panget','sira','disappoint','bad','poor','terrible','worst'];
+    const pos = ['ganda','maganda','satisfied','perfect','magaling','sulit','maayos','galing','nice','great','excellent','amazing','beautiful','love','thank','happy','best'];
+    const neg = ['bagal','pangit','panget','masama','mahal','delay','problema','tagal','sira','disappoint','bad','poor','terrible','worst','sad'];
     const l = text.toLowerCase();
-    let score = 0;
-    pos.forEach(w => { if (l.includes(w)) score++; });
-    neg.forEach(w => { if (l.includes(w)) score--; });
-    return score > 0 ? 'positive' : (score < 0 ? 'negative' : 'neutral');
+    let p = 0, n = 0;
+    pos.forEach(w => { if (l.includes(w)) p++; });
+    neg.forEach(w => { if (l.includes(w)) n++; });
+
+    if (p > 0 && n > 0) {
+        return (Math.abs(p - n) <= 1) ? 'mixed' : (p > n ? 'positive' : 'negative');
+    }
+    return p > 0 ? 'positive' : (n > 0 ? 'negative' : 'neutral');
 }
 </script>
