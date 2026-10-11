@@ -8,6 +8,12 @@ $pdo = db();
 $user = currentUser();
 
 // ============================================================
+// ✅ NEW: SERVER TIME CONSTANTS (same as booking.php)
+// ============================================================
+define('SERVER_TODAY',       date('Y-m-d'));
+define('SERVER_NOW_MINUTES', ((int)date('H') * 60) + (int)date('i'));
+
+// ============================================================
 // AUTO-MIGRATION CHECK
 // ============================================================
 $hasDurationColumn = false;
@@ -170,6 +176,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($date))        $errors[] = 'Date is required.';
     if (empty($time))        $errors[] = 'Time is required.';
 
+    // ============================================================
+    // ✅ NEW: SERVER-SIDE PAST DATE/TIME VALIDATION
+    // ============================================================
+    if ($date && (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)
+        || !checkdate((int)substr($date, 5, 2), (int)substr($date, 8, 2), (int)substr($date, 0, 4)))) {
+        $errors[] = 'Invalid date format.';
+    } elseif ($date && $date < SERVER_TODAY) {
+        $errors[] = 'That date has already passed. Please choose today or a future date.';
+    }
+
     $clientId = null;
     $loyaltyCount = 0;
 
@@ -244,6 +260,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($startMin < OPEN_HOUR_MINUTES) $errors[] = 'Studio opens at 10:00 AM.';
             if ($startMin >= CLOSE_HOUR_MINUTES) $errors[] = 'Studio closes at 7:00 PM.';
             if ($endMin > CLOSE_HOUR_MINUTES) $errors[] = 'Session would end past 7:00 PM. Please choose an earlier time.';
+
+            // ============================================================
+            // ✅ NEW: SERVER-SIDE PAST TIME VALIDATION (for today)
+            // ============================================================
+            if ($date === SERVER_TODAY && $startMin <= SERVER_NOW_MINUTES) {
+                $errors[] = 'This time slot has already passed. Current time: ' . date('g:i A') . '. Please choose a later time.';
+            }
         }
     }
 
@@ -494,7 +517,7 @@ unset($bs);
         </div>
       </div>
 
-      <!-- TWO COLUMN LAYOUT (like booking.php) -->
+      <!-- TWO COLUMN LAYOUT -->
       <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:24px;">
         
         <!-- LEFT: Calendar + People + Notes -->
@@ -612,6 +635,29 @@ const RESERVATION_FEE = 100;
 const OPEN_HOUR_MINUTES  = 10 * 60;
 const CLOSE_HOUR_MINUTES = 19 * 60;
 const SLOT_STEP_MINUTES  = 15;
+
+// ✅ NEW: Server clock (PHT) is source of truth
+const SERVER_TODAY       = <?= json_encode(SERVER_TODAY) ?>;
+const SERVER_NOW_MINUTES = <?= (int)SERVER_NOW_MINUTES ?>;
+const PAGE_LOADED_AT     = Date.now();
+
+function getCurrentTimeInMinutes() {
+    return SERVER_NOW_MINUTES + Math.floor((Date.now() - PAGE_LOADED_AT) / 60000);
+}
+
+function isToday(dateStr) {
+    return dateStr === SERVER_TODAY;
+}
+
+function isPastSlot(dateStr, startMinutes) {
+    return isToday(dateStr) && startMinutes <= getCurrentTimeInMinutes();
+}
+
+function toDateStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function todayStr() { return SERVER_TODAY; }
 
 let CLIENT_LOYALTY_COUNT = 0;
 let CLIENT_LOYALTY_BONUS_MINUTES = 0;
@@ -800,7 +846,6 @@ function updateSessionSummary() {
         return;
     }
 
-    // Find package details from mainPackages
     let pkgObj = null;
     mainPackages.forEach(m => {
         (m.sub_packages || []).forEach(s => {
@@ -845,6 +890,16 @@ function checkTimeAvailability(timeStr) {
     const endMinutes = timeMinutes + durationMinutes;
     if (endMinutes > CLOSE_HOUR_MINUTES) { statusDiv.innerHTML = `<span style="color:#C62828;">❌ Ends past 7:00 PM (${formatTime(endMinutes)})</span>`; submitBtn.disabled = true; return; }
 
+    // ✅ NEW: Past time check
+    if (isPastSlot(selectedDate, timeMinutes)) {
+        statusDiv.innerHTML = `
+            <div style="padding:10px;background:#EEEEEE;border-radius:6px;border-left:4px solid #9E9E9E;">
+                <div style="color:#616161;font-weight:700;font-size:13px;">⚫ This time has already passed</div>
+                <div style="font-size:12px;color:#616161;">Current time: ${formatTime(getCurrentTimeInMinutes())}. Please choose a later time.</div>
+            </div>`;
+        submitBtn.disabled = true; selectedTime = ''; return;
+    }
+
     if (isSlotConfirmed(selectedDate, timeStr, selectedPackageDuration)) {
         statusDiv.innerHTML = `<div style="padding:10px;background:#FEE2E2;border-radius:6px;border-left:4px solid #C62828;"><div style="color:#8E0000;font-weight:700;font-size:13px;">❌ Conflict Detected</div><div style="font-size:12px;color:#8E0000;">Slot is already booked.</div></div>`;
         submitBtn.disabled = true; selectedTime = ''; return;
@@ -873,9 +928,14 @@ function toggleQuickTimes() {
     const durationMinutes = getDurationInMinutes(selectedPackageDuration);
     const availableSlots = [];
     const pendingSlots = [];
+    const pastSlots = [];
 
     for (let timeMinutes = OPEN_HOUR_MINUTES; timeMinutes + durationMinutes <= CLOSE_HOUR_MINUTES; timeMinutes += SLOT_STEP_MINUTES) {
         const timeStr = formatTime(timeMinutes);
+
+        // ✅ NEW: Skip past slots
+        if (isPastSlot(selectedDate, timeMinutes)) { pastSlots.push(timeStr); continue; }
+
         if (isSlotConfirmed(selectedDate, timeStr, selectedPackageDuration)) continue;
         const slot = { start: timeStr, end: formatTime(timeMinutes + durationMinutes), isPending: isSlotPending(selectedDate, timeStr, selectedPackageDuration) };
         if (slot.isPending) pendingSlots.push(slot); else availableSlots.push(slot);
@@ -883,7 +943,7 @@ function toggleQuickTimes() {
 
     let html = '';
     if (availableSlots.length === 0 && pendingSlots.length === 0) {
-        html = `<div style="text-align:center;padding:20px;color:#C62828;"><div style="font-size:32px;margin-bottom:6px;">❌</div><div style="font-weight:600;">Walang available</div></div>`;
+        html = `<div style="text-align:center;padding:20px;color:#C62828;"><div style="font-size:32px;margin-bottom:6px;">❌</div><div style="font-weight:600;">Walang available</div><div style="font-size:11px;color:#8B8177;margin-top:4px;">${pastSlots.length > 0 ? pastSlots.length + ' past slot(s) today' : ''}</div></div>`;
     } else {
         if (availableSlots.length > 0) {
             html += `<div style="font-size:10px;color:#1B5E20;font-weight:700;padding:4px 6px;border-bottom:1px solid #E0E0E0;margin-bottom:4px;">✅ Available (${availableSlots.length})</div>`;
@@ -897,6 +957,14 @@ function toggleQuickTimes() {
                 html += `<div onclick="selectQuickTime('${slot.start}')" style="padding:8px 10px;cursor:pointer;border-radius:6px;margin:2px 0;background:#FEF3C7;color:#92400E;font-size:12px;display:flex;justify-content:space-between;align-items:center;font-weight:600;"><span>${slot.start} → ${slot.end}</span><span>⏳</span></div>`;
             });
         }
+    }
+    if (pastSlots.length > 0) {
+        html += `<div style="font-size:10px;color:#616161;font-weight:700;padding:4px 6px;border-bottom:1px solid #BDBDBD;margin:8px 0 4px;">⚫ Past — cannot be booked (${pastSlots.length})</div>`;
+        html += `<div style="display:flex;flex-wrap:wrap;gap:3px;">`;
+        pastSlots.slice(0, 12).forEach(slot => {
+            html += `<span style="padding:4px 8px;border-radius:4px;background:#EEEEEE;color:#757575;border:1px solid #BDBDBD;font-size:11px;cursor:not-allowed;text-decoration:line-through;">${slot}</span>`;
+        });
+        html += `</div>`;
     }
     dropdown.innerHTML = html;
     dropdown.style.display = 'block';
@@ -925,19 +993,27 @@ function renderCalendar() {
 
     const firstDay = new Date(calYear, calMonth, 1).getDay();
     const lastDate = new Date(calYear, calMonth + 1, 0).getDate();
-    const today = new Date(); today.setHours(0, 0, 0, 0);
     for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
 
     for (let d = 1; d <= lastDate; d++) {
         const ds = calYear + '-' + String(calMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
-        const dObj = new Date(calYear, calMonth, d);
-        const isPast = dObj < today;
+
+        // ✅ NEW: Use SERVER_TODAY instead of local date
+        const isPast = ds < SERVER_TODAY;
+        const isTodayCell = ds === SERVER_TODAY;
+
         let hasAvailable = false;
-        if (!isPast && selectedPackageDuration) hasAvailable = hasAnyAvailableSlot(ds, selectedPackageDuration);
+        let allPast = false;
+        if (!isPast && selectedPackageDuration) {
+            const result = getSlotAvailabilityMap(ds, selectedPackageDuration);
+            hasAvailable = result.hasAvailable;
+            allPast = isTodayCell && !hasAvailable && result.hasPast;
+        }
 
         let cls = 'calendar-date';
         let statusText = '';
         if (isPast) { cls += ' date-past'; statusText = 'Past'; }
+        else if (allPast) { cls += ' date-past'; statusText = 'All slots today have passed'; }
         else if (!hasAvailable && selectedPackageDuration) { cls += ' date-booked'; statusText = 'Fully Booked'; }
         else { cls += ' date-available'; statusText = 'Available'; }
 
@@ -963,19 +1039,29 @@ function renderCalendar() {
                 updatePickerInfo();
             } else if (cell.classList.contains('date-booked')) {
                 showToast('This date is fully booked.', '#E74C3C');
+            } else if (allPast) {
+                showToast('All slots today have passed. Choose another date.', '#E74C3C');
             }
         };
         grid.appendChild(cell);
     }
 }
 
-function hasAnyAvailableSlot(date, duration) {
+// ✅ NEW: Helper to get slot availability map
+function getSlotAvailabilityMap(date, duration) {
     const durationMinutes = getDurationInMinutes(duration);
+    let hasAvailable = false;
+    let hasPast = false;
+
     for (let timeMinutes = OPEN_HOUR_MINUTES; timeMinutes + durationMinutes <= CLOSE_HOUR_MINUTES; timeMinutes += SLOT_STEP_MINUTES) {
         const timeStr = formatTime(timeMinutes);
-        if (!isSlotConfirmed(date, timeStr, duration)) return true;
+        if (isPastSlot(date, timeMinutes)) { hasPast = true; continue; }
+        if (!isSlotConfirmed(date, timeStr, duration)) {
+            hasAvailable = true;
+            break;
+        }
     }
-    return false;
+    return { hasAvailable, hasPast };
 }
 
 function changeCalMonth(delta) {
@@ -1082,9 +1168,9 @@ function selectSubPackage(id, name, price, mainName, duration) {
     updatePickerInfo();
     renderCalendar();
 
-    const today = new Date().toISOString().split('T')[0];
-    selectedDate = today;
-    document.getElementById('form-date').value = today;
+    // ✅ NEW: Use server today
+    selectedDate = SERVER_TODAY;
+    document.getElementById('form-date').value = SERVER_TODAY;
     updatePickerInfo();
 
     document.getElementById('booking-form-section').scrollIntoView({ behavior: 'smooth' });
@@ -1112,9 +1198,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const quickBtn = document.getElementById('quick-times-btn');
 
     renderCalendar();
-    const today = new Date().toISOString().split('T')[0];
-    selectedDate = today;
-    document.getElementById('form-date').value = today;
+    // ✅ NEW: Use SERVER_TODAY
+    selectedDate = SERVER_TODAY;
+    document.getElementById('form-date').value = SERVER_TODAY;
 
     timeInput.addEventListener('input', function() { checkTimeAvailability(this.value); });
     quickBtn.addEventListener('click', toggleQuickTimes);
@@ -1139,6 +1225,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!document.getElementById('selected_time').value) { e.preventDefault(); showToast('Please select a valid time slot.', '#E74C3C'); }
         if (!document.getElementById('form-date').value) { e.preventDefault(); showToast('Please select a date.', '#E74C3C'); }
     });
+
+    // ✅ NEW: Auto-refresh every 60s (para sa past-time update)
+    setInterval(function() {
+        if (selectedPackageDuration) {
+            renderCalendar();
+        }
+    }, 60000);
 });
 </script>
 
