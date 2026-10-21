@@ -2,7 +2,7 @@
 // ============================================================
 // STUDIO 94 SNAPTRACK
 // REPORTS AND ANALYTICS MODULE
-// 9 REPORTS
+// 8 REPORTS (Chatbot Logs removed)
 // ============================================================
 
 requireRole('admin');
@@ -125,7 +125,6 @@ $allowedTypes = [
     'loyalty',
     'analytics',
     'evaluation',
-    'chatbot',
     'photos'
 ];
 
@@ -155,7 +154,7 @@ if ($from > $to) {
 $reportData = [];
 
 // ============================================================
-// 9 REPORT DEFINITIONS
+// 8 REPORT DEFINITIONS
 // ============================================================
 
 $reportTypes = [
@@ -259,20 +258,6 @@ $reportTypes = [
         ],
         'icon'        => '⭐',
         'description' => 'Client feedback, ratings, sentiment, and urgent concerns.',
-        'dateBased'   => true
-    ],
-
-    'chatbot' => [
-        'title'       => 'Chatbot Log Report',
-        'headers'     => [
-            'User',
-            'Message',
-            'Reply',
-            'Session',
-            'Date'
-        ],
-        'icon'        => '🤖',
-        'description' => 'AI chatbot conversation logs within the selected date range.',
         'dateBased'   => true
     ],
 
@@ -400,8 +385,6 @@ function getReportData($type, $from, $to, PDO $pdo)
 
         // ====================================================
         // 4. SALES
-        // IMPORTANT:
-        // Revenue is based on ACTUAL PAID PAYMENTS.
         // ====================================================
 
         case 'sales':
@@ -409,11 +392,8 @@ function getReportData($type, $from, $to, PDO $pdo)
             $stmt = $pdo->prepare("
                 SELECT
                     DATE_FORMAT(py.created_at, '%M %Y') AS month_name,
-
                     COUNT(py.id) AS transactions,
-
                     COALESCE(SUM(py.amount), 0) AS revenue,
-
                     SUM(
                         CASE
                             WHEN b.type = 'walk-in'
@@ -422,7 +402,6 @@ function getReportData($type, $from, $to, PDO $pdo)
                             ELSE 0
                         END
                     ) AS walkin,
-
                     SUM(
                         CASE
                             WHEN b.type = 'online'
@@ -430,19 +409,14 @@ function getReportData($type, $from, $to, PDO $pdo)
                             ELSE 0
                         END
                     ) AS online
-
                 FROM payments py
-
                 INNER JOIN bookings b
                     ON py.booking_id = b.id
-
                 WHERE UPPER(py.status) = 'PAID'
                   AND DATE(py.created_at) BETWEEN ? AND ?
-
                 GROUP BY
                     YEAR(py.created_at),
                     MONTH(py.created_at)
-
                 ORDER BY
                     YEAR(py.created_at) DESC,
                     MONTH(py.created_at) DESC
@@ -460,7 +434,6 @@ function getReportData($type, $from, $to, PDO $pdo)
 
         // ====================================================
         // 5. LOYALTY
-        // Current status report
         // ====================================================
 
         case 'loyalty':
@@ -470,7 +443,6 @@ function getReportData($type, $from, $to, PDO $pdo)
                     u.name AS client,
                     lc.card_number,
                     lc.total_bookings,
-
                     CASE
                         WHEN lc.total_bookings >= 4 THEN '50% OFF'
                         WHEN lc.total_bookings >= 3 THEN '+1 BACKDROP'
@@ -478,14 +450,10 @@ function getReportData($type, $from, $to, PDO $pdo)
                         WHEN lc.total_bookings >= 1 THEN '+5 MINUTES'
                         ELSE 'None'
                     END AS rewards,
-
                     lc.status
-
                 FROM loyalty_cards lc
-
                 INNER JOIN users u
                     ON lc.user_id = u.id
-
                 ORDER BY
                     lc.total_bookings DESC,
                     u.name ASC
@@ -498,90 +466,56 @@ function getReportData($type, $from, $to, PDO $pdo)
 
         // ====================================================
         // 6. ANALYTICS
-        // No hard-coded percentages.
         // ====================================================
 
         case 'analytics':
 
-            // Current selected period
             $currentBookingsStmt = $pdo->prepare("
                 SELECT COUNT(*)
                 FROM bookings
                 WHERE date BETWEEN ? AND ?
             ");
-
-            $currentBookingsStmt->execute([
-                $from,
-                $to
-            ]);
-
+            $currentBookingsStmt->execute([$from, $to]);
             $currentBookings = (int)$currentBookingsStmt->fetchColumn();
 
-
-            // Completed bookings
             $completedStmt = $pdo->prepare("
                 SELECT COUNT(*)
                 FROM bookings
                 WHERE status = 'Completed'
                   AND date BETWEEN ? AND ?
             ");
-
-            $completedStmt->execute([
-                $from,
-                $to
-            ]);
-
+            $completedStmt->execute([$from, $to]);
             $completedBookings = (int)$completedStmt->fetchColumn();
 
-
-            // Pending approvals
             $pendingStmt = $pdo->prepare("
                 SELECT COUNT(*)
                 FROM bookings
                 WHERE status = 'Awaiting Approval'
                   AND date BETWEEN ? AND ?
             ");
-
-            $pendingStmt->execute([
-                $from,
-                $to
-            ]);
-
+            $pendingStmt->execute([$from, $to]);
             $pendingBookings = (int)$pendingStmt->fetchColumn();
 
-
-            // Actual paid revenue
             $revenueStmt = $pdo->prepare("
                 SELECT COALESCE(SUM(amount), 0)
                 FROM payments
                 WHERE UPPER(status) = 'PAID'
                   AND DATE(created_at) BETWEEN ? AND ?
             ");
-
-            $revenueStmt->execute([
-                $from,
-                $to
-            ]);
-
+            $revenueStmt->execute([$from, $to]);
             $periodRevenue = (float)$revenueStmt->fetchColumn();
 
-
-            // Clients
             $totalUsers = (int)$pdo->query("
                 SELECT COUNT(*)
                 FROM users
                 WHERE role = 'client'
             ")->fetchColumn();
 
-
-            // Inventory
             $totalInventory = (int)$pdo->query("
                 SELECT COUNT(*)
                 FROM inventory
             ")->fetchColumn();
 
-
-            // Low stock
             $lowStock = (int)$pdo->query("
                 SELECT COUNT(*)
                 FROM inventory
@@ -589,8 +523,6 @@ function getReportData($type, $from, $to, PDO $pdo)
                   AND quantity <= threshold
             ")->fetchColumn();
 
-
-            // Feedback
             $feedbackStmt = $pdo->prepare("
                 SELECT
                     COUNT(*) AS total_feedback,
@@ -598,215 +530,81 @@ function getReportData($type, $from, $to, PDO $pdo)
                 FROM feedback
                 WHERE DATE(created_at) BETWEEN ? AND ?
             ");
-
-            $feedbackStmt->execute([
-                $from,
-                $to
-            ]);
-
+            $feedbackStmt->execute([$from, $to]);
             $feedbackStats = $feedbackStmt->fetch(PDO::FETCH_ASSOC);
 
             $totalFeedback = (int)($feedbackStats['total_feedback'] ?? 0);
             $avgRating = (float)($feedbackStats['avg_rating'] ?? 0);
 
-
-            // ------------------------------------------------
-            // Previous equivalent period
-            // Used for actual change calculation.
-            // ------------------------------------------------
-
             $fromDate = new DateTime($from);
             $toDate   = new DateTime($to);
-
             $days = $fromDate->diff($toDate)->days + 1;
 
             $previousToDate = clone $fromDate;
             $previousToDate->modify('-1 day');
-
             $previousFromDate = clone $previousToDate;
             $previousFromDate->modify('-' . ($days - 1) . ' days');
-
             $previousFrom = $previousFromDate->format('Y-m-d');
             $previousTo   = $previousToDate->format('Y-m-d');
 
-
-            // Previous bookings
             $prevBookingsStmt = $pdo->prepare("
                 SELECT COUNT(*)
                 FROM bookings
                 WHERE date BETWEEN ? AND ?
             ");
-
-            $prevBookingsStmt->execute([
-                $previousFrom,
-                $previousTo
-            ]);
-
+            $prevBookingsStmt->execute([$previousFrom, $previousTo]);
             $previousBookings = (int)$prevBookingsStmt->fetchColumn();
 
-
-            // Previous revenue
             $prevRevenueStmt = $pdo->prepare("
                 SELECT COALESCE(SUM(amount), 0)
                 FROM payments
                 WHERE UPPER(status) = 'PAID'
                   AND DATE(created_at) BETWEEN ? AND ?
             ");
-
-            $prevRevenueStmt->execute([
-                $previousFrom,
-                $previousTo
-            ]);
-
+            $prevRevenueStmt->execute([$previousFrom, $previousTo]);
             $previousRevenue = (float)$prevRevenueStmt->fetchColumn();
 
-
-            // Previous completed bookings
             $prevCompletedStmt = $pdo->prepare("
                 SELECT COUNT(*)
                 FROM bookings
                 WHERE status = 'Completed'
                   AND date BETWEEN ? AND ?
             ");
-
-            $prevCompletedStmt->execute([
-                $previousFrom,
-                $previousTo
-            ]);
-
+            $prevCompletedStmt->execute([$previousFrom, $previousTo]);
             $previousCompleted = (int)$prevCompletedStmt->fetchColumn();
 
-
-            // Change helper
             $calculateChange = function ($current, $previous) {
-
                 $current = (float)$current;
                 $previous = (float)$previous;
-
                 if ($previous == 0) {
-                    if ($current == 0) {
-                        return '0%';
-                    }
-
+                    if ($current == 0) return '0%';
                     return '+100%';
                 }
-
                 $change = (($current - $previous) / $previous) * 100;
-
-                return ($change >= 0 ? '+' : '') .
-                    number_format($change, 1) . '%';
+                return ($change >= 0 ? '+' : '') . number_format($change, 1) . '%';
             };
 
+            $bookingChange = $calculateChange($currentBookings, $previousBookings);
+            $revenueChange = $calculateChange($periodRevenue, $previousRevenue);
+            $completedChange = $calculateChange($completedBookings, $previousCompleted);
 
-            $bookingChange = $calculateChange(
-                $currentBookings,
-                $previousBookings
-            );
-
-            $revenueChange = $calculateChange(
-                $periodRevenue,
-                $previousRevenue
-            );
-
-            $completedChange = $calculateChange(
-                $completedBookings,
-                $previousCompleted
-            );
-
-
-            // Status helper
             $performanceStatus = function ($change) {
-
-                $numeric = (float)str_replace(
-                    ['%', '+'],
-                    '',
-                    $change
-                );
-
-                if ($numeric > 0) {
-                    return 'Improving';
-                }
-
-                if ($numeric < 0) {
-                    return 'Declining';
-                }
-
+                $numeric = (float)str_replace(['%', '+'], '', $change);
+                if ($numeric > 0) return 'Improving';
+                if ($numeric < 0) return 'Declining';
                 return 'Stable';
             };
 
-
             $data = [
-
-                [
-                    'metric'  => 'Total Bookings',
-                    'value'   => $currentBookings,
-                    'change'  => $bookingChange,
-                    'status'  => $performanceStatus($bookingChange)
-                ],
-
-                [
-                    'metric'  => 'Total Clients',
-                    'value'   => $totalUsers,
-                    'change'  => '—',
-                    'status'  => 'Current'
-                ],
-
-                [
-                    'metric'  => 'Paid Revenue',
-                    'value'   => reportMoney($periodRevenue),
-                    'change'  => $revenueChange,
-                    'status'  => $performanceStatus($revenueChange)
-                ],
-
-                [
-                    'metric'  => 'Pending Bookings',
-                    'value'   => $pendingBookings,
-                    'change'  => '—',
-                    'status'  => $pendingBookings > 0
-                        ? 'Attention'
-                        : 'Good'
-                ],
-
-                [
-                    'metric'  => 'Completed Bookings',
-                    'value'   => $completedBookings,
-                    'change'  => $completedChange,
-                    'status'  => $performanceStatus($completedChange)
-                ],
-
-                [
-                    'metric'  => 'Inventory Items',
-                    'value'   => $totalInventory,
-                    'change'  => '—',
-                    'status'  => 'Current'
-                ],
-
-                [
-                    'metric'  => 'Low Stock Items',
-                    'value'   => $lowStock,
-                    'change'  => '—',
-                    'status'  => $lowStock > 0
-                        ? 'Warning'
-                        : 'Good'
-                ],
-
-                [
-                    'metric'  => 'Feedback Records',
-                    'value'   => $totalFeedback,
-                    'change'  => '—',
-                    'status'  => 'Current'
-                ],
-
-                [
-                    'metric'  => 'Average Rating',
-                    'value'   => $avgRating > 0
-                        ? number_format($avgRating, 1) . ' ★'
-                        : 'No rating',
-                    'change'  => '—',
-                    'status'  => $avgRating >= 4
-                        ? 'Good'
-                        : ($avgRating > 0 ? 'Attention' : 'No Data')
-                ]
+                ['metric' => 'Total Bookings', 'value' => $currentBookings, 'change' => $bookingChange, 'status' => $performanceStatus($bookingChange)],
+                ['metric' => 'Total Clients', 'value' => $totalUsers, 'change' => '—', 'status' => 'Current'],
+                ['metric' => 'Paid Revenue', 'value' => reportMoney($periodRevenue), 'change' => $revenueChange, 'status' => $performanceStatus($revenueChange)],
+                ['metric' => 'Pending Bookings', 'value' => $pendingBookings, 'change' => '—', 'status' => $pendingBookings > 0 ? 'Attention' : 'Good'],
+                ['metric' => 'Completed Bookings', 'value' => $completedBookings, 'change' => $completedChange, 'status' => $performanceStatus($completedChange)],
+                ['metric' => 'Inventory Items', 'value' => $totalInventory, 'change' => '—', 'status' => 'Current'],
+                ['metric' => 'Low Stock Items', 'value' => $lowStock, 'change' => '—', 'status' => $lowStock > 0 ? 'Warning' : 'Good'],
+                ['metric' => 'Feedback Records', 'value' => $totalFeedback, 'change' => '—', 'status' => 'Current'],
+                ['metric' => 'Average Rating', 'value' => $avgRating > 0 ? number_format($avgRating, 1) . ' ★' : 'No rating', 'change' => '—', 'status' => $avgRating >= 4 ? 'Good' : ($avgRating > 0 ? 'Attention' : 'No Data')]
             ];
 
             break;
@@ -823,139 +621,27 @@ function getReportData($type, $from, $to, PDO $pdo)
                     u.name AS client,
                     f.rating_overall,
                     f.sentiment,
-
                     CASE
                         WHEN f.is_urgent = 1 THEN 'Yes'
                         ELSE 'No'
                     END AS urgent,
-
                     f.comment,
                     DATE(f.created_at) AS date
-
                 FROM feedback f
-
                 LEFT JOIN users u
                     ON f.user_id = u.id
-
                 WHERE DATE(f.created_at) BETWEEN ? AND ?
-
-                ORDER BY
-                    f.created_at DESC
+                ORDER BY f.created_at DESC
             ");
 
-            $stmt->execute([
-                $from,
-                $to
-            ]);
-
+            $stmt->execute([$from, $to]);
             $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             break;
 
 
         // ====================================================
-        // 8. CHATBOT (FIXED VERSION)
-        // ====================================================
-
-        case 'chatbot':
-
-            // Use LEFT JOINs to ensure messages are pulled even if sessions/users are missing.
-            $stmt = $pdo->prepare("
-                SELECT
-                    COALESCE(u.name, 'Guest') AS user,
-                    cm.message,
-                    cm.type,
-                    cm.session_id,
-                    cm.created_at AS date
-                FROM chat_messages cm
-                LEFT JOIN chat_sessions cs ON cm.session_id = cs.id
-                LEFT JOIN users u ON cs.user_id = u.id
-                WHERE DATE(cm.created_at) BETWEEN ? AND ?
-                ORDER BY cm.session_id ASC, cm.created_at ASC
-            ");
-
-            $stmt->execute([
-                $from,
-                $to
-            ]);
-
-            $rawData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            $data = [];
-            $temp = [];
-
-            // Group by session
-            foreach ($rawData as $row) {
-                $sessionId = $row['session_id'] ?? 0; // Fallback to 0 if null
-                if (!isset($temp[$sessionId])) {
-                    $temp[$sessionId] = [];
-                }
-                $temp[$sessionId][] = $row;
-            }
-
-            // Pair user message and bot reply
-            foreach ($temp as $sessionId => $messages) {
-                $userMsg = '';
-                $lastUser = 'Client';
-                $userDate = '';
-
-                foreach ($messages as $msg) {
-                    $messageType = strtolower(trim((string)$msg['type']));
-
-                    // Check if it's a user message
-                    if ($messageType === 'user' || $messageType === 'client') {
-                        // Save previous unanswered message
-                        if ($userMsg !== '') {
-                            $data[] = [
-                                'user'       => $lastUser,
-                                'message'    => $userMsg,
-                                'reply'      => '—',
-                                'session_id' => $sessionId,
-                                'date'       => $userDate
-                            ];
-                        }
-                        $userMsg  = $msg['message'];
-                        $lastUser = $msg['user'] ?? 'Client';
-                        $userDate = $msg['date'];
-
-                    } 
-                    // Check if it's a bot reply
-                    elseif (in_array($messageType, ['bot', 'assistant', 'ai'], true) && $userMsg !== '') {
-                        $data[] = [
-                            'user'       => $lastUser,
-                            'message'    => $userMsg,
-                            'reply'      => $msg['message'],
-                            'session_id' => $sessionId,
-                            'date'       => $msg['date']
-                        ];
-                        $userMsg  = '';
-                        $lastUser = '';
-                        $userDate = '';
-                    }
-                }
-
-                // Remaining unanswered message
-                if ($userMsg !== '') {
-                    $data[] = [
-                        'user'       => $lastUser,
-                        'message'    => $userMsg,
-                        'reply'      => '—',
-                        'session_id' => $sessionId,
-                        'date'       => $userDate
-                    ];
-                }
-            }
-
-            // Sort newest first
-            usort($data, function ($a, $b) {
-                return strtotime($b['date']) <=> strtotime($a['date']);
-            });
-
-            break;
-
-
-        // ====================================================
-        // 9. PHOTO GALLERY
+        // 8. PHOTO GALLERY
         // ====================================================
 
         case 'photos':
@@ -968,37 +654,24 @@ function getReportData($type, $from, $to, PDO $pdo)
                     uploader.name AS uploaded_by,
                     p.status,
                     DATE(p.created_at) AS date
-
                 FROM photos p
-
                 INNER JOIN bookings b
                     ON p.booking_id = b.id
-
                 LEFT JOIN users u
                     ON b.user_id = u.id
-
                 LEFT JOIN users uploader
                     ON p.uploader_id = uploader.id
-
                 WHERE DATE(p.created_at) BETWEEN ? AND ?
-
-                ORDER BY
-                    p.created_at DESC
+                ORDER BY p.created_at DESC
             ");
 
-            $stmt->execute([
-                $from,
-                $to
-            ]);
-
+            $stmt->execute([$from, $to]);
             $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             break;
     }
 
-    return [
-        'data' => $data
-    ];
+    return ['data' => $data];
 }
 
 // ============================================================
@@ -1082,7 +755,6 @@ function generateReportPDF($type, $from, $to, $result, $reportTypes)
     $pdf->SetAutoPageBreak(true, 15);
     $pdf->AddPage();
 
-    // TITLE
     $pdf->SetFont('Arial', 'B', 18);
     $pdf->SetTextColor(108, 99, 255);
     $pdf->Cell(0, 9, 'STUDIO 94 SNAPTRACK', 0, 1, 'C');
@@ -1094,7 +766,6 @@ function generateReportPDF($type, $from, $to, $result, $reportTypes)
     $pdf->Cell(0, 6, 'Generated: ' . date('F d, Y h:i A'), 0, 1, 'C');
     $pdf->Ln(5);
 
-    // COLUMN WIDTHS
     $widths = [
         'inventory' => [55, 45, 25, 25, 35],
         'appointment' => [35, 40, 50, 25, 20, 35, 25],
@@ -1103,14 +774,12 @@ function generateReportPDF($type, $from, $to, $result, $reportTypes)
         'loyalty' => [50, 45, 35, 45, 30],
         'analytics' => [65, 40, 40, 40],
         'evaluation' => [45, 20, 35, 25, 100, 30],
-        'chatbot' => [35, 75, 75, 25, 30],
         'photos' => [35, 40, 70, 45, 30, 30]
     ];
 
     $colWidths = $widths[$type];
     $headers = $info['headers'];
 
-    // TABLE HEADER
     $pdf->SetFont('Arial', 'B', 8);
     $pdf->SetFillColor(230, 230, 230);
 
@@ -1120,7 +789,6 @@ function generateReportPDF($type, $from, $to, $result, $reportTypes)
     }
     $pdf->Ln();
 
-    // TABLE BODY
     $pdf->SetFont('Arial', '', 7);
     $rowNum = 0;
 
@@ -1150,17 +818,6 @@ function generateReportPDF($type, $from, $to, $result, $reportTypes)
                 $stars = str_repeat('★', $rating) . str_repeat('☆', 5 - $rating);
                 $rowData = [$row['client'], $stars, ucfirst($row['sentiment'] ?? '—'), $row['urgent'], $row['comment'] ?? '—', $row['date']];
                 break;
-            case 'chatbot':
-                $message = (string)$row['message'];
-                $reply   = (string)($row['reply'] ?? '—');
-                $rowData = [
-                    $row['user'],
-                    mb_substr($message, 0, 70) . (mb_strlen($message) > 70 ? '...' : ''),
-                    mb_substr($reply, 0, 70) . (mb_strlen($reply) > 70 ? '...' : ''),
-                    $row['session_id'],
-                    $row['date']
-                ];
-                break;
             case 'photos':
                 $rowData = [$row['booking_ref'], $row['client'], $row['photo'], $row['uploaded_by'], $row['status'], $row['date']];
                 break;
@@ -1182,7 +839,6 @@ function generateReportPDF($type, $from, $to, $result, $reportTypes)
         $rowNum++;
     }
 
-    // FOOTER
     $pdf->Ln(5);
     $pdf->SetFont('Arial', 'I', 8);
     $pdf->Cell(0, 5, 'Generated by Studio 94 SnapTrack.', 0, 1, 'C');
@@ -1260,9 +916,6 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
                 break;
             case 'evaluation':
                 fputcsv($output, [$row['client'], $row['rating_overall'], $row['sentiment'], $row['urgent'], $row['comment'] ?? '—', $row['date']]);
-                break;
-            case 'chatbot':
-                fputcsv($output, [$row['user'], $row['message'], $row['reply'] ?? '—', $row['session_id'], $row['date']]);
                 break;
             case 'photos':
                 fputcsv($output, [$row['booking_ref'], $row['client'], $row['photo'], $row['uploaded_by'], $row['status'], $row['date']]);
@@ -1367,13 +1020,11 @@ table tr:hover { background: var(--primary-bg); }
 </head>
 <body>
 <div class="container">
-    <!-- PAGE BANNER -->
     <div class="page-banner">
         <h2>📊 Reports and Analytics</h2>
         <p>Generate, view, and export detailed Studio 94 reports and analytics.</p>
     </div>
 
-    <!-- FLASH MESSAGE -->
     <?php if ($flash): ?>
         <?php $flashType = strtolower((string)($flash['type'] ?? 'error')); $isSuccess = $flashType === 'success'; ?>
         <div class="alert <?= $isSuccess ? 'success' : '' ?>">
@@ -1382,7 +1033,6 @@ table tr:hover { background: var(--primary-bg); }
         </div>
     <?php endif; ?>
 
-    <!-- 9 AVAILABLE REPORTS -->
     <div class="card">
         <div class="section-header">
             <h3>📋 Available Reports</h3>
@@ -1400,9 +1050,7 @@ table tr:hover { background: var(--primary-bg); }
         </div>
     </div>
 
-    <!-- GENERATOR + RESULTS -->
     <div class="grid-2">
-        <!-- GENERATOR -->
         <div class="card">
             <div class="card-title"><?= $currentReport['icon'] ?> Generate Report</div>
             <div class="report-description">
@@ -1447,7 +1095,6 @@ table tr:hover { background: var(--primary-bg); }
             </form>
         </div>
 
-        <!-- RESULTS -->
         <div class="card">
             <div class="card-title">
                 <?= $currentReport['icon'] ?> Report Results
@@ -1537,23 +1184,6 @@ table tr:hover { background: var(--primary-bg); }
                                     <td><span class="badge <?= $sentimentClass ?>"><?= reportEsc(ucfirst($sentiment ?: '—')) ?></span></td>
                                     <td><?= $row['urgent'] === 'Yes' ? reportStatusBadge('Urgent') : reportStatusBadge('No') ?></td>
                                     <td><?= reportEsc($row['comment'] ?? '—') ?></td>
-                                    <td><?= reportDate($row['date']) ?></td>
-
-                                <?php elseif ($type === 'chatbot'): ?>
-                                    <?php
-                                    $message = (string)($row['message'] ?? '');
-                                    $reply = (string)($row['reply'] ?? '—');
-                                    ?>
-                                    <td><?= reportEsc($row['user'] ?? 'Client') ?></td>
-                                    <td title="<?= reportEsc($message) ?>">
-                                        <?= reportEsc(mb_substr($message, 0, 60)) ?>
-                                        <?php if (mb_strlen($message) > 60): ?>...<?php endif; ?>
-                                    </td>
-                                    <td title="<?= reportEsc($reply) ?>">
-                                        <?= reportEsc(mb_substr($reply, 0, 60)) ?>
-                                        <?php if (mb_strlen($reply) > 60): ?>...<?php endif; ?>
-                                    </td>
-                                    <td><?= reportEsc($row['session_id']) ?></td>
                                     <td><?= reportDate($row['date']) ?></td>
 
                                 <?php elseif ($type === 'photos'): ?>
