@@ -52,12 +52,13 @@ if (!function_exists('checkBookingConflict')) {
         if ($newStart === false) return [['error' => 'invalid_time']];
         $newEnd = $newStart + ($durationMinutes * 60);
 
+        // KASAMA NA ANG PENDING SA SERVER-SIDE CHECK PARA HARANGIN ANG DOUBLE BOOKING
         $sql = "SELECT b.id, b.booking_ref, b.time, b.status, b.duration_minutes,
                        b.notes, p.duration AS pkg_duration, p.name AS pkg_name
                 FROM bookings b
                 JOIN packages p ON b.package_id = p.id
                 WHERE b.date = ?
-                  AND b.status IN ('Approved (Unpaid)', 'Deposit Paid', 'Confirmed', 'In Progress', 'Completed')";
+                  AND b.status IN ('Awaiting Approval', 'Approved (Unpaid)', 'Deposit Paid', 'Confirmed', 'In Progress', 'Completed')";
         $params = [$date];
         if ($excludeId) { $sql .= " AND b.id != ?"; $params[] = $excludeId; }
 
@@ -194,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         $conflicts = checkBookingConflict($date, $time, null, $adjustedMinutes);
         if (!empty($conflicts)) {
-            $errors[] = 'Schedule conflict detected. That date and time is already booked. Please choose another time.';
+            $errors[] = 'Schedule conflict detected. That date and time is already booked or pending. Please choose another time.';
         }
     }
 
@@ -306,513 +307,106 @@ $errors = $errors ?? [];
 <!-- ============================================================ -->
 <style>
 /* PAGE BANNER */
-.page-banner {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    background: linear-gradient(135deg, #2C2C2C, #4A4A4A);
-    color: #fff;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 14px;
-    width: 100%;
-    box-sizing: border-box;
-}
+.page-banner { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; background: linear-gradient(135deg, #2C2C2C, #4A4A4A); color: #fff; border-radius: 12px; padding: 16px; margin-bottom: 14px; width: 100%; box-sizing: border-box; }
 .page-banner-text { width: 100%; min-width: 0; }
-.page-banner .eyebrow {
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    opacity: 0.6;
-    margin-bottom: 6px;
-}
-.page-banner h2 {
-    font-size: 18px;
-    margin: 0 0 6px;
-    line-height: 1.25;
-    word-break: break-word;
-}
-.page-banner p {
-    font-size: 12px;
-    opacity: 0.8;
-    margin: 0;
-    line-height: 1.4;
-}
-.page-banner-art {
-    font-size: 32px;
-    align-self: flex-end;
-}
+.page-banner .eyebrow { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.6; margin-bottom: 6px; }
+.page-banner h2 { font-size: 18px; margin: 0 0 6px; line-height: 1.25; word-break: break-word; }
+.page-banner p { font-size: 12px; opacity: 0.8; margin: 0; line-height: 1.4; }
+.page-banner-art { font-size: 32px; align-self: flex-end; }
 
 /* ALERT */
-.alert {
-    display: flex;
-    gap: 10px;
-    padding: 12px 14px;
-    border-radius: 10px;
-    font-size: 13px;
-    margin-bottom: 14px;
-    align-items: flex-start;
-}
+.alert { display: flex; gap: 10px; padding: 12px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 14px; align-items: flex-start; }
 .alert ul { padding-left: 16px; }
 .alert li { margin: 2px 0; }
 
 /* LOYALTY BANNER */
-.loyalty-banner {
-    padding: 14px 16px;
-    background: linear-gradient(135deg, #0A0A0A, #2A2A2A);
-    color: #fff;
-    border-radius: 12px;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    box-sizing: border-box;
-}
+.loyalty-banner { padding: 14px 16px; background: linear-gradient(135deg, #0A0A0A, #2A2A2A); color: #fff; border-radius: 12px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; box-sizing: border-box; }
 .loyalty-banner .loyalty-icon { font-size: 28px; flex-shrink: 0; }
-.loyalty-banner .loyalty-info {
-    flex: 1 1 100%;
-    min-width: 0;
-    order: 3;
-}
-.loyalty-banner .loyalty-tier {
-    font-weight: 800;
-    font-size: 14px;
-    letter-spacing: 0.3px;
-    word-break: break-word;
-}
-.loyalty-banner .loyalty-desc {
-    font-size: 12px;
-    opacity: 0.85;
-    margin-top: 4px;
-    line-height: 1.4;
-}
-.loyalty-banner .loyalty-badge {
-    padding: 6px 14px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 50px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-    margin-left: auto;
-}
+.loyalty-banner .loyalty-info { flex: 1 1 100%; min-width: 0; order: 3; }
+.loyalty-banner .loyalty-tier { font-weight: 800; font-size: 14px; letter-spacing: 0.3px; word-break: break-word; }
+.loyalty-banner .loyalty-desc { font-size: 12px; opacity: 0.85; margin-top: 4px; line-height: 1.4; }
+.loyalty-banner .loyalty-badge { padding: 6px 14px; background: rgba(255,255,255,0.15); border-radius: 50px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; white-space: nowrap; margin-left: auto; }
 
 /* SECTION TITLE */
-.section-title {
-    font-size: 15px;
-    margin-bottom: 12px;
-    line-height: 1.3;
-    word-break: break-word;
-}
+.section-title { font-size: 15px; margin-bottom: 12px; line-height: 1.3; word-break: break-word; }
 
 /* MAIN PACKAGES GRID */
-.backdrop-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-}
-.backdrop-card {
-    cursor: pointer;
-    border-radius: 14px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    border: 1px solid var(--border);
-    background: #fff;
-    box-sizing: border-box;
-    min-width: 0;
-}
-.backdrop-card .backdrop-color {
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 48px;
-}
+.backdrop-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.backdrop-card { cursor: pointer; border-radius: 14px; overflow: hidden; transition: all 0.3s ease; border: 1px solid var(--border); background: #fff; box-sizing: border-box; min-width: 0; }
+.backdrop-card .backdrop-color { height: 120px; display: flex; align-items: center; justify-content: center; font-size: 48px; }
 .backdrop-card .backdrop-info { padding: 14px; }
-.backdrop-card .backdrop-info h4 {
-    font-size: 15px;
-    font-weight: 700;
-    margin: 0 0 4px;
-    word-break: break-word;
-}
-.backdrop-card .backdrop-info p {
-    font-size: 12px;
-    color: var(--muted);
-    margin: 0 0 10px;
-    line-height: 1.4;
-    word-break: break-word;
-}
-.backdrop-card .backdrop-info .feat-list {
-    font-size: 12px;
-    color: var(--dark2);
-    margin-bottom: 12px;
-}
+.backdrop-card .backdrop-info h4 { font-size: 15px; font-weight: 700; margin: 0 0 4px; word-break: break-word; }
+.backdrop-card .backdrop-info p { font-size: 12px; color: var(--muted); margin: 0 0 10px; line-height: 1.4; word-break: break-word; }
+.backdrop-card .backdrop-info .feat-list { font-size: 12px; color: var(--dark2); margin-bottom: 12px; }
 
 /* SUB-PACKAGES GRID */
-#sub-packages-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 14px;
-    align-items: stretch;
-}
+#sub-packages-grid { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: stretch; }
 
 /* PACKAGE CARD */
-.package-card {
-    border: 2px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    transition: 0.3s;
-    background: white;
-    display: flex;
-    flex-direction: column;
-    min-height: auto;
-    position: relative;
-    box-sizing: border-box;
-    min-width: 0;
-}
-.package-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-}
-.package-card .popular-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: var(--dark);
-    color: white;
-    padding: 4px 10px;
-    border-radius: 50px;
-    font-size: 9px;
-    font-weight: 700;
-    z-index: 5;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-.package-card .card-image {
-    height: 180px;
-    position: relative;
-    flex-shrink: 0;
-    overflow: hidden;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.package-card .card-image .package-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center;
-    display: block;
-    padding: 4px;
-}
-.package-card .card-image .overlay {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    padding: 8px 12px;
-    background: linear-gradient(transparent, rgba(0,0,0,0.75));
-    pointer-events: none;
-}
-.package-card .card-image .overlay .name {
-    color: white;
-    font-weight: 700;
-    font-size: 14px;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-    word-break: break-word;
-}
-.package-card .card-image .overlay .duration {
-    color: rgba(255,255,255,0.95);
-    font-size: 11px;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-}
-.package-card .card-body {
-    padding: 12px 14px 14px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-.package-card .card-body .price {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--dark);
-    line-height: 1.2;
-}
-.package-card .card-body .max-pax {
-    font-size: 11px;
-    color: var(--muted);
-}
-.package-card .card-body .features {
-    flex: 0 0 auto;
-    margin: 4px 0 8px;
-    padding: 0;
-    list-style: none;
-}
-.package-card .card-body .features li {
-    padding: 2px 0;
-    color: var(--dark2);
-    font-size: 11px;
-    display: flex;
-    align-items: flex-start;
-    gap: 4px;
-    line-height: 1.35;
-}
-.package-card .card-body .features li::before {
-    content: "✓";
-    color: var(--green);
-    font-weight: 700;
-    flex-shrink: 0;
-}
-.package-card .card-body .print-inclusions {
-    margin-top: auto;
-    margin-bottom: 8px;
-    padding: 5px 10px;
-    background: var(--amber-bg);
-    border-radius: 6px;
-    font-size: 10px;
-    color: var(--amber-text);
-    border: 1px solid var(--amber);
-    flex-shrink: 0;
-}
-.package-card .card-body .btn-book {
-    margin-top: 0;
-    width: 100%;
-    padding: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    background: var(--dark);
-    color: white;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: 0.2s;
-    flex-shrink: 0;
-    letter-spacing: 0.5px;
-}
-.package-card .card-body .btn-book:hover {
-    background: #1A1A1A;
-    transform: scale(1.02);
-}
+.package-card { border: 2px solid var(--border); border-radius: 12px; overflow: hidden; transition: 0.3s; background: white; display: flex; flex-direction: column; min-height: auto; position: relative; box-sizing: border-box; min-width: 0; }
+.package-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+.package-card .popular-badge { position: absolute; top: 10px; right: 10px; background: var(--dark); color: white; padding: 4px 10px; border-radius: 50px; font-size: 9px; font-weight: 700; z-index: 5; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.package-card .card-image { height: 180px; position: relative; flex-shrink: 0; overflow: hidden; background: #fff; display: flex; align-items: center; justify-content: center; }
+.package-card .card-image .package-img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; padding: 4px; }
+.package-card .card-image .overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 8px 12px; background: linear-gradient(transparent, rgba(0,0,0,0.75)); pointer-events: none; }
+.package-card .card-image .overlay .name { color: white; font-weight: 700; font-size: 14px; text-shadow: 0 1px 4px rgba(0,0,0,0.5); word-break: break-word; }
+.package-card .card-image .overlay .duration { color: rgba(255,255,255,0.95); font-size: 11px; text-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+.package-card .card-body { padding: 12px 14px 14px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.package-card .card-body .price { font-size: 20px; font-weight: 700; color: var(--dark); line-height: 1.2; }
+.package-card .card-body .max-pax { font-size: 11px; color: var(--muted); }
+.package-card .card-body .features { flex: 0 0 auto; margin: 4px 0 8px; padding: 0; list-style: none; }
+.package-card .card-body .features li { padding: 2px 0; color: var(--dark2); font-size: 11px; display: flex; align-items: flex-start; gap: 4px; line-height: 1.35; }
+.package-card .card-body .features li::before { content: "✓"; color: var(--green); font-weight: 700; flex-shrink: 0; }
+.package-card .card-body .print-inclusions { margin-top: auto; margin-bottom: 8px; padding: 5px 10px; background: var(--amber-bg); border-radius: 6px; font-size: 10px; color: var(--amber-text); border: 1px solid var(--amber); flex-shrink: 0; }
+.package-card .card-body .btn-book { margin-top: 0; width: 100%; padding: 10px; font-size: 13px; font-weight: 600; background: var(--dark); color: white; border: none; border-radius: 50px; cursor: pointer; transition: 0.2s; flex-shrink: 0; letter-spacing: 0.5px; }
+.package-card .card-body .btn-book:hover { background: #1A1A1A; transform: scale(1.02); }
 
 /* BOOKING FORM SECTION */
-#booking-form-section .booking-form-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
-}
+#booking-form-section .booking-form-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
 
 /* CALENDAR */
-.calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 3px;
-}
-.calendar-day-label {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--muted);
-    text-align: center;
-    padding: 4px 0;
-}
-.calendar-date {
-    text-align: center;
-    padding: 6px 0;
-    border-radius: 6px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: 0.2s;
-    font-weight: 600;
-}
-.calendar-date.date-available {
-    background: var(--green-bg);
-    color: #1B5E20;
-    border: 2px solid #2E7D32;
-}
-.calendar-date.date-available:hover {
-    background: #2E7D32;
-    color: white;
-    transform: scale(1.08);
-}
-.calendar-date.date-booked {
-    background: var(--red-bg);
-    color: #8E0000;
-    border: 2px solid #C62828;
-    cursor: not-allowed;
-    opacity: 0.75;
-}
-.calendar-date.date-past {
-    background: #EEEEEE;
-    color: #616161;
-    border: 2px solid #BDBDBD;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.calendar-day-label { font-size: 10px; font-weight: 700; color: var(--muted); text-align: center; padding: 4px 0; }
+.calendar-date { text-align: center; padding: 6px 0; border-radius: 6px; font-size: 12px; cursor: pointer; transition: 0.2s; font-weight: 600; }
+.calendar-date.date-available { background: var(--green-bg); color: #1B5E20; border: 2px solid #2E7D32; }
+.calendar-date.date-available:hover { background: #2E7D32; color: white; transform: scale(1.08); }
+.calendar-date.date-booked { background: var(--red-bg); color: #8E0000; border: 2px solid #C62828; cursor: not-allowed; opacity: 0.75; }
+.calendar-date.date-past { background: #EEEEEE; color: #616161; border: 2px solid #BDBDBD; cursor: not-allowed; opacity: 0.6; }
+.calendar-date.date-pending { background: var(--amber-bg); color: #E65100; border: 2px solid #F9A825; cursor: pointer; }
+.calendar-date.date-pending:hover { background: #F9A825; color: white; transform: scale(1.08); }
 
 /* LEGEND */
-.calendar-legend {
-    margin-top: 14px;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 6px;
-    font-size: 11px;
-}
-.calendar-legend .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px;
-    border-radius: 6px;
-}
+.calendar-legend { margin-top: 14px; display: grid; grid-template-columns: 1fr; gap: 6px; font-size: 11px; }
+.calendar-legend .legend-item { display: flex; align-items: center; gap: 6px; padding: 6px; border-radius: 6px; }
 
 /* FORM GROUP */
 .form-group { margin-bottom: 12px; }
-.form-group label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 13px;
-}
-.form-group input,
-.form-group textarea,
-.form-group select {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    font-size: 14px;
-    box-sizing: border-box;
-    font-family: inherit;
-}
+.form-group label { display: block; margin-bottom: 6px; font-size: 13px; }
+.form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 14px; box-sizing: border-box; font-family: inherit; }
 .form-group textarea { min-height: 60px; resize: vertical; }
 
 /* BOOKED SLOTS */
-.booked-slots-panel {
-    padding: 12px;
-    background: var(--bg-soft);
-    border-radius: 12px;
-    position: static;
-}
-.booked-slots-panel .panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-.booked-slots-panel .panel-header > div:first-child {
-    font-size: 13px;
-    font-weight: 700;
-}
-.booked-slots-panel .panel-header .date-controls {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-wrap: wrap;
-}
-.booked-slots-panel .panel-header input[type="date"] {
-    padding: 4px 8px;
-    border-radius: 4px;
-    border: 1px solid var(--border);
-    font-size: 12px;
-    width: 130px;
-    max-width: 100%;
-}
-.booked-slots-panel .panel-header button {
-    padding: 2px 8px;
-    font-size: 11px;
-}
-
-#booked-slots-display {
-    background: white;
-    border-radius: 8px;
-    padding: 12px;
-    min-height: 200px;
-    border: 1px solid var(--border);
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-#booking-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    margin-top: 10px;
-}
-#booking-stats > div {
-    background: white;
-    padding: 6px 8px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    text-align: center;
-    min-width: 0;
-}
-#booking-stats > div .stat-label {
-    font-size: 9px;
-    color: var(--muted);
-    white-space: nowrap;
-}
-#booking-stats > div .stat-number {
-    font-size: 15px;
-    font-weight: 700;
-}
-
-/* SLOT COLOR LEGEND */
-.slot-color-legend {
-    margin-top: 10px;
-    padding: 10px;
-    background: white;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-}
-.slot-color-legend .legend-title {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--dark);
-    margin-bottom: 6px;
-}
-.slot-color-legend .legend-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 11px;
-    padding: 3px 0;
-}
-.slot-color-legend .legend-swatch {
-    width: 14px;
-    height: 14px;
-    border-radius: 4px;
-    flex-shrink: 0;
-}
-
-/* BOOKING SUMMARY */
-#booking-summary {
-    margin-top: 10px;
-    padding: 10px;
-    background: white;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    display: none;
-}
-#booking-summary .summary-title {
-    font-size: 11px;
-    font-weight: 700;
-    margin-bottom: 4px;
-    color: var(--dark);
-}
-
-/* FORM ACTIONS */
-.form-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
+.booked-slots-panel { padding: 12px; background: var(--bg-soft); border-radius: 12px; position: static; }
+.booked-slots-panel .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+.booked-slots-panel .panel-header > div:first-child { font-size: 13px; font-weight: 700; }
+.booked-slots-panel .panel-header .date-controls { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.booked-slots-panel .panel-header input[type="date"] { padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); font-size: 12px; width: 130px; max-width: 100%; }
+.booked-slots-panel .panel-header button { padding: 2px 8px; font-size: 11px; }
+#booked-slots-display { background: white; border-radius: 8px; padding: 12px; min-height: 200px; border: 1px solid var(--border); max-height: 300px; overflow-y: auto; }
+#booking-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+#booking-stats > div { background: white; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); text-align: center; min-width: 0; }
+#booking-stats > div .stat-label { font-size: 9px; color: var(--muted); white-space: nowrap; }
+#booking-stats > div .stat-number { font-size: 15px; font-weight: 700; }
+.slot-color-legend { margin-top: 10px; padding: 10px; background: white; border-radius: 6px; border: 1px solid var(--border); }
+.slot-color-legend .legend-title { font-size: 11px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
+.slot-color-legend .legend-row { display: flex; align-items: center; gap: 8px; font-size: 11px; padding: 3px 0; }
+.slot-color-legend .legend-swatch { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+#booking-summary { margin-top: 10px; padding: 10px; background: white; border-radius: 6px; border: 1px solid var(--border); display: none; }
+#booking-summary .summary-title { font-size: 11px; font-weight: 700; margin-bottom: 4px; color: var(--dark); }
+.form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .form-actions button { flex: 1 1 auto; min-width: 120px; }
 
-/* ============================================================ */
-/* RESPONSIVE                                                    */
-/* ============================================================ */
+/* RESPONSIVE */
 @media (min-width: 380px) {
     .page-banner h2 { font-size: 19px; }
     .backdrop-card .backdrop-color { height: 130px; font-size: 52px; }
@@ -821,136 +415,87 @@ $errors = $errors ?? [];
     .calendar-legend .legend-item { padding: 5px; font-size: 10px; }
     .package-card .card-image { height: 200px; }
 }
-
 @media (min-width: 600px) {
-    .page-banner {
-        flex-direction: row;
-        align-items: center;
-        padding: 20px 24px;
-        border-radius: 14px;
-    }
+    .page-banner { flex-direction: row; align-items: center; padding: 20px 24px; border-radius: 14px; }
     .page-banner h2 { font-size: 22px; }
     .page-banner-art { font-size: 40px; align-self: center; }
-
-    .loyalty-banner {
-        padding: 16px 20px;
-        border-radius: 14px;
-        flex-wrap: nowrap;
-    }
+    .loyalty-banner { padding: 16px 20px; border-radius: 14px; flex-wrap: nowrap; }
     .loyalty-banner .loyalty-icon { font-size: 32px; }
     .loyalty-banner .loyalty-info { order: 0; flex: 1; }
     .loyalty-banner .loyalty-tier { font-size: 15px; }
-
     .backdrop-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
     .backdrop-card .backdrop-color { height: 140px; font-size: 56px; }
     .backdrop-card .backdrop-info h4 { font-size: 16px; }
-
     #sub-packages-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-
     .package-card { min-height: 540px; }
     .package-card .card-image { height: 190px; }
-
     .calendar-date { font-size: 13px; }
     .booked-slots-panel { padding: 14px; }
 }
-
 @media (min-width: 768px) {
     .page-banner { padding: 24px 28px; border-radius: 16px; gap: 20px; }
     .page-banner h2 { font-size: 24px; }
     .page-banner p { font-size: 13px; }
     .page-banner-art { font-size: 48px; }
-
     .loyalty-banner { padding: 18px 22px; }
     .loyalty-banner .loyalty-tier { font-size: 16px; }
     .loyalty-banner .loyalty-desc { font-size: 13px; }
-
     .section-title { font-size: 17px; }
-
     .backdrop-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
     .backdrop-card .backdrop-color { height: 150px; font-size: 60px; }
-
     #sub-packages-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; }
-
     .package-card .card-image { height: 200px; }
     .package-card .card-body .price { font-size: 22px; }
-
-    #booking-form-section .booking-form-grid {
-        grid-template-columns: 1fr 1.2fr;
-        gap: 20px;
-    }
+    #booking-form-section .booking-form-grid { grid-template-columns: 1fr 1.2fr; gap: 20px; }
     .booked-slots-panel { position: sticky; top: 20px; }
-
-    .form-group input,
-    .form-group textarea,
-    .form-group select { font-size: 14px; padding: 10px 14px; }
-
+    .form-group input, .form-group textarea, .form-group select { font-size: 14px; padding: 10px 14px; }
     .calendar-grid { gap: 4px; }
     .calendar-date { padding: 8px 0; font-size: 14px; }
     .calendar-day-label { font-size: 11px; }
-
     #booked-slots-display { min-height: 250px; max-height: 350px; }
     #booking-stats > div .stat-number { font-size: 16px; }
     #booking-stats > div .stat-label { font-size: 10px; }
 }
-
 @media (min-width: 1024px) {
     .page-banner { padding: 28px 32px; }
     .page-banner h2 { font-size: 26px; }
     .page-banner-art { font-size: 52px; }
-
     .loyalty-banner { padding: 16px 20px; }
     .loyalty-banner .loyalty-icon { font-size: 36px; }
-
     .backdrop-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; }
     .backdrop-card .backdrop-color { height: 140px; font-size: 56px; }
-
-    #sub-packages-grid {
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 16px;
-    }
-
+    #sub-packages-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
     .package-card { min-height: 560px; }
     .package-card .card-image { height: 200px; }
 }
-
 @media (min-width: 1440px) {
     .page-banner { padding: 32px 40px; border-radius: 18px; }
     .page-banner h2 { font-size: 30px; }
     .page-banner p { font-size: 14px; }
     .page-banner-art { font-size: 64px; }
-
     .backdrop-grid { gap: 22px; }
     .backdrop-card .backdrop-color { height: 160px; font-size: 64px; }
-
     #sub-packages-grid { gap: 20px; }
     .package-card { min-height: 580px; }
     .package-card .card-image { height: 220px; }
     .package-card .card-body .price { font-size: 24px; }
-
     #booking-form-section .booking-form-grid { gap: 24px; }
 }
-
 @media (min-width: 1920px) {
     .page-banner { padding: 36px 48px; }
     .page-banner h2 { font-size: 34px; }
-
     .backdrop-grid { gap: 24px; }
     .package-card { min-height: 600px; }
     .package-card .card-image { height: 240px; }
 }
-
 @media (max-height: 500px) and (orientation: landscape) {
     .page-banner { padding: 12px 16px; }
     .page-banner h2 { font-size: 18px; }
     .page-banner-art { font-size: 32px; }
     .calendar-date { padding: 4px 0; font-size: 11px; }
 }
-
 @media print {
-    .page-banner-art,
-    .btn-book,
-    .btn-primary,
-    .btn-ghost { display: none !important; }
+    .page-banner-art, .btn-book, .btn-primary, .btn-ghost { display: none !important; }
     .package-card { break-inside: avoid; }
 }
 </style>
@@ -1094,6 +639,7 @@ $errors = $errors ?? [];
           </div>
           <div id="cal-grid" class="calendar-grid"></div>
           
+          <!-- ✅ LEGEND SA ILALIM NG CALENDAR (GREEN, RED, YELLOW) -->
           <div class="calendar-legend">
             <div class="legend-item" style="background:var(--green-bg);border:2px solid #2E7D32;">
               <div style="width:14px;height:14px;border-radius:3px;background:#2E7D32;flex-shrink:0;"></div>
@@ -1103,9 +649,9 @@ $errors = $errors ?? [];
               <div style="width:14px;height:14px;border-radius:3px;background:#C62828;flex-shrink:0;"></div>
               <strong style="color:#8E0000;">Booked</strong>
             </div>
-            <div class="legend-item" style="background:#EEEEEE;border:2px solid #9E9E9E;">
-              <div style="width:14px;height:14px;border-radius:3px;background:#757575;flex-shrink:0;"></div>
-              <strong style="color:#424242;">Past</strong>
+            <div class="legend-item" style="background:var(--amber-bg);border:2px solid #F9A825;">
+              <div style="width:14px;height:14px;border-radius:3px;background:#F9A825;flex-shrink:0;"></div>
+              <strong style="color:#E65100;">Pending</strong>
             </div>
           </div>
         </div>
@@ -1132,15 +678,12 @@ $errors = $errors ?? [];
               <?php endif; ?>
             </div>
 
-            <!-- ✅ CHANGE #1: DATE label tinanggal -->
             <div class="form-group">
               <input type="date" name="date" id="form-date" required min="<?= date('Y-m-d') ?>" style="background:white;font-weight:600;" onchange="onDateSelect(this.value)">
             </div>
 
             <div class="form-group">
               <label><strong>⏰ Select Time</strong> <span style="font-size:11px;color:var(--muted);font-weight:400;">(10:00 AM – 7:00 PM)</span></label>
-
-              <!-- ✅ CHANGE #2: Conflict Prevention banner tinanggal -->
               
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <input type="text" name="time" id="form-time" required placeholder="e.g., 10:30 AM" style="background:white;font-weight:600;flex:1 1 180px;min-width:0;text-transform:uppercase;" oninput="checkTimeAvailability(this.value)">
@@ -1148,9 +691,7 @@ $errors = $errors ?? [];
               </div>
               
               <div id="booked-times-display" style="margin-top:8px;padding:10px;background:var(--bg-soft);border-radius:6px;border:1px solid var(--border);display:none;">
-                <div style="font-size:11px;font-weight:600;color:var(--dark);margin-bottom:6px;">
-                  📋 Existing Bookings
-                </div>
+                <div style="font-size:11px;font-weight:600;color:var(--dark);margin-bottom:6px;">📋 Existing Bookings</div>
                 <div id="booked-times-list" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
               </div>
               
@@ -1202,21 +743,11 @@ $errors = $errors ?? [];
           </div>
 
           <div id="booking-stats">
-            <div>
-              <div class="stat-label">Total</div>
-              <div class="stat-number" id="stat-total">0</div>
-            </div>
-            <div>
-              <div class="stat-label">Booked</div>
-              <div class="stat-number" style="color:var(--red-text);" id="stat-booked">0</div>
-            </div>
-            <div>
-              <div class="stat-label">Available</div>
-              <div class="stat-number" style="color:var(--green-text);" id="stat-available">0</div>
-            </div>
+            <div><div class="stat-label">Total</div><div class="stat-number" id="stat-total">0</div></div>
+            <div><div class="stat-label">Booked</div><div class="stat-number" style="color:var(--red-text);" id="stat-booked">0</div></div>
+            <div><div class="stat-label">Available</div><div class="stat-number" style="color:var(--green-text);" id="stat-available">0</div></div>
           </div>
 
-          <!-- ✅ CHANGE #3: Slot Color Legend cleaned (walang "Past", walang mahabang sentences) -->
           <div class="slot-color-legend">
             <div class="legend-title">🎨 Slot Color Legend</div>
             <div class="legend-row">
@@ -1604,7 +1135,7 @@ function updateBookedSlotsDisplay(date) {
         html += `
             <div style="margin-top:6px;padding:6px 10px;background:var(--amber-bg);border-radius:4px;border:1px solid var(--amber);">
                 <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--amber-text);">
-                    <span>⏳ Pending slots (pwede pa mag-book)</span>
+                    <span>⏳ Pending slots (naka-hold)</span>
                     <span style="font-weight:700;">${pendingSlots.length} slots</span>
                 </div>
                 <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;">
@@ -1731,6 +1262,7 @@ function checkTimeAvailability(timeStr) {
         submitBtn.disabled = true; return;
     }
 
+    // --- CONFLICT DETECTED (PULA) ---
     if (isSlotConfirmed(date, timeStr, selectedPackageDuration)) {
         const booked = getBookedSlotsForDate(date);
         let conflictInfo = '';
@@ -1764,8 +1296,27 @@ function checkTimeAvailability(timeStr) {
         return;
     }
 
-    const hasPending = isSlotPending(date, timeStr, selectedPackageDuration);
+    // --- PENDING HOLD (DILAW) ---
+    if (isSlotPending(date, timeStr, selectedPackageDuration)) {
+        statusDiv.innerHTML = `
+            <div style="padding:12px;background:var(--amber-bg);border-radius:6px;border-left:4px solid #E65100;">
+                <div style="color:#E65100;font-weight:700;font-size:13px;">⏳ Schedule Pending</div>
+                <div style="font-size:12px;color:#E65100;margin-top:4px;">
+                    This time slot is currently on hold for another client's pending request. Please choose another time.
+                </div>
+                <div style="font-size:11px;color:var(--dark2);margin-top:8px;padding:6px 8px;background:white;border-radius:4px;line-height:1.4;">
+                    💡 <strong>Solution:</strong> Please choose a different time or click <strong>"Quick Times ▼"</strong>.
+                </div>
+            </div>`;
+        submitBtn.disabled = true;
+        summaryDiv.style.display = 'none';
+        selectedTime = '';
+        updateBookedSlotsDisplay(date);
+        showBookedTimes(date);
+        return;
+    }
 
+    // --- AVAILABLE (BERDE) ---
     selectedTime = timeStr;
     const endTime = formatTime(endMinutes);
     
@@ -1787,11 +1338,7 @@ function checkTimeAvailability(timeStr) {
         durationDisplay = `${baseText} <span style="color:#F59E0B;font-weight:700;">+ ${LOYALTY_BONUS_MINUTES} min loyalty</span> = <strong>${adjText}</strong>`;
     }
 
-    if (hasPending) {
-        statusDiv.innerHTML = `<span style="color:var(--amber-text);font-weight:600;">⚠️ May pending request na ito. Pwede ka pa ring mag-book — i-review ng staff.</span>`;
-    } else {
-        statusDiv.innerHTML = `<span style="color:var(--green-text);font-weight:600;">✅ Available! ${timeStr} → ${endTime} (${durationDisplay})</span>`;
-    }
+    statusDiv.innerHTML = `<span style="color:var(--green-text);font-weight:600;">✅ Available! ${timeStr} → ${endTime} (${durationDisplay})</span>`;
     submitBtn.disabled = false;
 
     summaryDiv.style.display = 'block';
@@ -1809,7 +1356,6 @@ function checkTimeAvailability(timeStr) {
             ` : ''}
             <span style="color:var(--muted);">Total Duration:</span>
             <span style="font-weight:700;color:var(--dark);">${adjText}</span>
-            ${hasPending ? `<span style="color:var(--muted);">Note:</span><span style="font-weight:500;color:var(--amber-text);">May pending request</span>` : ''}
         </div>`;
 
     updateBookedSlotsDisplay(date);
@@ -1905,11 +1451,13 @@ function renderCalendar() {
         const isTodayCell = ds === SERVER_TODAY;
 
         let hasAvailable = false;
+        let hasPending = false;
         let allPast = false;
         if (!isPast && selectedPackageDuration) {
             const map = getSlotMap(ds, selectedPackageDuration);
             hasAvailable = map.available.length > 0;
-            allPast = isTodayCell && !hasAvailable && map.past.length > 0;
+            hasPending = map.pending.length > 0;
+            allPast = isTodayCell && !hasAvailable && !hasPending && map.past.length > 0;
         }
 
         let cls = 'calendar-date';
@@ -1917,7 +1465,8 @@ function renderCalendar() {
 
         if (isPast) { cls += ' date-past'; statusText = 'Past'; }
         else if (allPast) { cls += ' date-past'; statusText = 'All slots today have passed'; }
-        else if (!hasAvailable && selectedPackageDuration) { cls += ' date-booked'; statusText = 'Fully Booked'; }
+        else if (!hasAvailable && hasPending && selectedPackageDuration) { cls += ' date-pending'; statusText = 'Pending Only'; }
+        else if (!hasAvailable && !hasPending && selectedPackageDuration) { cls += ' date-booked'; statusText = 'Fully Booked'; }
         else { cls += ' date-available'; statusText = 'Available'; }
 
         const cell = document.createElement('div');
