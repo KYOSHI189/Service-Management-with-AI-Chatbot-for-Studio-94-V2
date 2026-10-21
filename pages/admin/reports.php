@@ -854,32 +854,24 @@ function getReportData($type, $from, $to, PDO $pdo)
 
 
         // ====================================================
-        // 8. CHATBOT
+        // 8. CHATBOT (FIXED VERSION)
         // ====================================================
 
         case 'chatbot':
 
+            // Use LEFT JOINs to ensure messages are pulled even if sessions/users are missing.
             $stmt = $pdo->prepare("
                 SELECT
-                    u.name AS user,
+                    COALESCE(u.name, 'Guest') AS user,
                     cm.message,
                     cm.type,
-                    cs.id AS session_id,
+                    cm.session_id,
                     cm.created_at AS date
-
                 FROM chat_messages cm
-
-                INNER JOIN chat_sessions cs
-                    ON cm.session_id = cs.id
-
-                LEFT JOIN users u
-                    ON cs.user_id = u.id
-
+                LEFT JOIN chat_sessions cs ON cm.session_id = cs.id
+                LEFT JOIN users u ON cs.user_id = u.id
                 WHERE DATE(cm.created_at) BETWEEN ? AND ?
-
-                ORDER BY
-                    cs.id ASC,
-                    cm.created_at ASC
+                ORDER BY cm.session_id ASC, cm.created_at ASC
             ");
 
             $stmt->execute([
@@ -892,38 +884,28 @@ function getReportData($type, $from, $to, PDO $pdo)
             $data = [];
             $temp = [];
 
-
             // Group by session
             foreach ($rawData as $row) {
-
-                $sessionId = $row['session_id'];
-
+                $sessionId = $row['session_id'] ?? 0; // Fallback to 0 if null
                 if (!isset($temp[$sessionId])) {
                     $temp[$sessionId] = [];
                 }
-
                 $temp[$sessionId][] = $row;
             }
 
-
             // Pair user message and bot reply
             foreach ($temp as $sessionId => $messages) {
-
                 $userMsg = '';
-                $lastUser = '';
+                $lastUser = 'Client';
                 $userDate = '';
 
                 foreach ($messages as $msg) {
+                    $messageType = strtolower(trim((string)$msg['type']));
 
-                    $messageType = strtolower(
-                        trim((string)$msg['type'])
-                    );
-
-                    if ($messageType === 'user') {
-
+                    // Check if it's a user message
+                    if ($messageType === 'user' || $messageType === 'client') {
                         // Save previous unanswered message
                         if ($userMsg !== '') {
-
                             $data[] = [
                                 'user'       => $lastUser,
                                 'message'    => $userMsg,
@@ -932,20 +914,13 @@ function getReportData($type, $from, $to, PDO $pdo)
                                 'date'       => $userDate
                             ];
                         }
-
                         $userMsg  = $msg['message'];
                         $lastUser = $msg['user'] ?? 'Client';
                         $userDate = $msg['date'];
 
-                    } elseif (
-                        in_array(
-                            $messageType,
-                            ['bot', 'assistant'],
-                            true
-                        )
-                        && $userMsg !== ''
-                    ) {
-
+                    } 
+                    // Check if it's a bot reply
+                    elseif (in_array($messageType, ['bot', 'assistant', 'ai'], true) && $userMsg !== '') {
                         $data[] = [
                             'user'       => $lastUser,
                             'message'    => $userMsg,
@@ -953,17 +928,14 @@ function getReportData($type, $from, $to, PDO $pdo)
                             'session_id' => $sessionId,
                             'date'       => $msg['date']
                         ];
-
                         $userMsg  = '';
                         $lastUser = '';
                         $userDate = '';
                     }
                 }
 
-
                 // Remaining unanswered message
                 if ($userMsg !== '') {
-
                     $data[] = [
                         'user'       => $lastUser,
                         'message'    => $userMsg,
@@ -974,15 +946,10 @@ function getReportData($type, $from, $to, PDO $pdo)
                 }
             }
 
-
-            // Newest first
-            usort(
-                $data,
-                function ($a, $b) {
-                    return strtotime($b['date'])
-                        <=> strtotime($a['date']);
-                }
-            );
+            // Sort newest first
+            usort($data, function ($a, $b) {
+                return strtotime($b['date']) <=> strtotime($a['date']);
+            });
 
             break;
 
@@ -1043,7 +1010,6 @@ $fpdfLoaded = false;
 if (class_exists('FPDF')) {
     $fpdfLoaded = true;
 } else {
-
     $fpdfPaths = [
         __DIR__ . '/../../includes/fpdf/fpdf.php',
         __DIR__ . '/../../includes/fpdf.php',
@@ -1052,11 +1018,8 @@ if (class_exists('FPDF')) {
     ];
 
     foreach ($fpdfPaths as $path) {
-
         if (file_exists($path)) {
-
             require_once $path;
-
             if (class_exists('FPDF')) {
                 $fpdfLoaded = true;
                 break;
@@ -1070,62 +1033,23 @@ if (class_exists('FPDF')) {
 // ============================================================
 
 if ($fpdfLoaded) {
-
     class Studio94ReportPDF extends FPDF
     {
         public function safeEncode($txt)
         {
             $txt = (string)$txt;
-
-            $converted = @iconv(
-                'UTF-8',
-                'windows-1252//TRANSLIT//IGNORE',
-                $txt
-            );
-
-            return $converted !== false
-                ? $converted
-                : $txt;
+            $converted = @iconv('UTF-8', 'windows-1252//TRANSLIT//IGNORE', $txt);
+            return $converted !== false ? $converted : $txt;
         }
 
-        public function Cell(
-            $w,
-            $h = 0,
-            $txt = '',
-            $border = 0,
-            $ln = 0,
-            $align = '',
-            $fill = false,
-            $link = ''
-        ) {
-            parent::Cell(
-                $w,
-                $h,
-                $this->safeEncode($txt),
-                $border,
-                $ln,
-                $align,
-                $fill,
-                $link
-            );
+        public function Cell($w, $h = 0, $txt = '', $border = 0, $ln = 0, $align = '', $fill = false, $link = '')
+        {
+            parent::Cell($w, $h, $this->safeEncode($txt), $border, $ln, $align, $fill, $link);
         }
 
-        public function MultiCell(
-            $w,
-            $h,
-            $txt,
-            $border = 0,
-            $align = 'J',
-            $fill = false
-        ) {
-            parent::MultiCell(
-                $w,
-                $h,
-                $this->safeEncode($txt),
-                $border,
-                $align,
-                $fill
-            );
+        public function MultiCell($w, $h, $txt, $border = 0, $align = 'J', $fill = false)
+        {
+            parent::MultiCell($w, $h, $this->safeEncode($txt), $border, $align, $fill);
         }
     }
 }
@@ -1134,25 +1058,14 @@ if ($fpdfLoaded) {
 // PDF GENERATION
 // ============================================================
 
-function generateReportPDF(
-    $type,
-    $from,
-    $to,
-    $result,
-    $reportTypes
-) {
-
+function generateReportPDF($type, $from, $to, $result, $reportTypes)
+{
     global $fpdfLoaded;
 
     if (!$fpdfLoaded) {
-
         if (function_exists('setFlash')) {
-            setFlash(
-                'warning',
-                'PDF library was not found. Please check the FPDF installation.'
-            );
+            setFlash('warning', 'PDF library was not found. Please check the FPDF installation.');
         }
-
         header('Location: index.php?page=reports');
         exit;
     }
@@ -1164,413 +1077,119 @@ function generateReportPDF(
         ob_end_clean();
     }
 
-    $pdf = new Studio94ReportPDF(
-        'L',
-        'mm',
-        'A4'
-    );
-
+    $pdf = new Studio94ReportPDF('L', 'mm', 'A4');
     $pdf->SetMargins(8, 8, 8);
     $pdf->SetAutoPageBreak(true, 15);
     $pdf->AddPage();
 
-
-    // ========================================================
     // TITLE
-    // ========================================================
-
     $pdf->SetFont('Arial', 'B', 18);
     $pdf->SetTextColor(108, 99, 255);
-
-    $pdf->Cell(
-        0,
-        9,
-        'STUDIO 94 SNAPTRACK',
-        0,
-        1,
-        'C'
-    );
-
+    $pdf->Cell(0, 9, 'STUDIO 94 SNAPTRACK', 0, 1, 'C');
     $pdf->SetTextColor(0, 0, 0);
-
     $pdf->SetFont('Arial', 'B', 14);
-
-    $pdf->Cell(
-        0,
-        8,
-        $info['title'],
-        0,
-        1,
-        'C'
-    );
-
+    $pdf->Cell(0, 8, $info['title'], 0, 1, 'C');
     $pdf->SetFont('Arial', '', 9);
-
-    $pdf->Cell(
-        0,
-        6,
-        'Date Range: ' .
-        date('M d, Y', strtotime($from)) .
-        ' - ' .
-        date('M d, Y', strtotime($to)),
-        0,
-        1,
-        'C'
-    );
-
-    $pdf->Cell(
-        0,
-        6,
-        'Generated: ' .
-        date('F d, Y h:i A'),
-        0,
-        1,
-        'C'
-    );
-
+    $pdf->Cell(0, 6, 'Date Range: ' . date('M d, Y', strtotime($from)) . ' - ' . date('M d, Y', strtotime($to)), 0, 1, 'C');
+    $pdf->Cell(0, 6, 'Generated: ' . date('F d, Y h:i A'), 0, 1, 'C');
     $pdf->Ln(5);
 
-
-    // ========================================================
     // COLUMN WIDTHS
-    // ========================================================
-
     $widths = [
-
-        'inventory' => [
-            55, 45, 25, 25, 35
-        ],
-
-        'appointment' => [
-            35, 40, 50, 25, 20, 35, 25
-        ],
-
-        'payment' => [
-            35, 40, 50, 30, 30, 30, 25
-        ],
-
-        'sales' => [
-            55, 35, 50, 35, 35
-        ],
-
-        'loyalty' => [
-            50, 45, 35, 45, 30
-        ],
-
-        'analytics' => [
-            65, 40, 40, 40
-        ],
-
-        'evaluation' => [
-            45, 20, 35, 25, 100, 30
-        ],
-
-        'chatbot' => [
-            35, 75, 75, 25, 30
-        ],
-
-        'photos' => [
-            35, 40, 70, 45, 30, 30
-        ]
+        'inventory' => [55, 45, 25, 25, 35],
+        'appointment' => [35, 40, 50, 25, 20, 35, 25],
+        'payment' => [35, 40, 50, 30, 30, 30, 25],
+        'sales' => [55, 35, 50, 35, 35],
+        'loyalty' => [50, 45, 35, 45, 30],
+        'analytics' => [65, 40, 40, 40],
+        'evaluation' => [45, 20, 35, 25, 100, 30],
+        'chatbot' => [35, 75, 75, 25, 30],
+        'photos' => [35, 40, 70, 45, 30, 30]
     ];
 
     $colWidths = $widths[$type];
-
     $headers = $info['headers'];
 
-
-    // ========================================================
     // TABLE HEADER
-    // ========================================================
-
     $pdf->SetFont('Arial', 'B', 8);
-
-    $pdf->SetFillColor(
-        230,
-        230,
-        230
-    );
+    $pdf->SetFillColor(230, 230, 230);
 
     foreach ($headers as $index => $header) {
-
-        $width = $colWidths[$index]
-            ?? (277 / count($headers));
-
-        $pdf->Cell(
-            $width,
-            7,
-            $header,
-            1,
-            0,
-            'C',
-            true
-        );
+        $width = $colWidths[$index] ?? (277 / count($headers));
+        $pdf->Cell($width, 7, $header, 1, 0, 'C', true);
     }
-
     $pdf->Ln();
 
-
-    // ========================================================
     // TABLE BODY
-    // ========================================================
-
-    $pdf->SetFont(
-        'Arial',
-        '',
-        7
-    );
-
+    $pdf->SetFont('Arial', '', 7);
     $rowNum = 0;
 
-
     foreach ($data as $row) {
-
-        // --------------------------------------------
-        // Prepare row
-        // --------------------------------------------
-
         switch ($type) {
-
             case 'inventory':
-
-                $rowData = [
-                    $row['name'],
-                    $row['category'],
-                    $row['quantity'],
-                    $row['threshold'],
-                    $row['status']
-                ];
-
+                $rowData = [$row['name'], $row['category'], $row['quantity'], $row['threshold'], $row['status']];
                 break;
-
-
             case 'appointment':
-
-                $rowData = [
-                    $row['booking_ref'],
-                    $row['client'],
-                    $row['package'],
-                    $row['date'],
-                    $row['time'],
-                    $row['status'],
-                    $row['type']
-                ];
-
+                $rowData = [$row['booking_ref'], $row['client'], $row['package'], $row['date'], $row['time'], $row['status'], $row['type']];
                 break;
-
-
             case 'payment':
-
-                $rowData = [
-                    $row['payment_ref'],
-                    $row['client'],
-                    $row['package'],
-                    'PHP ' . number_format(
-                        (float)$row['amount'],
-                        2
-                    ),
-                    $row['method'] ?? '—',
-                    $row['status'],
-                    $row['date']
-                ];
-
+                $rowData = [$row['payment_ref'], $row['client'], $row['package'], 'PHP ' . number_format((float)$row['amount'], 2), $row['method'] ?? '—', $row['status'], $row['date']];
                 break;
-
-
             case 'sales':
-
-                $rowData = [
-                    $row['month_name'],
-                    $row['transactions'],
-                    'PHP ' . number_format(
-                        (float)$row['revenue'],
-                        2
-                    ),
-                    $row['walkin'],
-                    $row['online']
-                ];
-
+                $rowData = [$row['month_name'], $row['transactions'], 'PHP ' . number_format((float)$row['revenue'], 2), $row['walkin'], $row['online']];
                 break;
-
-
             case 'loyalty':
-
-                $rowData = [
-                    $row['client'],
-                    $row['card_number'],
-                    $row['total_bookings'],
-                    $row['rewards'],
-                    $row['status']
-                ];
-
+                $rowData = [$row['client'], $row['card_number'], $row['total_bookings'], $row['rewards'], $row['status']];
                 break;
-
-
             case 'analytics':
-
-                $rowData = [
-                    $row['metric'],
-                    $row['value'],
-                    $row['change'],
-                    $row['status']
-                ];
-
+                $rowData = [$row['metric'], $row['value'], $row['change'], $row['status']];
                 break;
-
-
             case 'evaluation':
-
                 $rating = (int)$row['rating_overall'];
-
-                $rating = max(
-                    0,
-                    min(5, $rating)
-                );
-
-                $stars =
-                    str_repeat('★', $rating) .
-                    str_repeat('☆', 5 - $rating);
-
-                $rowData = [
-                    $row['client'],
-                    $stars,
-                    ucfirst(
-                        $row['sentiment'] ?? '—'
-                    ),
-                    $row['urgent'],
-                    $row['comment'] ?? '—',
-                    $row['date']
-                ];
-
+                $rating = max(0, min(5, $rating));
+                $stars = str_repeat('★', $rating) . str_repeat('☆', 5 - $rating);
+                $rowData = [$row['client'], $stars, ucfirst($row['sentiment'] ?? '—'), $row['urgent'], $row['comment'] ?? '—', $row['date']];
                 break;
-
-
             case 'chatbot':
-
                 $message = (string)$row['message'];
                 $reply   = (string)($row['reply'] ?? '—');
-
                 $rowData = [
                     $row['user'],
-                    mb_substr($message, 0, 70) .
-                        (mb_strlen($message) > 70 ? '...' : ''),
-                    mb_substr($reply, 0, 70) .
-                        (mb_strlen($reply) > 70 ? '...' : ''),
+                    mb_substr($message, 0, 70) . (mb_strlen($message) > 70 ? '...' : ''),
+                    mb_substr($reply, 0, 70) . (mb_strlen($reply) > 70 ? '...' : ''),
                     $row['session_id'],
                     $row['date']
                 ];
-
                 break;
-
-
             case 'photos':
-
-                $rowData = [
-                    $row['booking_ref'],
-                    $row['client'],
-                    $row['photo'],
-                    $row['uploaded_by'],
-                    $row['status'],
-                    $row['date']
-                ];
-
+                $rowData = [$row['booking_ref'], $row['client'], $row['photo'], $row['uploaded_by'], $row['status'], $row['date']];
                 break;
-
-
             default:
-
                 $rowData = [];
-
                 break;
         }
 
-
-        // --------------------------------------------
-        // Alternating row fill
-        // --------------------------------------------
-
         $fill = ($rowNum % 2 === 0);
-
-        $pdf->SetFillColor(
-            248,
-            248,
-            248
-        );
-
-
-        // --------------------------------------------
-        // Normal rows
-        // --------------------------------------------
+        $pdf->SetFillColor(248, 248, 248);
 
         foreach ($rowData as $index => $cell) {
-
-            $width = $colWidths[$index]
-                ?? (277 / count($rowData));
-
-            $text = strip_tags(
-                (string)$cell
-            );
-
-            $pdf->Cell(
-                $width,
-                6,
-                mb_substr($text, 0, 100),
-                1,
-                0,
-                'L',
-                $fill
-            );
+            $width = $colWidths[$index] ?? (277 / count($rowData));
+            $text = strip_tags((string)$cell);
+            $pdf->Cell($width, 6, mb_substr($text, 0, 100), 1, 0, 'L', $fill);
         }
 
         $pdf->Ln();
-
         $rowNum++;
     }
 
-
-    // ========================================================
     // FOOTER
-    // ========================================================
-
     $pdf->Ln(5);
+    $pdf->SetFont('Arial', 'I', 8);
+    $pdf->Cell(0, 5, 'Generated by Studio 94 SnapTrack.', 0, 1, 'C');
+    $pdf->Cell(0, 5, 'Total Records: ' . count($data), 0, 1, 'C');
 
-    $pdf->SetFont(
-        'Arial',
-        'I',
-        8
-    );
-
-    $pdf->Cell(
-        0,
-        5,
-        'Generated by Studio 94 SnapTrack.',
-        0,
-        1,
-        'C'
-    );
-
-    $pdf->Cell(
-        0,
-        5,
-        'Total Records: ' . count($data),
-        0,
-        1,
-        'C'
-    );
-
-
-    $filename =
-        'report_' .
-        $type .
-        '_' .
-        date('Y-m-d') .
-        '.pdf';
-
-    $pdf->Output(
-        'D',
-        $filename
-    );
-
+    $filename = 'report_' . $type . '_' . date('Y-m-d') . '.pdf';
+    $pdf->Output('D', $filename);
     exit;
 }
 
@@ -1578,288 +1197,80 @@ function generateReportPDF(
 // EXPORT PDF
 // ============================================================
 
-if (
-    isset($_GET['export']) &&
-    $_GET['export'] === 'pdf'
-) {
-
-    $result = getReportData(
-        $type,
-        $from,
-        $to,
-        $pdo
-    );
-
+if (isset($_GET['export']) && $_GET['export'] === 'pdf') {
+    $result = getReportData($type, $from, $to, $pdo);
     if (empty($result['data'])) {
-
         if (function_exists('setFlash')) {
-            setFlash(
-                'warning',
-                'No data available to export.'
-            );
+            setFlash('warning', 'No data available to export.');
         }
-
-        header(
-            'Location: index.php?page=reports&type=' .
-            urlencode($type)
-        );
-
+        header('Location: index.php?page=reports&type=' . urlencode($type));
         exit;
     }
-
-    generateReportPDF(
-        $type,
-        $from,
-        $to,
-        $result,
-        $reportTypes
-    );
+    generateReportPDF($type, $from, $to, $result, $reportTypes);
 }
 
 // ============================================================
 // EXPORT CSV
 // ============================================================
 
-if (
-    isset($_GET['export']) &&
-    $_GET['export'] === 'csv'
-) {
-
-    $result = getReportData(
-        $type,
-        $from,
-        $to,
-        $pdo
-    );
-
+if (isset($_GET['export']) && $_GET['export'] === 'csv') {
+    $result = getReportData($type, $from, $to, $pdo);
     $data = $result['data'];
-
     if (empty($data)) {
-
         if (function_exists('setFlash')) {
-            setFlash(
-                'warning',
-                'No data available to export.'
-            );
+            setFlash('warning', 'No data available to export.');
         }
-
-        header(
-            'Location: index.php?page=reports&type=' .
-            urlencode($type)
-        );
-
+        header('Location: index.php?page=reports&type=' . urlencode($type));
         exit;
     }
-
 
     while (ob_get_level() > 0) {
         ob_end_clean();
     }
 
+    $headers = $reportTypes[$type]['headers'];
+    header('Content-Type: text/csv; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="report_' . $type . '_' . date('Y-m-d') . '.csv"');
+    header('Pragma: no-cache');
+    header('Expires: 0');
 
-    $headers =
-        $reportTypes[$type]['headers'];
-
-
-    header(
-        'Content-Type: text/csv; charset=UTF-8'
-    );
-
-    header(
-        'Content-Disposition: attachment; filename="report_' .
-        $type .
-        '_' .
-        date('Y-m-d') .
-        '.csv"'
-    );
-
-    header(
-        'Pragma: no-cache'
-    );
-
-    header(
-        'Expires: 0'
-    );
-
-
-    $output = fopen(
-        'php://output',
-        'w'
-    );
-
-
-    // UTF-8 BOM for Excel
-    fprintf(
-        $output,
-        chr(0xEF) .
-        chr(0xBB) .
-        chr(0xBF)
-    );
-
-
-    fputcsv(
-        $output,
-        $headers
-    );
-
+    $output = fopen('php://output', 'w');
+    fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
+    fputcsv($output, $headers);
 
     foreach ($data as $row) {
-
         switch ($type) {
-
             case 'inventory':
-
-                fputcsv(
-                    $output,
-                    [
-                        $row['name'],
-                        $row['category'],
-                        $row['quantity'],
-                        $row['threshold'],
-                        $row['status']
-                    ]
-                );
-
+                fputcsv($output, [$row['name'], $row['category'], $row['quantity'], $row['threshold'], $row['status']]);
                 break;
-
-
             case 'appointment':
-
-                fputcsv(
-                    $output,
-                    [
-                        $row['booking_ref'],
-                        $row['client'],
-                        $row['package'],
-                        $row['date'],
-                        $row['time'],
-                        $row['status'],
-                        $row['type']
-                    ]
-                );
-
+                fputcsv($output, [$row['booking_ref'], $row['client'], $row['package'], $row['date'], $row['time'], $row['status'], $row['type']]);
                 break;
-
-
             case 'payment':
-
-                fputcsv(
-                    $output,
-                    [
-                        $row['payment_ref'],
-                        $row['client'],
-                        $row['package'],
-                        $row['amount'],
-                        $row['method'] ?? '—',
-                        $row['status'],
-                        $row['date']
-                    ]
-                );
-
+                fputcsv($output, [$row['payment_ref'], $row['client'], $row['package'], $row['amount'], $row['method'] ?? '—', $row['status'], $row['date']]);
                 break;
-
-
             case 'sales':
-
-                fputcsv(
-                    $output,
-                    [
-                        $row['month_name'],
-                        $row['transactions'],
-                        $row['revenue'],
-                        $row['walkin'],
-                        $row['online']
-                    ]
-                );
-
+                fputcsv($output, [$row['month_name'], $row['transactions'], $row['revenue'], $row['walkin'], $row['online']]);
                 break;
-
-
             case 'loyalty':
-
-                fputcsv(
-                    $output,
-                    [
-                        $row['client'],
-                        $row['card_number'],
-                        $row['total_bookings'],
-                        $row['rewards'],
-                        $row['status']
-                    ]
-                );
-
+                fputcsv($output, [$row['client'], $row['card_number'], $row['total_bookings'], $row['rewards'], $row['status']]);
                 break;
-
-
             case 'analytics':
-
-                fputcsv(
-                    $output,
-                    [
-                        $row['metric'],
-                        $row['value'],
-                        $row['change'],
-                        $row['status']
-                    ]
-                );
-
+                fputcsv($output, [$row['metric'], $row['value'], $row['change'], $row['status']]);
                 break;
-
-
             case 'evaluation':
-
-                fputcsv(
-                    $output,
-                    [
-                        $row['client'],
-                        $row['rating_overall'],
-                        $row['sentiment'],
-                        $row['urgent'],
-                        $row['comment'] ?? '—',
-                        $row['date']
-                    ]
-                );
-
+                fputcsv($output, [$row['client'], $row['rating_overall'], $row['sentiment'], $row['urgent'], $row['comment'] ?? '—', $row['date']]);
                 break;
-
-
             case 'chatbot':
-
-                fputcsv(
-                    $output,
-                    [
-                        $row['user'],
-                        $row['message'],
-                        $row['reply'] ?? '—',
-                        $row['session_id'],
-                        $row['date']
-                    ]
-                );
-
+                fputcsv($output, [$row['user'], $row['message'], $row['reply'] ?? '—', $row['session_id'], $row['date']]);
                 break;
-
-
             case 'photos':
-
-                fputcsv(
-                    $output,
-                    [
-                        $row['booking_ref'],
-                        $row['client'],
-                        $row['photo'],
-                        $row['uploaded_by'],
-                        $row['status'],
-                        $row['date']
-                    ]
-                );
-
+                fputcsv($output, [$row['booking_ref'], $row['client'], $row['photo'], $row['uploaded_by'], $row['status'], $row['date']]);
                 break;
         }
     }
 
-
     fclose($output);
-
     exit;
 }
 
@@ -1868,1681 +1279,299 @@ if (
 // ============================================================
 
 if (isset($_GET['generate'])) {
-
-    $result = getReportData(
-        $type,
-        $from,
-        $to,
-        $pdo
-    );
-
+    $result = getReportData($type, $from, $to, $pdo);
     $reportData = $result['data'];
 }
 
 $currentReport = $reportTypes[$type];
 
-$flash = function_exists('getFlash')
-    ? getFlash()
-    : null;
+$flash = function_exists('getFlash') ? getFlash() : null;
 
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>
-    Reports and Analytics | Studio 94 SnapTrack
-</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports and Analytics | Studio 94 SnapTrack</title>
 <style>
-
 :root {
-
     --primary: #6C63FF;
     --primary-dark: #4A42CC;
     --primary-light: #8B83FF;
-
-    --primary-bg:
-        rgba(108, 99, 255, 0.08);
-
-    --primary-gradient:
-        linear-gradient(
-            135deg,
-            #6C63FF,
-            #4A42CC
-        );
-
+    --primary-bg: rgba(108, 99, 255, 0.08);
+    --primary-gradient: linear-gradient(135deg, #6C63FF, #4A42CC);
     --success: #2ECC71;
     --danger: #FF6B6B;
     --warning: #F1C40F;
     --amber: #F59E0B;
-
     --bg: #F0F2F5;
     --card-bg: #FFFFFF;
-
     --text: #2D3436;
     --text-muted: #636E72;
-
     --border: #DFE6E9;
-
-    --shadow:
-        0 2px 10px
-        rgba(0,0,0,0.08);
-
+    --shadow: 0 2px 10px rgba(0,0,0,0.08);
     --radius: 12px;
 }
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        sans-serif;
-
-    background: var(--bg);
-    color: var(--text);
-
-    padding: 20px;
-}
-
-.container {
-
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-
-/* =========================================================
-   PAGE BANNER
-   ========================================================= */
-
-.page-banner {
-
-    background:
-        var(--primary-gradient);
-
-    color: white;
-
-    padding:
-        30px 32px;
-
-    border-radius:
-        var(--radius);
-
-    margin-bottom:
-        24px;
-
-    box-shadow:
-        0 4px 15px
-        rgba(108,99,255,0.3);
-}
-
-.page-banner h2 {
-
-    font-size: 24px;
-    font-weight: 700;
-}
-
-.page-banner p {
-
-    opacity: 0.92;
-
-    font-size: 14px;
-
-    margin-top: 5px;
-}
-
-
-/* =========================================================
-   CARDS
-   ========================================================= */
-
-.card {
-
-    background:
-        var(--card-bg);
-
-    border-radius:
-        var(--radius);
-
-    box-shadow:
-        var(--shadow);
-
-    padding:
-        20px 24px;
-
-    margin-bottom:
-        20px;
-}
-
-.card-title {
-
-    font-size: 18px;
-
-    font-weight: 600;
-
-    margin-bottom:
-        16px;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-}
-
-
-/* =========================================================
-   SECTION
-   ========================================================= */
-
-.section-header {
-
-    display: flex;
-
-    justify-content:
-        space-between;
-
-    align-items: center;
-
-    flex-wrap: wrap;
-
-    gap: 12px;
-
-    margin-bottom: 14px;
-}
-
-.section-header h3 {
-
-    font-size: 16px;
-    font-weight: 600;
-}
-
-
-/* =========================================================
-   FORM
-   ========================================================= */
-
-.form-group {
-
-    margin-bottom: 14px;
-}
-
-.form-group label {
-
-    display: block;
-
-    font-weight: 500;
-
-    font-size: 13px;
-
-    margin-bottom: 5px;
-}
-
-.form-group input,
-.form-group select {
-
-    width: 100%;
-
-    padding:
-        9px 12px;
-
-    border:
-        1px solid var(--border);
-
-    border-radius: 8px;
-
-    font-size: 14px;
-
-    background: white;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-
-    outline: none;
-
-    border-color:
-        var(--primary);
-
-    box-shadow:
-        0 0 0 3px
-        rgba(108,99,255,0.10);
-}
-
-.form-row {
-
-    display: grid;
-
-    grid-template-columns:
-        1fr 1fr;
-
-    gap: 14px;
-}
-
-
-/* =========================================================
-   BUTTONS
-   ========================================================= */
-
-.btn {
-
-    padding:
-        9px 16px;
-
-    border: none;
-
-    border-radius: 8px;
-
-    font-size: 13px;
-
-    font-weight: 600;
-
-    cursor: pointer;
-
-    transition:
-        all 0.2s;
-
-    text-decoration: none;
-
-    display: inline-flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 5px;
-}
-
-.btn-primary {
-
-    background:
-        var(--primary);
-
-    color: white;
-}
-
-.btn-primary:hover {
-
-    background:
-        var(--primary-dark);
-
-    transform:
-        translateY(-1px);
-
-    box-shadow:
-        0 4px 15px
-        rgba(108,99,255,0.3);
-}
-
-.btn-ghost {
-
-    background:
-        var(--bg);
-
-    color: var(--text);
-
-    border:
-        1px solid var(--border);
-}
-
-.btn-ghost:hover {
-
-    background:
-        var(--border);
-}
-
-.btn-dark {
-
-    background:
-        #2C3E50;
-
-    color: white;
-}
-
-.btn-dark:hover {
-
-    background:
-        #1a252f;
-
-    transform:
-        translateY(-1px);
-}
-
-
-/* =========================================================
-   REPORT CARDS
-   ========================================================= */
-
-.grid-3 {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(
-            auto-fit,
-            minmax(200px, 1fr)
-        );
-
-    gap: 12px;
-}
-
-.report-card {
-
-    border:
-        1px solid var(--border);
-
-    border-radius:
-        10px;
-
-    padding:
-        15px 14px;
-
-    background:
-        var(--bg);
-
-    transition:
-        all 0.2s;
-
-    text-align:
-        center;
-}
-
-.report-card:hover {
-
-    border-color:
-        var(--primary-light);
-
-    box-shadow:
-        var(--shadow);
-
-    transform:
-        translateY(-2px);
-}
-
-.report-card.active {
-
-    border-color:
-        var(--primary);
-
-    background:
-        var(--primary-bg);
-
-    box-shadow:
-        0 0 0 2px
-        rgba(108,99,255,0.08);
-}
-
-.report-card .icon {
-
-    font-size: 25px;
-}
-
-.report-card .title {
-
-    font-weight: 600;
-
-    font-size: 13px;
-
-    margin-top: 5px;
-}
-
-.report-card .description {
-
-    font-size: 11px;
-
-    color:
-        var(--text-muted);
-
-    margin-top: 5px;
-
-    line-height: 1.4;
-}
-
-
-/* =========================================================
-   GRID
-   ========================================================= */
-
-.grid-2 {
-
-    display: grid;
-
-    grid-template-columns:
-        1fr 1fr;
-
-    gap: 20px;
-}
-
-
-/* =========================================================
-   TABLE
-   ========================================================= */
-
-.table-wrap {
-
-    overflow-x: auto;
-
-    max-height: 500px;
-
-    overflow-y: auto;
-
-    border:
-        1px solid var(--border);
-
-    border-radius:
-        8px;
-}
-
-table {
-
-    width: 100%;
-
-    border-collapse:
-        collapse;
-
-    font-size:
-        13px;
-
-    min-width:
-        700px;
-}
-
-table th,
-table td {
-
-    padding:
-        9px 10px;
-
-    text-align:
-        left;
-
-    border-bottom:
-        1px solid var(--border);
-
-    vertical-align:
-        top;
-}
-
-table th {
-
-    font-weight:
-        600;
-
-    font-size:
-        11px;
-
-    text-transform:
-        uppercase;
-
-    letter-spacing:
-        0.5px;
-
-    color:
-        var(--text-muted);
-
-    background:
-        var(--bg);
-
-    position:
-        sticky;
-
-    top:
-        0;
-
-    z-index:
-        10;
-}
-
-table tr:hover {
-
-    background:
-        var(--primary-bg);
-}
-
-
-/* =========================================================
-   BADGES
-   ========================================================= */
-
-.badge {
-
-    padding:
-        3px 10px;
-
-    border-radius:
-        50px;
-
-    font-size:
-        11px;
-
-    font-weight:
-        600;
-
-    display:
-        inline-block;
-
-    white-space:
-        nowrap;
-}
-
-.badge-green {
-
-    background:
-        #d4edda;
-
-    color:
-        #155724;
-}
-
-.badge-amber {
-
-    background:
-        #fff3cd;
-
-    color:
-        #856404;
-}
-
-.badge-red {
-
-    background:
-        #f8d7da;
-
-    color:
-        #721c24;
-}
-
-.badge-gray {
-
-    background:
-        var(--bg);
-
-    color:
-        var(--text-muted);
-}
-
-
-/* =========================================================
-   ALERT
-   ========================================================= */
-
-.alert {
-
-    padding:
-        12px 16px;
-
-    border-radius:
-        8px;
-
-    margin-bottom:
-        16px;
-
-    font-size:
-        14px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        10px;
-
-    border-left:
-        4px solid
-        var(--danger);
-
-    background:
-        #fef2f2;
-
-    color:
-        #721c24;
-}
-
-.alert.success {
-
-    border-left-color:
-        var(--success);
-
-    background:
-        #ecfdf5;
-
-    color:
-        #155724;
-}
-
-.alert-icon {
-
-    font-size:
-        18px;
-}
-
-
-/* =========================================================
-   ACTIONS
-   ========================================================= */
-
-.action-buttons {
-
-    display:
-        flex;
-
-    gap:
-        8px;
-
-    flex-wrap:
-        wrap;
-
-    margin-top:
-        10px;
-}
-
-
-/* =========================================================
-   INFO
-   ========================================================= */
-
-.report-description {
-
-    padding:
-        10px 12px;
-
-    background:
-        var(--primary-bg);
-
-    border-left:
-        3px solid
-        var(--primary);
-
-    border-radius:
-        6px;
-
-    color:
-        var(--text-muted);
-
-    font-size:
-        12px;
-
-    margin-bottom:
-        16px;
-
-    line-height:
-        1.5;
-}
-
-.no-data {
-
-    text-align:
-        center;
-
-    color:
-        var(--text-muted);
-
-    padding:
-        35px 20px;
-}
-
-.results-count {
-
-    font-size:
-        12px;
-
-    color:
-        var(--text-muted);
-
-    font-weight:
-        400;
-}
-
-
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
-
-@media (max-width: 1000px) {
-
-    .grid-2 {
-
-        grid-template-columns:
-            1fr;
-    }
-}
-
-@media (max-width: 768px) {
-
-    body {
-
-        padding:
-            12px;
-    }
-
-    .form-row {
-
-        grid-template-columns:
-            1fr;
-    }
-
-    .page-banner {
-
-        padding:
-            22px;
-    }
-
-    .page-banner h2 {
-
-        font-size:
-            20px;
-    }
-
-    .action-buttons .btn {
-
-        flex:
-            1;
-    }
-}
-
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+.container { max-width: 1400px; margin: 0 auto; }
+.page-banner { background: var(--primary-gradient); color: white; padding: 30px 32px; border-radius: var(--radius); margin-bottom: 24px; box-shadow: 0 4px 15px rgba(108,99,255,0.3); }
+.page-banner h2 { font-size: 24px; font-weight: 700; }
+.page-banner p { opacity: 0.92; font-size: 14px; margin-top: 5px; }
+.card { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 24px; margin-bottom: 20px; }
+.card-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; }
+.section-header h3 { font-size: 16px; font-weight: 600; }
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-weight: 500; font-size: 13px; margin-bottom: 5px; }
+.form-group input, .form-group select { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: white; }
+.form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108,99,255,0.10); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.btn { padding: 9px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 15px rgba(108,99,255,0.3); }
+.btn-ghost { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--border); }
+.btn-dark { background: #2C3E50; color: white; }
+.btn-dark:hover { background: #1a252f; transform: translateY(-1px); }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.report-card { border: 1px solid var(--border); border-radius: 10px; padding: 15px 14px; background: var(--bg); transition: all 0.2s; text-align: center; }
+.report-card:hover { border-color: var(--primary-light); box-shadow: var(--shadow); transform: translateY(-2px); }
+.report-card.active { border-color: var(--primary); background: var(--primary-bg); box-shadow: 0 0 0 2px rgba(108,99,255,0.08); }
+.report-card .icon { font-size: 25px; }
+.report-card .title { font-weight: 600; font-size: 13px; margin-top: 5px; }
+.report-card .description { font-size: 11px; color: var(--text-muted); margin-top: 5px; line-height: 1.4; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.table-wrap { overflow-x: auto; max-height: 500px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 700px; }
+table th, table td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+table th { font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); background: var(--bg); position: sticky; top: 0; z-index: 10; }
+table tr:hover { background: var(--primary-bg); }
+.badge { padding: 3px 10px; border-radius: 50px; font-size: 11px; font-weight: 600; display: inline-block; white-space: nowrap; }
+.badge-green { background: #d4edda; color: #155724; }
+.badge-amber { background: #fff3cd; color: #856404; }
+.badge-red { background: #f8d7da; color: #721c24; }
+.badge-gray { background: var(--bg); color: var(--text-muted); }
+.alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--danger); background: #fef2f2; color: #721c24; }
+.alert.success { border-left-color: var(--success); background: #ecfdf5; color: #155724; }
+.alert-icon { font-size: 18px; }
+.action-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.report-description { padding: 10px 12px; background: var(--primary-bg); border-left: 3px solid var(--primary); border-radius: 6px; color: var(--text-muted); font-size: 12px; margin-bottom: 16px; line-height: 1.5; }
+.no-data { text-align: center; color: var(--text-muted); padding: 35px 20px; }
+.results-count { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+@media (max-width: 1000px) { .grid-2 { grid-template-columns: 1fr; } }
+@media (max-width: 768px) { body { padding: 12px; } .form-row { grid-template-columns: 1fr; } .page-banner { padding: 22px; } .page-banner h2 { font-size: 20px; } .action-buttons .btn { flex: 1; } }
 </style>
-
 </head>
-
 <body>
-
 <div class="container">
-
-
-    <!-- =====================================================
-         PAGE BANNER
-         ===================================================== -->
-
+    <!-- PAGE BANNER -->
     <div class="page-banner">
-
-        <h2>
-            📊 Reports and Analytics
-        </h2>
-
-        <p>
-            Generate, view, and export detailed Studio 94 reports and analytics.
-        </p>
-
+        <h2>📊 Reports and Analytics</h2>
+        <p>Generate, view, and export detailed Studio 94 reports and analytics.</p>
     </div>
 
-
-    <!-- =====================================================
-         FLASH MESSAGE
-         ===================================================== -->
-
+    <!-- FLASH MESSAGE -->
     <?php if ($flash): ?>
-
-        <?php
-        $flashType =
-            strtolower(
-                (string)($flash['type'] ?? 'error')
-            );
-
-        $isSuccess =
-            $flashType === 'success';
-        ?>
-
+        <?php $flashType = strtolower((string)($flash['type'] ?? 'error')); $isSuccess = $flashType === 'success'; ?>
         <div class="alert <?= $isSuccess ? 'success' : '' ?>">
-
-            <span class="alert-icon">
-                <?= $isSuccess ? '✅' : '⚠️' ?>
-            </span>
-
-            <span>
-                <?= reportEsc($flash['msg'] ?? '') ?>
-            </span>
-
+            <span class="alert-icon"><?= $isSuccess ? '✅' : '⚠️' ?></span>
+            <span><?= reportEsc($flash['msg'] ?? '') ?></span>
         </div>
-
     <?php endif; ?>
 
-
-    <!-- =====================================================
-         9 AVAILABLE REPORTS
-         ===================================================== -->
-
+    <!-- 9 AVAILABLE REPORTS -->
     <div class="card">
-
         <div class="section-header">
-
-            <h3>
-                📋 Available Reports
-            </h3>
-
+            <h3>📋 Available Reports</h3>
         </div>
-
-
         <div class="grid-3">
-
             <?php foreach ($reportTypes as $key => $info): ?>
-
-                <a
-                    href="index.php?page=reports&type=<?= urlencode($key) ?>"
-                    style="text-decoration:none;color:inherit;"
-                >
-
-                    <div
-                        class="report-card <?= $type === $key ? 'active' : '' ?>"
-                    >
-
-                        <div class="icon">
-                            <?= $info['icon'] ?>
-                        </div>
-
-                        <div class="title">
-                            <?= reportEsc($info['title']) ?>
-                        </div>
-
-                        <div class="description">
-                            <?= reportEsc($info['description']) ?>
-                        </div>
-
+                <a href="index.php?page=reports&type=<?= urlencode($key) ?>" style="text-decoration:none;color:inherit;">
+                    <div class="report-card <?= $type === $key ? 'active' : '' ?>">
+                        <div class="icon"><?= $info['icon'] ?></div>
+                        <div class="title"><?= reportEsc($info['title']) ?></div>
+                        <div class="description"><?= reportEsc($info['description']) ?></div>
                     </div>
-
                 </a>
-
             <?php endforeach; ?>
-
         </div>
-
     </div>
 
-
-    <!-- =====================================================
-         GENERATOR + RESULTS
-         ===================================================== -->
-
+    <!-- GENERATOR + RESULTS -->
     <div class="grid-2">
-
-
-        <!-- =================================================
-             GENERATOR
-             ================================================= -->
-
+        <!-- GENERATOR -->
         <div class="card">
-
-            <div class="card-title">
-
-                <?= $currentReport['icon'] ?>
-
-                Generate Report
-
-            </div>
-
-
+            <div class="card-title"><?= $currentReport['icon'] ?> Generate Report</div>
             <div class="report-description">
-
-                <?= reportEsc(
-                    $currentReport['description']
-                ) ?>
-
+                <?= reportEsc($currentReport['description']) ?>
                 <?php if (!$currentReport['dateBased']): ?>
-
-                    <br><br>
-
-                    <strong>
-                        Note:
-                    </strong>
-
-                    This report shows current system records.
-                    The selected date range does not restrict this report.
-
+                    <br><br><strong>Note:</strong> This report shows current system records. The selected date range does not restrict this report.
                 <?php endif; ?>
-
             </div>
-
-
-            <form
-                method="GET"
-                action="index.php"
-            >
-
-                <input
-                    type="hidden"
-                    name="page"
-                    value="reports"
-                >
-
-                <input
-                    type="hidden"
-                    name="generate"
-                    value="1"
-                >
-
-
-                <!-- REPORT TYPE -->
-
+            <form method="GET" action="index.php">
+                <input type="hidden" name="page" value="reports">
+                <input type="hidden" name="generate" value="1">
+                
                 <div class="form-group">
-
-                    <label>
-                        Report Type
-                    </label>
-
+                    <label>Report Type</label>
                     <select name="type">
-
-                        <?php foreach (
-                            $reportTypes
-                            as $key => $info
-                        ): ?>
-
-                            <option
-                                value="<?= reportEsc($key) ?>"
-                                <?= $type === $key
-                                    ? 'selected'
-                                    : '' ?>
-                            >
-
-                                <?= $info['icon'] ?>
-
-                                <?= reportEsc(
-                                    $info['title']
-                                ) ?>
-
+                        <?php foreach ($reportTypes as $key => $info): ?>
+                            <option value="<?= reportEsc($key) ?>" <?= $type === $key ? 'selected' : '' ?>>
+                                <?= $info['icon'] ?> <?= reportEsc($info['title']) ?>
                             </option>
-
                         <?php endforeach; ?>
-
                     </select>
-
                 </div>
-
-
-                <!-- DATE -->
 
                 <div class="form-row">
-
                     <div class="form-group">
-
-                        <label>
-                            From Date
-                        </label>
-
-                        <input
-                            type="date"
-                            name="from"
-                            value="<?= reportEsc($from) ?>"
-                        >
-
+                        <label>From Date</label>
+                        <input type="date" name="from" value="<?= reportEsc($from) ?>">
                     </div>
-
-
                     <div class="form-group">
-
-                        <label>
-                            To Date
-                        </label>
-
-                        <input
-                            type="date"
-                            name="to"
-                            value="<?= reportEsc($to) ?>"
-                        >
-
+                        <label>To Date</label>
+                        <input type="date" name="to" value="<?= reportEsc($to) ?>">
                     </div>
-
                 </div>
-
-
-                <!-- BUTTONS -->
 
                 <div class="action-buttons">
-
-                    <button
-                        type="submit"
-                        class="btn btn-primary"
-                        style="flex:2;"
-                    >
-                        📊 Generate & View
-                    </button>
-
-
+                    <button type="submit" class="btn btn-primary" style="flex:2;">📊 Generate & View</button>
                     <?php if (!empty($reportData)): ?>
-
-                        <a
-                            href="index.php?page=reports&type=<?= urlencode($type) ?>&from=<?= urlencode($from) ?>&to=<?= urlencode($to) ?>&export=pdf"
-                            class="btn btn-dark"
-                            style="flex:1;"
-                        >
-                            📄 PDF
-                        </a>
-
-
-                        <a
-                            href="index.php?page=reports&type=<?= urlencode($type) ?>&from=<?= urlencode($from) ?>&to=<?= urlencode($to) ?>&export=csv"
-                            class="btn btn-ghost"
-                            style="flex:1;"
-                        >
-                            📥 CSV
-                        </a>
-
+                        <a href="index.php?page=reports&type=<?= urlencode($type) ?>&from=<?= urlencode($from) ?>&to=<?= urlencode($to) ?>&export=pdf" class="btn btn-dark" style="flex:1;">📄 PDF</a>
+                        <a href="index.php?page=reports&type=<?= urlencode($type) ?>&from=<?= urlencode($from) ?>&to=<?= urlencode($to) ?>&export=csv" class="btn btn-ghost" style="flex:1;">📥 CSV</a>
                     <?php endif; ?>
-
                 </div>
-
             </form>
-
         </div>
 
-
-        <!-- =================================================
-             RESULTS
-             ================================================= -->
-
+        <!-- RESULTS -->
         <div class="card">
-
             <div class="card-title">
-
-                <?= $currentReport['icon'] ?>
-
-                Report Results
-
+                <?= $currentReport['icon'] ?> Report Results
                 <?php if (!empty($reportData)): ?>
-
-                    <span class="results-count">
-
-                        (
-                        <?= count($reportData) ?>
-                        records
-                        )
-
-                    </span>
-
+                    <span class="results-count">(<?= count($reportData) ?> records)</span>
                 <?php endif; ?>
-
             </div>
 
-
-            <?php if (
-                empty($reportData) &&
-                !isset($_GET['generate'])
-            ): ?>
-
+            <?php if (empty($reportData) && !isset($_GET['generate'])): ?>
                 <div class="no-data">
-
-                    <div style="font-size:35px;margin-bottom:10px;">
-                        📊
-                    </div>
-
-                    Select a report type, choose a date range,
-                    and click <strong>Generate & View</strong>
-                    to display the report.
-
+                    <div style="font-size:35px;margin-bottom:10px;">📊</div>
+                    Select a report type, choose a date range, and click <strong>Generate & View</strong> to display the report.
                 </div>
-
-
             <?php elseif (empty($reportData)): ?>
-
                 <div class="no-data">
-
-                    <div style="font-size:35px;margin-bottom:10px;">
-                        📭
-                    </div>
-
+                    <div style="font-size:35px;margin-bottom:10px;">📭</div>
                     No records found for the selected period.
-
                 </div>
-
-
             <?php else: ?>
-
-
                 <div class="table-wrap">
-
                     <table>
-
                         <thead>
-
                             <tr>
-
-                                <?php foreach (
-                                    $currentReport['headers']
-                                    as $header
-                                ): ?>
-
-                                    <th>
-                                        <?= reportEsc($header) ?>
-                                    </th>
-
+                                <?php foreach ($currentReport['headers'] as $header): ?>
+                                    <th><?= reportEsc($header) ?></th>
                                 <?php endforeach; ?>
-
                             </tr>
-
                         </thead>
-
-
                         <tbody>
-
-                        <?php foreach (
-                            $reportData
-                            as $row
-                        ): ?>
-
+                        <?php foreach ($reportData as $row): ?>
                             <tr>
+                                <?php if ($type === 'inventory'): ?>
+                                    <td><?= reportEsc($row['name']) ?></td>
+                                    <td><?= reportEsc($row['category']) ?></td>
+                                    <td><strong><?= (int)$row['quantity'] ?></strong></td>
+                                    <td><?= (int)$row['threshold'] ?></td>
+                                    <td><?= reportStatusBadge($row['status']) ?></td>
 
+                                <?php elseif ($type === 'appointment'): ?>
+                                    <td><?= reportEsc($row['booking_ref']) ?></td>
+                                    <td><?= reportEsc($row['client'] ?? '—') ?></td>
+                                    <td><?= reportEsc($row['package'] ?? '—') ?></td>
+                                    <td><?= reportDate($row['date']) ?></td>
+                                    <td><?= reportEsc($row['time']) ?></td>
+                                    <td><?= reportStatusBadge($row['status']) ?></td>
+                                    <td><?= reportEsc($row['type']) ?></td>
 
-                                <!-- =================================
-                                     INVENTORY
-                                     ================================= -->
+                                <?php elseif ($type === 'payment'): ?>
+                                    <td><?= reportEsc($row['payment_ref']) ?></td>
+                                    <td><?= reportEsc($row['client'] ?? '—') ?></td>
+                                    <td><?= reportEsc($row['package'] ?? '—') ?></td>
+                                    <td><strong><?= reportMoney($row['amount']) ?></strong></td>
+                                    <td><?= reportEsc($row['method'] ?? '—') ?></td>
+                                    <td><?= reportStatusBadge($row['status']) ?></td>
+                                    <td><?= reportDate($row['date']) ?></td>
 
-                                <?php if (
-                                    $type === 'inventory'
-                                ): ?>
+                                <?php elseif ($type === 'sales'): ?>
+                                    <td><?= reportEsc($row['month_name']) ?></td>
+                                    <td><?= (int)$row['transactions'] ?></td>
+                                    <td><strong><?= reportMoney($row['revenue']) ?></strong></td>
+                                    <td><?= (int)$row['walkin'] ?></td>
+                                    <td><?= (int)$row['online'] ?></td>
 
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['name']
-                                        ) ?>
-                                    </td>
+                                <?php elseif ($type === 'loyalty'): ?>
+                                    <td><?= reportEsc($row['client']) ?></td>
+                                    <td><?= reportEsc($row['card_number']) ?></td>
+                                    <td><?= (int)$row['total_bookings'] ?></td>
+                                    <td><?= reportEsc($row['rewards']) ?></td>
+                                    <td><?= reportStatusBadge($row['status']) ?></td>
 
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['category']
-                                        ) ?>
-                                    </td>
+                                <?php elseif ($type === 'analytics'): ?>
+                                    <td><strong><?= reportEsc($row['metric']) ?></strong></td>
+                                    <td><strong><?= reportEsc($row['value']) ?></strong></td>
+                                    <td><?= $row['change'] !== '—' ? reportEsc($row['change']) : '—' ?></td>
+                                    <td><?= reportStatusBadge($row['status']) ?></td>
 
-                                    <td>
-                                        <strong>
-                                            <?= (int)$row['quantity'] ?>
-                                        </strong>
-                                    </td>
-
-                                    <td>
-                                        <?= (int)$row['threshold'] ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportStatusBadge(
-                                            $row['status']
-                                        ) ?>
-                                    </td>
-
-
-                                <!-- =================================
-                                     APPOINTMENT
-                                     ================================= -->
-
-                                <?php elseif (
-                                    $type === 'appointment'
-                                ): ?>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['booking_ref']
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['client'] ?? '—'
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['package'] ?? '—'
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportDate(
-                                            $row['date']
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['time']
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportStatusBadge(
-                                            $row['status']
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['type']
-                                        ) ?>
-                                    </td>
-
-
-                                <!-- =================================
-                                     PAYMENT
-                                     ================================= -->
-
-                                <?php elseif (
-                                    $type === 'payment'
-                                ): ?>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['payment_ref']
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['client'] ?? '—'
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['package'] ?? '—'
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <strong>
-                                            <?= reportMoney(
-                                                $row['amount']
-                                            ) ?>
-                                        </strong>
-                                    </td>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['method'] ?? '—'
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportStatusBadge(
-                                            $row['status']
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportDate(
-                                            $row['date']
-                                        ) ?>
-                                    </td>
-
-
-                                <!-- =================================
-                                     SALES
-                                     ================================= -->
-
-                                <?php elseif (
-                                    $type === 'sales'
-                                ): ?>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['month_name']
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= (int)$row['transactions'] ?>
-                                    </td>
-
-                                    <td>
-                                        <strong>
-                                            <?= reportMoney(
-                                                $row['revenue']
-                                            ) ?>
-                                        </strong>
-                                    </td>
-
-                                    <td>
-                                        <?= (int)$row['walkin'] ?>
-                                    </td>
-
-                                    <td>
-                                        <?= (int)$row['online'] ?>
-                                    </td>
-
-
-                                <!-- =================================
-                                     LOYALTY
-                                     ================================= -->
-
-                                <?php elseif (
-                                    $type === 'loyalty'
-                                ): ?>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['client']
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['card_number']
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= (int)$row['total_bookings'] ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['rewards']
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportStatusBadge(
-                                            $row['status']
-                                        ) ?>
-                                    </td>
-
-
-                                <!-- =================================
-                                     ANALYTICS
-                                     ================================= -->
-
-                                <?php elseif (
-                                    $type === 'analytics'
-                                ): ?>
-
-                                    <td>
-                                        <strong>
-                                            <?= reportEsc(
-                                                $row['metric']
-                                            ) ?>
-                                        </strong>
-                                    </td>
-
-                                    <td>
-                                        <strong>
-                                            <?= reportEsc(
-                                                $row['value']
-                                            ) ?>
-                                        </strong>
-                                    </td>
-
-                                    <td>
-
-                                        <?php if (
-                                            $row['change'] !== '—'
-                                        ): ?>
-
-                                            <?= reportEsc(
-                                                $row['change']
-                                            ) ?>
-
-                                        <?php else: ?>
-
-                                            —
-
-                                        <?php endif; ?>
-
-                                    </td>
-
-                                    <td>
-                                        <?= reportStatusBadge(
-                                            $row['status']
-                                        ) ?>
-                                    </td>
-
-
-                                <!-- =================================
-                                     EVALUATION
-                                     ================================= -->
-
-                                <?php elseif (
-                                    $type === 'evaluation'
-                                ): ?>
-
+                                <?php elseif ($type === 'evaluation'): ?>
                                     <?php
-                                    $rating =
-                                        max(
-                                            0,
-                                            min(
-                                                5,
-                                                (int)$row['rating_overall']
-                                            )
-                                        );
-
-                                    $sentiment =
-                                        strtolower(
-                                            (string)(
-                                                $row['sentiment']
-                                                ?? ''
-                                            )
-                                        );
-
-                                    if (
-                                        $sentiment === 'positive'
-                                    ) {
-                                        $sentimentClass =
-                                            'badge-green';
-
-                                    } elseif (
-                                        $sentiment === 'negative'
-                                    ) {
-                                        $sentimentClass =
-                                            'badge-red';
-
-                                    } else {
-                                        $sentimentClass =
-                                            'badge-amber';
-                                    }
+                                    $rating = max(0, min(5, (int)$row['rating_overall']));
+                                    $sentiment = strtolower((string)($row['sentiment'] ?? ''));
+                                    if ($sentiment === 'positive') { $sentimentClass = 'badge-green'; }
+                                    elseif ($sentiment === 'negative') { $sentimentClass = 'badge-red'; }
+                                    else { $sentimentClass = 'badge-amber'; }
                                     ?>
+                                    <td><?= reportEsc($row['client'] ?? '—') ?></td>
+                                    <td><?= str_repeat('★', $rating) . str_repeat('☆', 5 - $rating) ?></td>
+                                    <td><span class="badge <?= $sentimentClass ?>"><?= reportEsc(ucfirst($sentiment ?: '—')) ?></span></td>
+                                    <td><?= $row['urgent'] === 'Yes' ? reportStatusBadge('Urgent') : reportStatusBadge('No') ?></td>
+                                    <td><?= reportEsc($row['comment'] ?? '—') ?></td>
+                                    <td><?= reportDate($row['date']) ?></td>
 
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['client'] ?? '—'
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= str_repeat(
-                                            '★',
-                                            $rating
-                                        ) .
-                                        str_repeat(
-                                            '☆',
-                                            5 - $rating
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-
-                                        <span
-                                            class="badge <?= $sentimentClass ?>"
-                                        >
-                                            <?= reportEsc(
-                                                ucfirst(
-                                                    $sentiment ?: '—'
-                                                )
-                                            ) ?>
-                                        </span>
-
-                                    </td>
-
-                                    <td>
-
-                                        <?= $row['urgent'] === 'Yes'
-                                            ? reportStatusBadge('Urgent')
-                                            : reportStatusBadge('No') ?>
-
-                                    </td>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['comment'] ?? '—'
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportDate(
-                                            $row['date']
-                                        ) ?>
-                                    </td>
-
-
-                                <!-- =================================
-                                     CHATBOT
-                                     ================================= -->
-
-                                <?php elseif (
-                                    $type === 'chatbot'
-                                ): ?>
-
+                                <?php elseif ($type === 'chatbot'): ?>
                                     <?php
-                                    $message =
-                                        (string)(
-                                            $row['message']
-                                            ?? ''
-                                        );
-
-                                    $reply =
-                                        (string)(
-                                            $row['reply']
-                                            ?? '—'
-                                        );
+                                    $message = (string)($row['message'] ?? '');
+                                    $reply = (string)($row['reply'] ?? '—');
                                     ?>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['user'] ?? 'Client'
-                                        ) ?>
-                                    </td>
-
+                                    <td><?= reportEsc($row['user'] ?? 'Client') ?></td>
                                     <td title="<?= reportEsc($message) ?>">
-
-                                        <?= reportEsc(
-                                            mb_substr(
-                                                $message,
-                                                0,
-                                                60
-                                            )
-                                        ) ?>
-
-                                        <?php if (
-                                            mb_strlen($message) > 60
-                                        ): ?>
-
-                                            ...
-
-                                        <?php endif; ?>
-
+                                        <?= reportEsc(mb_substr($message, 0, 60)) ?>
+                                        <?php if (mb_strlen($message) > 60): ?>...<?php endif; ?>
                                     </td>
-
                                     <td title="<?= reportEsc($reply) ?>">
-
-                                        <?= reportEsc(
-                                            mb_substr(
-                                                $reply,
-                                                0,
-                                                60
-                                            )
-                                        ) ?>
-
-                                        <?php if (
-                                            mb_strlen($reply) > 60
-                                        ): ?>
-
-                                            ...
-
-                                        <?php endif; ?>
-
+                                        <?= reportEsc(mb_substr($reply, 0, 60)) ?>
+                                        <?php if (mb_strlen($reply) > 60): ?>...<?php endif; ?>
                                     </td>
+                                    <td><?= reportEsc($row['session_id']) ?></td>
+                                    <td><?= reportDate($row['date']) ?></td>
 
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['session_id']
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportDate(
-                                            $row['date']
-                                        ) ?>
-                                    </td>
-
-
-                                <!-- =================================
-                                     PHOTOS
-                                     ================================= -->
-
-                                <?php elseif (
-                                    $type === 'photos'
-                                ): ?>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['booking_ref']
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['client'] ?? '—'
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['photo']
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportEsc(
-                                            $row['uploaded_by'] ?? '—'
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportStatusBadge(
-                                            $row['status']
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= reportDate(
-                                            $row['date']
-                                        ) ?>
-                                    </td>
-
+                                <?php elseif ($type === 'photos'): ?>
+                                    <td><?= reportEsc($row['booking_ref']) ?></td>
+                                    <td><?= reportEsc($row['client'] ?? '—') ?></td>
+                                    <td><?= reportEsc($row['photo']) ?></td>
+                                    <td><?= reportEsc($row['uploaded_by'] ?? '—') ?></td>
+                                    <td><?= reportStatusBadge($row['status']) ?></td>
+                                    <td><?= reportDate($row['date']) ?></td>
                                 <?php endif; ?>
-
                             </tr>
-
                         <?php endforeach; ?>
-
                         </tbody>
-
                     </table>
-
                 </div>
-
             <?php endif; ?>
-
         </div>
-
     </div>
-
 </div>
-
 </body>
-
 </html>
