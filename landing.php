@@ -453,8 +453,8 @@ if ($loggedIn) {
   <footer class="site-footer" id="contact">
     <div class="footer-content">
       <p class="footer-reach">Reach us here</p>
-      <a href="mailto:THISIS.STUDIO94OFFICIAL@GMAIL.COM" class="footer-email">
-        THISIS.STUDIO94OFFICIAL@GMAIL.COM
+      <a href="mailto:thisis.studio94official@gmail.com" class="footer-email">
+        thisis.studio94official@gmail.com
       </a>
       <div class="footer-address">
         2F SBD BUILDING, HIGHWAY 1, SAN ISIDRO<br />
