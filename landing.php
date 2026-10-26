@@ -461,12 +461,12 @@ if ($loggedIn) {
         POBLACION, NABUA, CAMARINES SUR 4434
       </div>
       <div class="footer-socials">
-        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Facebook Page">
+        <a href="https://www.facebook.com/studio94official" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Facebook Page">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
           </svg>
         </a>
-        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Instagram Profile">
+        <a href="https://l.facebook.com/l.php?u=https%3A%2F%2Fwww.instagram.com%2Fthisis.studio94%3Futm_source%3Dig_web_button_share_sheet%26mdxt%3DZDNlZDc0MzIxNw%253D%253D%26fbclid%3DIwZXh0bgNhZW0CMTAAcGRvZgVicmlkETFDYnFrNTBNeE8zcXNWV29Hc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHneoqn4Gw1n44mCqNic8bDaNX2nQGwztRSJEv9wV2OuYgbQs5wBnYl80WP13_aem_M-v-VguMOwl8h37Q7gohKw&h=AUCCXPrnldv7m3f8tNzf8TdJMTHseTqVp_v7p4-MPKvFMsMI3nv14Wi1P2s-GX5-f6-kSAqaAUeipJczH4xLyfcpfEh5Dc22sP0i2uD1LKxNyr4Qz3qJe06HSE1e-xcFrJkM4bRmuFFb9RI-NG-6ZQ" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Instagram Profile">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
