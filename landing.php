@@ -391,9 +391,9 @@ if ($loggedIn) {
                     <line x1="3" y1="10" x2="21" y2="10"></line>
                   </svg>
                 </div>
-                <h4 class="step-heading">Step 1: select your schedule</h4>
+                <h4 class="step-heading">Step 1: Select your schedule</h4>
               </div>
-              <p class="step-desc">choose your schedule and capture your moment—select a date and time for your self-shoot session.</p>
+              <p class="step-desc">Choose your schedule and capture your moment—select a date and time for your self-shoot session.</p>
             </div>
 
             <div class="step-card">
@@ -406,7 +406,7 @@ if ($loggedIn) {
                 </div>
                 <h4 class="step-heading">Step 2: Choose your package</h4>
               </div>
-              <p class="step-desc">choose your preferred package and add - ons.</p>
+              <p class="step-desc">Choose your preferred package and add - ons.</p>
             </div>
 
             <div class="step-card">
@@ -419,7 +419,7 @@ if ($loggedIn) {
                 </div>
                 <h4 class="step-heading">Step 3: Secure your spot</h4>
               </div>
-              <p class="step-desc">proceed to checkout and complete your downpayment. you'll receive an email once booking is confirmed</p>
+              <p class="step-desc">Proceed to checkout and complete your downpayment. you'll receive an email once booking is confirmed</p>
             </div>
           </div>
         </div>
