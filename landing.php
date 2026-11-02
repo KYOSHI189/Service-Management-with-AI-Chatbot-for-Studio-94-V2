@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// STUDIO 94 — Landing Page (FINAL — naka-angkop sa existing feedback table)
+// STUDIO 94 — Landing Page (FINAL FIXED)
 // ============================================================
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/functions.php';
@@ -34,10 +34,10 @@ if (isset($_GET['feedback'])) {
     }
 }
 
-// ---- Fetch recent feedback from database (WITH user JOIN) ----
+// ---- Fetch recent feedback from database (JOIN sa users) ----
 $reviews = [];
 try {
-    $pdo = db(); // ⚠️ Gamit ang existing db() function mo
+    $pdo = db();
     $stmt = $pdo->query("
         SELECT 
             f.rating_overall,
@@ -298,7 +298,8 @@ try {
       flex-direction: column;
     }
     .feedback-form input,
-    .feedback-form textarea {
+    .feedback-form textarea,
+    .feedback-form select {
       width: 100%;
       padding: 12px 14px;
       border: 1px solid var(--color-border);
@@ -310,7 +311,8 @@ try {
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
     .feedback-form input:focus,
-    .feedback-form textarea:focus {
+    .feedback-form textarea:focus,
+    .feedback-form select:focus {
       outline: none;
       border-color: #111;
       box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
@@ -449,7 +451,6 @@ try {
       font-size: 14px;
       font-weight: 600;
       letter-spacing: 1px;
-      text-transform: uppercase;
       color: #fff;
       text-decoration: none;
       padding: 10px 18px;
@@ -457,6 +458,7 @@ try {
       border-radius: 30px;
       margin-bottom: 26px;
       transition: var(--transition-smooth);
+      text-transform: lowercase; /* ✅ LOWERCASE EMAIL */
     }
     .footer-email:hover {
       background: #fff;
@@ -708,6 +710,17 @@ try {
           <!-- ⚠️ PALITAN ANG ACTION URL kung iba ang feedback handler mo -->
           <form class="feedback-form" action="<?= $baseUrl ?>/index.php?page=feedback-submit" method="POST">
             <input type="hidden" name="source" value="landing" />
+
+            <div class="form-group">
+              <label>Select Package</label>
+              <select name="package" required>
+                <option value="">— Select package —</option>
+                <option value="Self-Shoot">Self-Shoot</option>
+                <option value="Studio Rental">Studio Rental</option>
+                <option value="Family">Family Package</option>
+                <option value="Creative">Creative Package</option>
+              </select>
+            </div>
 
             <div class="form-group">
               <label>Your Rating</label>
