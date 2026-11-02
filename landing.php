@@ -1,13 +1,12 @@
 <?php
 // ============================================================
-// STUDIO 94 — Landing Page (Fixed for Existing System)
+// STUDIO 94 — Landing Page (FINAL — naka-angkop sa existing feedback table)
 // ============================================================
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/functions.php';
 
 startSession();
 
-// ---- Redirect targets based on login state ----
 $loggedIn = isLoggedIn();
 $baseUrl  = defined('APP_URL') ? rtrim(APP_URL, '/') : '';
 
@@ -22,7 +21,7 @@ if ($loggedIn) {
     $accountUrl = $baseUrl . '/login.php?tab=login&redirect=' . urlencode($baseUrl . '/index.php?page=dashboard');
 }
 
-// ---- Feedback message (optional) ----
+// Feedback message
 $feedbackMsg = '';
 $feedbackType = '';
 if (isset($_GET['feedback'])) {
@@ -33,6 +32,28 @@ if (isset($_GET['feedback'])) {
         $feedbackMsg = 'Sorry, there was an error submitting your feedback. Please try again.';
         $feedbackType = 'error';
     }
+}
+
+// ---- Fetch recent feedback from database (WITH user JOIN) ----
+$reviews = [];
+try {
+    $pdo = db(); // ⚠️ Gamit ang existing db() function mo
+    $stmt = $pdo->query("
+        SELECT 
+            f.rating_overall,
+            f.comment,
+            f.created_at,
+            f.ai_sentiment,
+            u.name AS client_name
+        FROM feedback f
+        JOIN users u ON f.user_id = u.id
+        WHERE f.comment IS NOT NULL AND f.comment != ''
+        ORDER BY f.created_at DESC
+        LIMIT 10
+    ");
+    $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $reviews = [];
 }
 ?>
 <!DOCTYPE html>
@@ -53,8 +74,6 @@ if (isset($_GET['feedback'])) {
       --font-serif: 'Cormorant Garamond', Georgia, serif;
       --color-bg: #ffffff;
       --color-text-main: #1a1a1a;
-      --color-text-muted: #666666;
-      --color-text-light: #888888;
       --color-package-pink: #ffd3d4;
       --color-package-green: #4d7a51;
       --color-package-cream: #fff6e9;
@@ -223,7 +242,7 @@ if (isset($_GET['feedback'])) {
     .offer-cream { background-color: var(--color-package-cream); color: var(--color-package-cream-text); }
     .offer-blue { background-color: var(--color-package-blue); color: #ffffff; }
 
-    /* ====== FEEDBACK SECTION (NEW) ====== */
+    /* ====== FEEDBACK SECTION ====== */
     .feedback-section {
       padding: 60px 0 80px;
       background: #fafafa;
@@ -332,7 +351,68 @@ if (isset($_GET['feedback'])) {
       box-shadow: 0 6px 20px rgba(0,0,0,0.15);
     }
 
-    /* ====== FOOTER (ENHANCED CONTACT & ICONS) ====== */
+    /* ====== FEEDBACK DISPLAY ====== */
+    .feedback-display {
+      max-width: 1000px;
+      margin: 60px auto 0;
+      padding-top: 40px;
+      border-top: 2px solid #e8e8e8;
+    }
+    .feedback-display-title {
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: 1px;
+      color: #111;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .feedback-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .review-card {
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .review-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+    .review-stars {
+      color: #ffb400;
+      font-size: 18px;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+    .review-comment {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: #333;
+      line-height: 1.6;
+      margin-bottom: 14px;
+      font-style: italic;
+    }
+    .review-author {
+      font-size: 12px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .no-reviews {
+      text-align: center;
+      color: #999;
+      font-style: italic;
+      font-size: 14px;
+      padding: 20px;
+    }
+
+    /* ====== FOOTER ====== */
     .site-footer {
       background: #111;
       color: #eee;
@@ -612,7 +692,7 @@ if (isset($_GET['feedback'])) {
       </div>
     </section>
 
-    <!-- ========== FEEDBACK SECTION (NEW) ========== -->
+    <!-- ========== FEEDBACK SECTION ========== -->
     <section class="feedback-section" id="feedback">
       <div class="container">
         <div class="feedback-inner">
@@ -625,8 +705,8 @@ if (isset($_GET['feedback'])) {
             </div>
           <?php endif; ?>
 
-          <!-- ⚠️ PALITAN ITO NG EXISTING FEEDBACK HANDLER MO -->
-          <form class="feedback-form" action="<?= $baseUrl ?>/index.php?page=feedback" method="POST">
+          <!-- ⚠️ PALITAN ANG ACTION URL kung iba ang feedback handler mo -->
+          <form class="feedback-form" action="<?= $baseUrl ?>/index.php?page=feedback-submit" method="POST">
             <input type="hidden" name="source" value="landing" />
 
             <div class="form-group">
@@ -659,12 +739,39 @@ if (isset($_GET['feedback'])) {
             <button type="submit" class="feedback-submit">Submit Feedback</button>
           </form>
         </div>
+
+        <!-- ========== FEEDBACK DISPLAY ========== -->
+        <div class="feedback-display">
+          <h3 class="feedback-display-title">What our customers say</h3>
+
+          <?php if (!empty($reviews)): ?>
+            <div class="feedback-list">
+              <?php foreach ($reviews as $review): ?>
+                <div class="review-card">
+                  <div class="review-stars">
+                    <?= str_repeat('★', (int)$review['rating_overall']) ?>
+                    <?= str_repeat('☆', 5 - (int)$review['rating_overall']) ?>
+                  </div>
+                  <p class="review-comment">
+                    "<?= htmlspecialchars($review['comment']) ?>"
+                  </p>
+                  <p class="review-author">
+                    — <?= htmlspecialchars($review['client_name'] ?: 'Anonymous') ?>,
+                    <?= date('M j, Y', strtotime($review['created_at'])) ?>
+                  </p>
+                </div>
+              <?php endforeach; ?>
+            </div>
+          <?php else: ?>
+            <p class="no-reviews">No feedback yet. Be the first to share your experience!</p>
+          <?php endif; ?>
+        </div>
       </div>
     </section>
 
   </main>
 
-  <!-- FOOTER (ENHANCED CONTACT & ICONS) -->
+  <!-- FOOTER -->
   <footer class="site-footer" id="contact">
     <div class="footer-content">
       <p class="footer-reach">Reach us here</p>
